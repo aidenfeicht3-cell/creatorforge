@@ -80,6 +80,10 @@ type Any = Record<string, unknown>;
  * canvas. Image models butcher in-image text, so we generate the image clean
  * (per the prompt in `thumbnailPromptFor`) and bake the overlay here. The
  * Download button exports the composed PNG; Regenerate re-rolls just the image.
+ *
+ * Each concept gets a DIFFERENT layout (cycled by index) so the 4 outputs
+ * actually look distinct — same logic that drives the image-side variants in
+ * COMPOSITION_VARIANTS over in ai-image.ts.
  */
 function Thumbnails({ data, style }: { data: Any; style?: string }) {
   const initial = [...((data.concepts as Any[]) || [])].sort(
@@ -102,6 +106,7 @@ function Thumbnails({ data, style }: { data: Any; style?: string }) {
           key={i}
           concept={c}
           style={style}
+          index={i}
           onRegenerated={(image) => updateConcept(i, { image })}
         />
       ))}
@@ -109,13 +114,48 @@ function Thumbnails({ data, style }: { data: Any; style?: string }) {
   );
 }
 
+/**
+ * 4 distinct text-overlay layouts. Each pairs with the matching
+ * composition-variant in ai-image.ts so the text lands in the clean
+ * zone the image generator was told to leave empty.
+ */
+type LayoutId = 0 | 1 | 2 | 3;
+
+interface LayoutSpec {
+  /** Where the headline sits */
+  position: "left-band" | "right-band" | "top-banner" | "stacked";
+  /** Accent palette */
+  accent: { box: string; text: string; stroke: string };
+}
+
+const LAYOUTS: LayoutSpec[] = [
+  {
+    position: "left-band",
+    accent: { box: "#FFE600", text: "#0A0A0A", stroke: "#0A0A0A" }, // MrBeast yellow
+  },
+  {
+    position: "right-band",
+    accent: { box: "#FF2D55", text: "#FFFFFF", stroke: "#0A0A0A" }, // hot red
+  },
+  {
+    position: "top-banner",
+    accent: { box: "#000000", text: "#FFFFFF", stroke: "#000000" }, // bold contrast
+  },
+  {
+    position: "stacked",
+    accent: { box: "#0066FF", text: "#FFFFFF", stroke: "#0A0A0A" }, // tech blue
+  },
+];
+
 function ThumbnailCard({
   concept,
   style,
+  index,
   onRegenerated,
 }: {
   concept: Any;
   style?: string;
+  index: number;
   onRegenerated: (image: string) => void;
 }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -124,51 +164,27 @@ function ThumbnailCard({
 
   const overlayText = String(concept.overlayText || "");
   const imageSrc = concept.image ? String(concept.image) : "";
+  const layout = LAYOUTS[(index % LAYOUTS.length) as LayoutId];
 
-  // Composite: draw the AI image + bottom gradient + thick stroked headline.
-  // Re-runs whenever the image or text changes (e.g. after regenerate).
+  // Composite: draw the AI image + per-layout text overlay (accent block +
+  // chunky outlined headline). Re-runs when the image or text changes.
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    // Target a high-res 16:9 canvas so downloaded PNGs look crisp.
+    // High-res 16:9 so downloaded PNGs are crisp at YouTube's native size.
     canvas.width = 1280;
     canvas.height = 720;
 
     const drawText = () => {
       if (!overlayText) return;
       const text = overlayText.toUpperCase();
-
-      // Bottom gradient for readability regardless of the image's contents.
-      const grad = ctx.createLinearGradient(0, canvas.height * 0.45, 0, canvas.height);
-      grad.addColorStop(0, "rgba(0,0,0,0)");
-      grad.addColorStop(1, "rgba(0,0,0,0.78)");
-      ctx.fillStyle = grad;
-      ctx.fillRect(0, canvas.height * 0.45, canvas.width, canvas.height * 0.55);
-
-      // Headline — chunky stroked sans, bottom-aligned, wrapped to 2 lines max.
-      const fontSize = 96;
-      ctx.font = `900 ${fontSize}px Inter, system-ui, -apple-system, sans-serif`;
-      ctx.fillStyle = "#fff";
-      ctx.strokeStyle = "#000";
-      ctx.lineWidth = 12;
-      ctx.lineJoin = "round";
-      ctx.textAlign = "center";
-      ctx.textBaseline = "bottom";
-
-      const lines = wrapToLines(ctx, text, canvas.width - 120).slice(0, 2);
-      let y = canvas.height - 50;
-      for (let i = lines.length - 1; i >= 0; i--) {
-        ctx.strokeText(lines[i], canvas.width / 2, y);
-        ctx.fillText(lines[i], canvas.width / 2, y);
-        y -= fontSize + 12;
-      }
+      renderLayout(ctx, text, layout, canvas.width, canvas.height);
     };
 
     if (!imageSrc) {
-      // No image yet — fill a placeholder so the canvas isn't blank.
       ctx.fillStyle = "#111";
       ctx.fillRect(0, 0, canvas.width, canvas.height);
       drawText();
@@ -178,7 +194,6 @@ function ThumbnailCard({
     const img = new Image();
     img.crossOrigin = "anonymous";
     img.onload = () => {
-      // Cover-fit
       const imgAspect = img.width / img.height;
       const cAspect = canvas.width / canvas.height;
       let dw, dh, dx, dy;
@@ -200,13 +215,12 @@ function ThumbnailCard({
       setImageLoaded(true);
     };
     img.onerror = () => {
-      // CDN/CORS — still show the placeholder + text so the user sees the design.
       ctx.fillStyle = "#1a1a1a";
       ctx.fillRect(0, 0, canvas.width, canvas.height);
       drawText();
     };
     img.src = imageSrc;
-  }, [imageSrc, overlayText]);
+  }, [imageSrc, overlayText, layout]);
 
   async function regenerate() {
     setRegenerating(true);
@@ -221,6 +235,7 @@ function ThumbnailCard({
             emotionalAngle: String(concept.emotionalAngle || ""),
             colorPalette: String(concept.colorPalette || ""),
             style,
+            index, // keeps the same composition variant on regen
           },
         }),
       });
@@ -321,6 +336,118 @@ function ThumbnailCard({
       </div>
     </Card>
   );
+}
+
+/**
+ * Render the headline overlay in one of 4 distinct layouts. Each pairs with
+ * the matching composition-variant the image generator was prompted for.
+ *
+ * The hard problem here is auto-sizing — if the user wrote "I TRIED 47
+ * RANDOM RESTAURANTS IN TOKYO" we need to scale down or wrap intelligently
+ * rather than just truncating.
+ */
+function renderLayout(
+  ctx: CanvasRenderingContext2D,
+  text: string,
+  layout: LayoutSpec,
+  W: number,
+  H: number,
+) {
+  const { position, accent } = layout;
+
+  // Auto-fit: start at a generous size, shrink until two lines fit the band.
+  function fitFont(maxWidth: number, maxLines: number, startSize: number) {
+    let size = startSize;
+    while (size > 32) {
+      ctx.font = `900 ${size}px Inter, "Helvetica Neue", Arial, sans-serif`;
+      const lines = wrapToLines(ctx, text, maxWidth);
+      if (lines.length <= maxLines) return { size, lines };
+      size -= 6;
+    }
+    ctx.font = `900 32px Inter, "Helvetica Neue", Arial, sans-serif`;
+    return { size: 32, lines: wrapToLines(ctx, text, maxWidth).slice(0, maxLines) };
+  }
+
+  function paintStroked(line: string, x: number, y: number, size: number) {
+    ctx.font = `900 ${size}px Inter, "Helvetica Neue", Arial, sans-serif`;
+    ctx.lineJoin = "round";
+    ctx.strokeStyle = accent.stroke;
+    ctx.lineWidth = Math.max(8, size * 0.13);
+    ctx.strokeText(line, x, y);
+    ctx.fillStyle = accent.text;
+    ctx.fillText(line, x, y);
+  }
+
+  ctx.textBaseline = "middle";
+
+  if (position === "left-band" || position === "right-band") {
+    // Subject is on one side; text fills a colored panel on the other.
+    const bandW = W * 0.42;
+    const bandX = position === "left-band" ? 0 : W - bandW;
+
+    // Solid colored block — gives instant scannability at small sizes.
+    ctx.fillStyle = accent.box;
+    ctx.fillRect(bandX, 0, bandW, H);
+
+    // Sharp diagonal edge on the side facing the subject (gives it energy).
+    ctx.fillStyle = accent.box;
+    ctx.beginPath();
+    if (position === "left-band") {
+      ctx.moveTo(bandX + bandW, 0);
+      ctx.lineTo(bandX + bandW + 60, H * 0.5);
+      ctx.lineTo(bandX + bandW, H);
+    } else {
+      ctx.moveTo(bandX, 0);
+      ctx.lineTo(bandX - 60, H * 0.5);
+      ctx.lineTo(bandX, H);
+    }
+    ctx.closePath();
+    ctx.fill();
+
+    const innerW = bandW - 60;
+    const { size, lines } = fitFont(innerW, 4, 120);
+    ctx.textAlign = "center";
+    const cx = bandX + bandW / 2;
+    const totalH = lines.length * size * 1.05;
+    let y = H / 2 - totalH / 2 + size / 2;
+    for (const ln of lines) {
+      paintStroked(ln, cx, y, size);
+      y += size * 1.05;
+    }
+    return;
+  }
+
+  if (position === "top-banner") {
+    // Black band across the top; subject lives below it.
+    const bandH = H * 0.28;
+    ctx.fillStyle = "rgba(0,0,0,0.85)";
+    ctx.fillRect(0, 0, W, bandH);
+
+    const { size, lines } = fitFont(W - 80, 2, 130);
+    ctx.textAlign = "center";
+    const totalH = lines.length * size * 1.05;
+    let y = bandH / 2 - totalH / 2 + size / 2;
+    for (const ln of lines) {
+      paintStroked(ln, W / 2, y, size);
+      y += size * 1.05;
+    }
+    return;
+  }
+
+  // "stacked" — colored bar across the bottom, hook headline above it
+  const barH = H * 0.18;
+  ctx.fillStyle = accent.box;
+  ctx.fillRect(0, H - barH, W, barH);
+
+  // Big headline floating above the bar with full stroke
+  const { size, lines } = fitFont(W - 100, 2, 140);
+  ctx.textAlign = "center";
+  const totalH = lines.length * size * 1.05;
+  let y = H - barH - 40 - totalH + size / 2;
+  for (const ln of lines) {
+    paintStroked(ln, W / 2, y, size);
+    y += size * 1.05;
+  }
 }
 
 /** Wrap a string onto canvas lines that fit within maxWidth at current font. */

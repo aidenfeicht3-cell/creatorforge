@@ -171,13 +171,16 @@ export async function POST(req: Request) {
     try {
       const concepts =
         (result.concepts as Array<Record<string, string>>) ?? [];
-      const prompts = concepts.map((c) =>
+      // Pass `index` so each concept gets a different composition variant —
+      // prevents "all 4 thumbnails look the same" failure mode.
+      const prompts = concepts.map((c, i) =>
         thumbnailPromptFor({
           composition: String(c.composition || ""),
           overlayText: String(c.overlayText || ""),
           emotionalAngle: String(c.emotionalAngle || ""),
           colorPalette: String(c.colorPalette || ""),
           style: inputs.style,
+          index: i,
         }),
       );
       const images = await generateImages(prompts);

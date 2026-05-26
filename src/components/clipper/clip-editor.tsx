@@ -36,19 +36,44 @@ interface RenderState {
   error?: string;
 }
 
+/**
+ * Job pre-seeded from a parent component that already kicked off rendering.
+ * Lets the "Render N shorts directly" flow on the packager start polling
+ * immediately without forcing the user to click "Render video" again.
+ */
+interface PreRenderJob {
+  renderId?: string;
+  status?: "planned" | "rendering" | "succeeded" | "failed";
+  url?: string;
+  error?: string;
+}
+
 /** Editor for a single Twitch clip — preview, edit overlay, export cover image. */
 export function ClipEditor({
   clip,
   parentDomain,
+  initialRender,
 }: {
   clip: ClipPackage;
   parentDomain: string;
+  initialRender?: unknown;
 }) {
   const [editing, setEditing] = useState(false);
   const [hookOverlay, setHookOverlay] = useState(clip.hookOverlay);
   const [bodyCaption, setBodyCaption] = useState(clip.bodyCaption);
   const [copied, setCopied] = useState(false);
-  const [render, setRender] = useState<RenderState>({ status: "idle" });
+  const [render, setRender] = useState<RenderState>(() => {
+    const ir = initialRender as PreRenderJob | undefined;
+    if (!ir) return { status: "idle" };
+    if (ir.error) return { status: "failed", error: ir.error };
+    if (ir.status === "succeeded" && ir.url) {
+      return { status: "succeeded", renderId: ir.renderId, videoUrl: ir.url };
+    }
+    if (ir.renderId) {
+      return { status: "rendering", renderId: ir.renderId };
+    }
+    return { status: "idle" };
+  });
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   // Poll Creatomate for completion once a render has been kicked off. Polls

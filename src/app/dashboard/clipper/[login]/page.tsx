@@ -26,9 +26,10 @@ export default async function StreamerPage({
   try {
     user = await getUserByLogin(login);
     if (user) {
-      // Pulls from 24h / 7d / 30d / 1yr / all-time and dedupes — typically
-      // returns 30-50 clips even for streamers with light recent activity.
-      clips = await getBroadcasterClips(user.id, 50);
+      // Pulls from 24h / 7d / 30d / 1yr / all-time, tags each with its
+      // recency tier, and ranks by views weighted by recency — so trending
+      // clips beat 3-year-old viral moments. Returns up to 80.
+      clips = await getBroadcasterClips(user.id, 80);
     }
   } catch (err) {
     error = err instanceof Error ? err.message : String(err);

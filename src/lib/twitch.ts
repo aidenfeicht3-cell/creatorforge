@@ -91,6 +91,10 @@ export interface TwitchClip {
   created_at: string;
   broadcaster_name: string;
   game_id: string;
+  /** Earliest time window this clip appeared in. Set by getBroadcasterClips. */
+  recencyTier?: "24h" | "7d" | "30d" | "1y" | "older";
+  /** Combined views × recency score (set by getBroadcasterClips) for default sort. */
+  hotScore?: number;
 }
 
 // ──────── Public API ────────
@@ -124,26 +128,33 @@ export async function searchChannels(
 }
 
 /**
- * Get top clips for a broadcaster across MULTIPLE time windows.
+ * Get clips for a broadcaster across multiple time windows + recency-weighted scoring.
  *
- * Twitch's /clips endpoint is filtered by a single `started_at` window — if you
- * only ask for 30 days, a streamer with quiet recent weeks has near-zero clips.
- * We fan out to 24h / 7d / 30d / 1yr / all-time in parallel, dedupe by clip id,
- * and return the most-viewed up to `limit`. This typically turns a "0 clips"
- * page into 30–50 ranked candidates.
+ * Why: Twitch's /clips endpoint filters by a single `started_at` window. If
+ * we only sort by raw views, all-time top clips drown out everything recent —
+ * a 3-year-old viral moment with 2M views beats this week's 50k-view banger.
+ * That's wrong for a clipping tool whose value is "what's trending right now."
+ *
+ * Approach:
+ *   1. Fan out to 24h / 7d / 30d / 1yr / all-time in parallel, 100 clips per.
+ *   2. Dedupe by clip id; tag each with its tightest recency tier.
+ *   3. Compute `hotScore = views / (ageDays + 2)^0.6` — gives a 1-day-old clip
+ *      with 5k views (~3400 score) priority over a 365-day-old clip with 50k
+ *      views (~1500 score). Tune the exponent to bias more/less recent.
+ *   4. Sort by hotScore descending — caller filters by `recencyTier` in UI.
  */
 export async function getBroadcasterClips(
   broadcasterId: string,
-  limit = 50,
+  limit = 80,
 ): Promise<TwitchClip[]> {
   const now = Date.now();
   const day = 24 * 60 * 60 * 1000;
-  const windows: Array<{ label: string; sinceMs: number | null }> = [
-    { label: "24h",   sinceMs: day },
-    { label: "7d",    sinceMs: 7 * day },
-    { label: "30d",   sinceMs: 30 * day },
-    { label: "365d",  sinceMs: 365 * day },
-    { label: "all",   sinceMs: null }, // no window — Twitch returns all-time top
+  const windows: Array<{ tier: TwitchClip["recencyTier"]; sinceMs: number | null }> = [
+    { tier: "24h",   sinceMs: day },
+    { tier: "7d",    sinceMs: 7 * day },
+    { tier: "30d",   sinceMs: 30 * day },
+    { tier: "1y",    sinceMs: 365 * day },
+    { tier: "older", sinceMs: null }, // no window — all-time top
   ];
 
   const results = await Promise.allSettled(
@@ -159,20 +170,32 @@ export async function getBroadcasterClips(
     }),
   );
 
-  const seen = new Set<string>();
-  const merged: TwitchClip[] = [];
-  for (const r of results) {
+  // Tag clips with the TIGHTEST window they fall in. Process windows in order,
+  // so a clip that appeared in both "24h" and "7d" responses keeps the "24h" tag.
+  const byId = new Map<string, TwitchClip>();
+  for (let i = 0; i < results.length; i++) {
+    const r = results[i];
     if (r.status !== "fulfilled") continue;
+    const tier = windows[i].tier;
     for (const c of r.value.data) {
-      if (seen.has(c.id)) continue;
-      seen.add(c.id);
-      merged.push(c);
+      if (byId.has(c.id)) continue;
+      byId.set(c.id, { ...c, recencyTier: tier });
     }
   }
 
-  // Sort by view count descending so the cream of the crop is at the top,
-  // then return up to `limit`. Caller decides how many to actually show.
-  merged.sort((a, b) => (b.view_count ?? 0) - (a.view_count ?? 0));
+  // Recency-weighted score. Tune exponent (0.6) lower → more recency bias,
+  // higher → more view-count bias.
+  for (const clip of byId.values()) {
+    const created = Date.parse(clip.created_at);
+    const ageDays = isNaN(created)
+      ? 9999
+      : Math.max(0, (now - created) / day);
+    const views = clip.view_count ?? 0;
+    clip.hotScore = views / Math.pow(ageDays + 2, 0.6);
+  }
+
+  const merged = Array.from(byId.values());
+  merged.sort((a, b) => (b.hotScore ?? 0) - (a.hotScore ?? 0));
   return merged.slice(0, limit);
 }
 

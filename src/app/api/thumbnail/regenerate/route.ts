@@ -42,6 +42,7 @@ export async function POST(req: Request) {
       emotionalAngle?: string;
       colorPalette?: string;
       style?: string;
+      index?: number;
     };
   };
   try {
@@ -84,6 +85,7 @@ export async function POST(req: Request) {
     emotionalAngle: concept.emotionalAngle || "",
     colorPalette: concept.colorPalette || "",
     style: concept.style,
+    index: concept.index,
   });
 
   let image: string | null = null;

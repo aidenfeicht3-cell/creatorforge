@@ -215,12 +215,32 @@ const STYLE_DIRECTION: Record<string, string> = {
 };
 
 /**
+ * Per-concept composition variant — pushes the AI to put the subject in a
+ * different position for each of the 4 concepts so they don't all look the
+ * same. The matching CANVAS layout (in result-view.tsx) places the headline
+ * text in the safe zone for each variant.
+ *
+ * 0: subject right-aligned → text safe-zone left
+ * 1: subject left-aligned → text safe-zone right
+ * 2: subject centered low → text safe-zone TOP
+ * 3: subject centered tight → text wraps around as banner top + bottom
+ */
+const COMPOSITION_VARIANTS = [
+  "Subject framed in the RIGHT 55% of the image; LEFT 35% is a relatively clean gradient background or motion-blurred environment with no other subjects — reserved for headline overlay.",
+  "Subject framed in the LEFT 55% of the image; RIGHT 35% is a clean gradient background or out-of-focus environment — reserved for headline overlay.",
+  "Subject anchored to the BOTTOM HALF of the frame, looking up or upward-facing; TOP 30% is sky/ceiling/gradient — reserved for headline banner.",
+  "Subject CENTERED tightly in the middle 50%; TOP 25% and BOTTOM 25% are darker zones or gradient bands — reserved for stacked headline + tagline.",
+] as const;
+
+/**
  * Tuned thumbnail prompt builder.
  *
  * IMPORTANT: We deliberately do NOT ask the image model to render the headline
  * text. Even Imagen 4 / Flux Pro mangle text in images. Instead, we render the
  * `overlayText` client-side via canvas on top of a clean image. That's why the
  * `overlayText` field on the concept is unused here — it's only painted in JS.
+ *
+ * The `index` arg cycles composition variants so 4 concepts feel distinct.
  */
 export function thumbnailPromptFor(concept: {
   composition: string;
@@ -228,20 +248,24 @@ export function thumbnailPromptFor(concept: {
   emotionalAngle: string;
   colorPalette: string;
   style?: string;
+  index?: number;
 }): string {
   const styleDir =
     STYLE_DIRECTION[concept.style || "MrBeast"] || STYLE_DIRECTION.MrBeast;
+  const variant =
+    COMPOSITION_VARIANTS[(concept.index ?? 0) % COMPOSITION_VARIANTS.length];
 
   return [
     `Professional YouTube thumbnail, 16:9 widescreen, optimized to be readable at 320px wide.`,
     `${styleDir}.`,
     `Specific subject + composition: ${concept.composition}.`,
-    `Emotional read: ${concept.emotionalAngle}.`,
-    `Dominant palette: ${concept.colorPalette}.`,
-    // Reserve a clean band on one side so the canvas text overlay has somewhere to live.
-    `Composition rule: leave roughly 35% of the frame on the left or right side relatively uncluttered so a large headline can sit there without fighting the subject.`,
-    `Studio-quality photography, sharp focus on the subject, dramatic but motivated lighting, vivid saturation, premium 1M+ subscriber channel finish.`,
-    // Negative-style cues — these reduce common failure modes from Flux/Imagen.
-    `Avoid: any text, letters, words, numbers, captions, subtitles, watermarks, signatures, logos, borders, frames, UI chrome, channel handles, blurry faces, deformed hands, extra fingers, low-resolution artifacts.`,
+    `Frame layout: ${variant}`,
+    `Emotional read: ${concept.emotionalAngle}. Exaggerated readable expression — eyebrows, mouth, eyes all telling the story.`,
+    `Color story: ${concept.colorPalette}. High saturation. Strong color contrast between subject and background.`,
+    `Lighting: dramatic rim light from one side, motivated key light hitting the face, deep shadow opposite. Studio-quality, not flat or evenly-lit.`,
+    `Lens: 50mm at f/2 feel — subject crisp, background softly out of focus. NO ultra-wide distortion.`,
+    `Energy: looks like a top-1% YouTube thumbnail from a 1M+ subscriber channel. Premium finish, would survive direct comparison to MrBeast / Veritasium / Marques Brownlee on the same screen.`,
+    // Negative cues — these knock out the most common Flux/Imagen failure modes.
+    `Avoid: any text, letters, words, numbers, captions, subtitles, watermarks, signatures, logos, borders, frames, UI chrome, channel handles, blurry faces, deformed hands, extra fingers, asymmetrical eyes, low-resolution artifacts, AI-generic-looking faces.`,
   ].join(" ");
 }

@@ -53,12 +53,9 @@ export function extractClipSlug(input: string): string | null {
   return null;
 }
 
-/**
- * Get the highest-quality MP4 download URL for a clip slug.
- * Returned URL is already signed and ready to fetch.
- */
-export async function getClipMp4Url(slug: string): Promise<string | null> {
-  const body = [
+/** Persisted-query body (preferred — Twitch caches this server-side). */
+function persistedBody(slug: string) {
+  return [
     {
       operationName: "VideoAccessToken_Clip",
       variables: { slug },
@@ -71,29 +68,80 @@ export async function getClipMp4Url(slug: string): Promise<string | null> {
       },
     },
   ];
+}
 
+/**
+ * Raw GQL fallback — used when the persisted-query hash above goes stale
+ * (Twitch rotates these every few months and every clip-downloader has to
+ * keep up). This sends the full query inline so it works regardless of
+ * which hash Twitch currently honors.
+ */
+function rawBody(slug: string) {
+  return [
+    {
+      operationName: "VideoAccessToken_Clip",
+      variables: { slug },
+      query: `query VideoAccessToken_Clip($slug: ID!) {
+        clip(slug: $slug) {
+          playbackAccessToken(params: { platform: "web", playerType: "site", playerBackend: "mediaplayer" }) {
+            signature
+            value
+          }
+          videoQualities {
+            frameRate
+            quality
+            sourceURL
+          }
+        }
+      }`,
+    },
+  ];
+}
+
+async function callGql(body: unknown): Promise<ClipAccessTokenResponse | null> {
+  const res = await fetch(GQL_ENDPOINT, {
+    method: "POST",
+    headers: {
+      "Client-Id": PUBLIC_CLIENT_ID,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) {
+    console.warn(
+      `[twitch-clip-mp4] GQL ${res.status}:`,
+      await res.text().catch(() => ""),
+    );
+    return null;
+  }
+  const arr = (await res.json()) as ClipAccessTokenResponse[];
+  return arr[0] ?? null;
+}
+
+/**
+ * Get the highest-quality MP4 download URL for a clip slug.
+ * Tries the persisted-query first (fast cached path), falls back to a raw
+ * inline query if Twitch rejects the persisted hash. Returns null if both
+ * fail or the clip is deleted/restricted.
+ */
+export async function getClipMp4Url(slug: string): Promise<string | null> {
   try {
-    const res = await fetch(GQL_ENDPOINT, {
-      method: "POST",
-      headers: {
-        "Client-Id": PUBLIC_CLIENT_ID,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(body),
-    });
-    if (!res.ok) {
-      console.error(
-        `[twitch-clip-mp4] GQL ${res.status}:`,
-        await res.text().catch(() => ""),
-      );
+    let result = await callGql(persistedBody(slug));
+    if (!result?.data?.clip?.videoQualities?.length) {
+      console.warn("[twitch-clip-mp4] persisted query empty, trying raw");
+      result = await callGql(rawBody(slug));
+    }
+    const clip = result?.data?.clip;
+    if (!clip) {
+      console.warn(`[twitch-clip-mp4] no clip data for slug ${slug}`);
       return null;
     }
-    const arr = (await res.json()) as ClipAccessTokenResponse[];
-    const clip = arr[0]?.data?.clip;
-    if (!clip) return null;
 
     const qualities = clip.videoQualities ?? [];
-    if (qualities.length === 0) return null;
+    if (qualities.length === 0) {
+      console.warn(`[twitch-clip-mp4] no qualities for slug ${slug}`);
+      return null;
+    }
 
     // Pick the highest resolution (sort numerically by quality string).
     const best = [...qualities].sort(
