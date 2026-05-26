@@ -90,15 +90,20 @@ async function withGemini(prompt: string): Promise<string | null> {
 
 /**
  * Pollinations.ai — free, no-key image-gen endpoint.
- * Using flux model with enhance=true for higher-fidelity output.
+ *
+ * IMPORTANT: Pollinations is "fire and hope" — the URL we return resolves
+ * server-side and renders an image, but the service is rate-limited and times
+ * out under load. We *fetch* the URL here with a timeout so a broken call
+ * surfaces as null instead of a dead URL the client can't render. If it fails,
+ * we retry up to twice with fresh seeds before giving up.
  */
-function pollinationsUrl(prompt: string): string {
-  const encoded = encodeURIComponent(prompt);
-  const seed = Math.floor(Math.random() * 1_000_000);
+function pollinationsUrl(prompt: string, seed?: number): string {
+  const encoded = encodeURIComponent(prompt.slice(0, 1900)); // URL length cap
+  const s = seed ?? Math.floor(Math.random() * 1_000_000);
   const params = new URLSearchParams({
     width: "1280",
     height: "720",
-    seed: String(seed),
+    seed: String(s),
     nologo: "true",
     enhance: "true",
     model: "flux",
@@ -106,13 +111,48 @@ function pollinationsUrl(prompt: string): string {
   return `https://image.pollinations.ai/prompt/${encoded}?${params.toString()}`;
 }
 
-/** Generate a single image. Tries Replicate → Gemini → Pollinations. */
+async function withPollinations(prompt: string): Promise<string | null> {
+  for (let attempt = 0; attempt < 3; attempt++) {
+    const url = pollinationsUrl(prompt);
+    try {
+      const ctl = new AbortController();
+      const t = setTimeout(() => ctl.abort(), 25_000);
+      // HEAD first — cheaper and confirms the URL renders without pulling bytes.
+      const head = await fetch(url, { method: "GET", signal: ctl.signal });
+      clearTimeout(t);
+      if (head.ok) return url;
+      console.warn(
+        `[ai-image] Pollinations attempt ${attempt + 1} returned ${head.status}`,
+      );
+    } catch (err) {
+      console.warn(
+        `[ai-image] Pollinations attempt ${attempt + 1} threw:`,
+        err instanceof Error ? err.message : err,
+      );
+    }
+  }
+  return null;
+}
+
+/**
+ * Generate a single image. Tries each provider in order, retrying within each
+ * before falling through. Returns null only if every provider failed — callers
+ * should treat null as "skip this concept" not "throw."
+ */
 export async function generateImage(prompt: string): Promise<string | null> {
+  // Replicate (paid, best quality) — already retries internally via poll loop.
   const replicate = await withReplicate(prompt);
   if (replicate) return replicate;
+
+  // Gemini (free, region-restricted) — single attempt.
   const gemini = await withGemini(prompt);
   if (gemini) return gemini;
-  return pollinationsUrl(prompt);
+
+  // Pollinations free fallback with 3 attempts.
+  const pol = await withPollinations(prompt);
+  if (pol) return pol;
+
+  return null;
 }
 
 /** Generate N images in parallel. */

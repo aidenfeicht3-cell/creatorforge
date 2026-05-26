@@ -49,11 +49,13 @@ function tierFor(tool: ToolSlug, plan: PlanId): ModelTier {
 /* ──── Claude ──────────────────────────────────────────── */
 
 function claudeModelFor(tier: ModelTier): string {
+  // Defaults are the 4.6 line for Sonnet/Opus — best creative prose available.
+  // Override via env if you want 4.7 (better for agentic flows, same prose).
   if (tier === "opus") {
-    return process.env.CLAUDE_MODEL_OPUS || "claude-opus-4-7";
+    return process.env.CLAUDE_MODEL_OPUS || "claude-opus-4-6";
   }
   if (tier === "sonnet") {
-    return process.env.CLAUDE_MODEL_SONNET || "claude-sonnet-4-7";
+    return process.env.CLAUDE_MODEL_SONNET || "claude-sonnet-4-6";
   }
   return process.env.CLAUDE_MODEL_HAIKU || "claude-haiku-4-5-20251001";
 }

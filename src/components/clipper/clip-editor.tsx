@@ -1,7 +1,16 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Download, Edit3, Save, Copy, Check } from "lucide-react";
+import {
+  Download,
+  Edit3,
+  Save,
+  Copy,
+  Check,
+  Film,
+  Loader2,
+  PlayCircle,
+} from "lucide-react";
 import { toast } from "sonner";
 
 interface ClipPackage {
@@ -20,6 +29,13 @@ interface ClipPackage {
   whyItWorks: string;
 }
 
+interface RenderState {
+  status: "idle" | "starting" | "rendering" | "succeeded" | "failed";
+  renderId?: string;
+  videoUrl?: string;
+  error?: string;
+}
+
 /** Editor for a single Twitch clip — preview, edit overlay, export cover image. */
 export function ClipEditor({
   clip,
@@ -32,7 +48,105 @@ export function ClipEditor({
   const [hookOverlay, setHookOverlay] = useState(clip.hookOverlay);
   const [bodyCaption, setBodyCaption] = useState(clip.bodyCaption);
   const [copied, setCopied] = useState(false);
+  const [render, setRender] = useState<RenderState>({ status: "idle" });
   const canvasRef = useRef<HTMLCanvasElement>(null);
+
+  // Poll Creatomate for completion once a render has been kicked off. Polls
+  // every 3s and cleans up if the component unmounts mid-flight.
+  useEffect(() => {
+    if (render.status !== "rendering" || !render.renderId) return;
+    let cancelled = false;
+    const tick = async () => {
+      try {
+        const res = await fetch(
+          `/api/clipper/render?ids=${render.renderId}`,
+          { cache: "no-store" },
+        );
+        const data = await res.json();
+        if (cancelled) return;
+        const job = (data.jobs ?? [])[0];
+        if (!job) return;
+        if (job.status === "succeeded") {
+          setRender({
+            status: "succeeded",
+            renderId: render.renderId,
+            videoUrl: job.url,
+          });
+          toast.success("Short rendered. Download below.");
+        } else if (job.status === "failed") {
+          setRender({
+            status: "failed",
+            renderId: render.renderId,
+            error: job.error || "Render failed at Creatomate.",
+          });
+          toast.error("Render failed.");
+        }
+      } catch (err) {
+        console.error("[clip-editor] poll failed:", err);
+      }
+    };
+    const id = setInterval(tick, 3000);
+    tick(); // immediate first check
+    return () => {
+      cancelled = true;
+      clearInterval(id);
+    };
+  }, [render.status, render.renderId]);
+
+  // Extract the Twitch clip slug from the public URL (the embed_url is
+  // structured as https://clips.twitch.tv/embed?clip=<SLUG>&...). The render
+  // API also accepts a full URL so this is best-effort.
+  function extractSlug(): string {
+    const m = clip.url.match(/clip[s]?\.twitch\.tv\/(?:embed\?clip=)?([A-Za-z0-9_-]+)/);
+    if (m) return m[1];
+    const m2 = clip.url.match(/twitch\.tv\/[^/]+\/clip\/([A-Za-z0-9_-]+)/);
+    if (m2) return m2[1];
+    return clip.url; // let the server parse
+  }
+
+  async function renderShort() {
+    setRender({ status: "starting" });
+    try {
+      const res = await fetch("/api/clipper/render", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          clips: [
+            {
+              slug: extractSlug(),
+              hookText: hookOverlay,
+              durationSec: Math.max(5, Math.round(clip.duration)),
+            },
+          ],
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Render failed");
+      const job = (data.jobs ?? [])[0];
+      if (!job) throw new Error("No render job returned");
+      if (job.error) throw new Error(job.error);
+      if (job.url && job.status === "succeeded") {
+        // Sometimes Creatomate finishes synchronously on short clips.
+        setRender({
+          status: "succeeded",
+          renderId: job.renderId,
+          videoUrl: job.url,
+        });
+        toast.success(`Rendered. ${data.creditsCharged} credits used.`);
+      } else {
+        setRender({ status: "rendering", renderId: job.renderId });
+        toast.success(
+          `Rendering started — usually 20-60s. ${data.creditsCharged} credits used.`,
+        );
+      }
+    } catch (err) {
+      setRender({
+        status: "failed",
+        error: err instanceof Error ? err.message : "Render failed",
+      });
+      toast.error(err instanceof Error ? err.message : "Render failed");
+    }
+  }
 
   // Render the thumbnail + overlay text to canvas so user can download a "cover"
   useEffect(() => {
@@ -271,6 +385,92 @@ export function ClipEditor({
           >
             Open clip on Twitch ↗
           </a>
+        </div>
+
+        {/* Real 9:16 video render — Twitch MP4 + Deepgram captions + Creatomate */}
+        <div className="mt-5 rounded-2xl border border-brand-500/30 bg-gradient-to-br from-brand-50 to-surface p-4">
+          {render.status === "idle" && (
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div className="min-w-0">
+                <h4 className="flex items-center gap-1.5 text-sm font-bold">
+                  <Film className="h-4 w-4 text-brand-600" />
+                  Render as 9:16 short
+                </h4>
+                <p className="mt-0.5 text-xs text-muted">
+                  Downloads the clip, transcribes it, burns in the hook overlay
+                  + word-by-word captions, exports an MP4 you can post.
+                  10 credits.
+                </p>
+              </div>
+              <button
+                onClick={renderShort}
+                className="inline-flex items-center gap-1.5 rounded-full bg-brand-500 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-600"
+              >
+                <Film className="h-4 w-4" />
+                Render video
+              </button>
+            </div>
+          )}
+
+          {(render.status === "starting" || render.status === "rendering") && (
+            <div className="flex items-center gap-3">
+              <Loader2 className="h-5 w-5 animate-spin text-brand-600" />
+              <div>
+                <div className="text-sm font-medium">
+                  {render.status === "starting"
+                    ? "Kicking off render…"
+                    : "Rendering 9:16 video with captions…"}
+                </div>
+                <div className="mt-0.5 text-xs text-muted">
+                  Typically 20-60 seconds. You can leave this page open or come
+                  back later.
+                </div>
+              </div>
+            </div>
+          )}
+
+          {render.status === "succeeded" && render.videoUrl && (
+            <div className="space-y-3">
+              <div className="flex items-center gap-1.5 text-sm font-medium text-emerald-700">
+                <PlayCircle className="h-4 w-4" />
+                Ready — preview below, or download the MP4.
+              </div>
+              <div className="overflow-hidden rounded-xl border border-border bg-black">
+                <video
+                  src={render.videoUrl}
+                  controls
+                  playsInline
+                  className="block aspect-[9/16] h-auto w-full max-w-[280px] mx-auto"
+                />
+              </div>
+              <a
+                href={render.videoUrl}
+                download={`short-${clip.clipId}.mp4`}
+                className="inline-flex items-center gap-1.5 rounded-full bg-brand-500 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-600"
+              >
+                <Download className="h-4 w-4" />
+                Download MP4
+              </a>
+            </div>
+          )}
+
+          {render.status === "failed" && (
+            <div className="space-y-2">
+              <div className="text-sm font-medium text-rose-700">
+                Render failed
+              </div>
+              <p className="text-xs text-muted">
+                {render.error || "Unknown error from Creatomate."}
+              </p>
+              <button
+                onClick={renderShort}
+                className="inline-flex items-center gap-1.5 rounded-full border border-border bg-bg-soft px-3 py-1.5 text-xs font-medium hover:border-brand-500/40 hover:text-brand-600"
+              >
+                <Film className="h-3 w-3" />
+                Try again
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </div>
