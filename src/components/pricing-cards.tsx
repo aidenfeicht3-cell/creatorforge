@@ -54,7 +54,7 @@ export function PricingCards({ authed = false }: { authed?: boolean }) {
               </span>
             )}
             {plan.id === "studio" && (
-              <span className="absolute -top-3 right-8 inline-flex items-center gap-1 rounded-full border border-brand-400/40 bg-bg px-3 py-1 text-xs font-semibold text-brand-300">
+              <span className="absolute -top-3 right-8 inline-flex items-center gap-1 rounded-full border border-brand-400/40 bg-bg px-3 py-1 text-xs font-semibold text-brand-600">
                 <Sparkles className="h-3 w-3" />
                 Opus 4.7
               </span>

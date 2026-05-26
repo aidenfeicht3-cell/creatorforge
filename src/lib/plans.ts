@@ -93,7 +93,8 @@ export const TOOL_CREDIT_COSTS = {
   titles: 1,
   hooks: 1,
   seo: 1,
-  shorts: 2,
+  shorts: 3,   // URL-based, real transcript fetch + analysis
+  reverse: 3,  // URL-based, real transcript fetch + viral teardown
   ideas: 2,
   thumbnails: 2,
   scripts: 3,
@@ -101,11 +102,40 @@ export const TOOL_CREDIT_COSTS = {
 } as const;
 
 /** Returns true if the user has enough credits to run a tool that costs `cost`. */
-export function hasCredits(plan: PlanId, used: number, cost: number): boolean {
-  return used + cost <= PLANS[plan].monthlyCredits;
+export function hasCredits(
+  plan: PlanId,
+  used: number,
+  cost: number,
+  bonus = 0,
+): boolean {
+  return used + cost <= PLANS[plan].monthlyCredits + bonus;
 }
 
-/** Remaining credits this cycle. */
-export function creditsRemaining(plan: PlanId, used: number): number {
-  return Math.max(0, PLANS[plan].monthlyCredits - used);
+/** Remaining credits this cycle (includes lifetime waitlist bonus). */
+export function creditsRemaining(
+  plan: PlanId,
+  used: number,
+  bonus = 0,
+): number {
+  return Math.max(0, PLANS[plan].monthlyCredits + bonus - used);
+}
+
+/**
+ * Custom credit-pack pricing — bulk discount tiers, always profitable.
+ * (At our cost of ~$0.005 per credit, even the steepest tier holds ~4x margin.)
+ */
+export function customCreditPrice(credits: number): {
+  price: number;       // total $ rounded to nearest dollar
+  perCredit: number;   // $ per credit
+  discount: number;    // % savings vs base rate
+} {
+  let rate = 0.05; // base: 5¢ per credit
+  if (credits >= 5000) rate = 0.020;
+  else if (credits >= 2500) rate = 0.022;
+  else if (credits >= 1000) rate = 0.025;
+  else if (credits >= 500) rate = 0.030;
+  else if (credits >= 250) rate = 0.040;
+  const price = Math.max(5, Math.round(credits * rate));
+  const discount = Math.round((1 - rate / 0.05) * 100);
+  return { price, perCredit: rate, discount };
 }

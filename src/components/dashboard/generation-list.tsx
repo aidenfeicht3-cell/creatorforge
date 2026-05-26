@@ -106,7 +106,11 @@ export function GenerationList({
             </div>
             {expanded && (
               <div className="border-t p-4">
-                <ResultView tool={row.tool} data={row.result} />
+                <ResultView
+                  tool={row.tool}
+                  data={row.result}
+                  inputs={row.inputs}
+                />
               </div>
             )}
           </div>

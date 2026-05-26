@@ -11,13 +11,14 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "next": "15.1.6",
+    "next": "^15.5.0",
     "react": "19.0.0",
     "react-dom": "19.0.0",
     "@supabase/supabase-js": "^2.48.1",
     "@supabase/ssr": "^0.5.2",
     "@anthropic-ai/sdk": "^0.39.0",
     "@google/generative-ai": "^0.21.0",
+    "youtube-transcript": "^1.2.1",
     "stripe": "^17.6.0",
     "motion": "^11.18.2",
     "lucide-react": "^0.474.0",
@@ -34,6 +35,6 @@
     "@tailwindcss/postcss": "^4.0.3",
     "postcss": "^8.5.1",
     "eslint": "^9.19.0",
-    "eslint-config-next": "15.1.6"
+    "eslint-config-next": "^15.5.0"
   }
 }

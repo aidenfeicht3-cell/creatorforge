@@ -7,10 +7,21 @@ import {
   Lightbulb,
   Scissors,
   Clapperboard,
+  Crosshair,
+  UserCircle,
+  Layout,
+  AtSign,
+  Hash,
+  Compass,
+  Film,
+  Video,
+  Camera,
+  TrendingUp,
+  Wand2,
+  BarChart3,
   type LucideIcon,
 } from "lucide-react";
 
-/** Maps the icon names stored in the tool registry to Lucide components. */
 const ICONS: Record<string, LucideIcon> = {
   Image,
   Type,
@@ -20,6 +31,18 @@ const ICONS: Record<string, LucideIcon> = {
   Lightbulb,
   Scissors,
   Clapperboard,
+  Crosshair,
+  UserCircle,
+  Layout,
+  AtSign,
+  Hash,
+  Compass,
+  Film,
+  Video,
+  Camera,
+  TrendingUp,
+  Wand2,
+  BarChart3,
 };
 
 export function ToolIcon({

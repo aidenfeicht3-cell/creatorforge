@@ -18,7 +18,7 @@ export default async function VideosPage() {
   if (!account.plan.videoLibrary) {
     return (
       <div className="glass grid place-items-center rounded-3xl p-16 text-center">
-        <div className="grid h-14 w-14 place-items-center rounded-2xl bg-brand-500/15 text-brand-300">
+        <div className="grid h-14 w-14 place-items-center rounded-2xl bg-brand-500/15 text-brand-600">
           <Lock className="h-7 w-7" />
         </div>
         <h1 className="mt-5 text-2xl font-semibold">Video Library is locked</h1>

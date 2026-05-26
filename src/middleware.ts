@@ -1,13 +1,17 @@
-import { type NextRequest } from "next/server";
-import { updateSession } from "@/lib/supabase/middleware";
+// Middleware intentionally disabled.
+//
+// Next.js 15 runs middleware on the Edge runtime, which doesn't allow the
+// dynamic code generation that Supabase's SSR client relies on. Auth is
+// already enforced server-side inside the dashboard layout (see
+// src/app/dashboard/layout.tsx), so we don't need middleware to do it.
 
-export async function middleware(request: NextRequest) {
-  return updateSession(request);
+import { NextResponse } from "next/server";
+
+export function middleware() {
+  return NextResponse.next();
 }
 
 export const config = {
-  matcher: [
-    // Run on everything except static assets and image files.
-    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
-  ],
+  // Empty matcher = middleware never runs.
+  matcher: [],
 };

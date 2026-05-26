@@ -4,8 +4,8 @@ import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Loader2, Eye, EyeOff, MailCheck } from "lucide-react";
-import { Logo } from "@/components/logo";
 import { toast } from "sonner";
+import { Logo } from "@/components/logo";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/client";
 
@@ -40,9 +40,6 @@ export function AuthForm({ mode }: { mode: "login" | "signup" }) {
           },
         });
         if (error) throw error;
-
-        // If email confirmation is required, no session is returned.
-        // Show the "check your inbox" state instead of pushing.
         if (!data.session) {
           setVerifySent(true);
           return;
@@ -56,7 +53,6 @@ export function AuthForm({ mode }: { mode: "login" | "signup" }) {
           password,
         });
         if (error) {
-          // Common case: user hasn't confirmed their email yet.
           if (/confirm/i.test(error.message) || /verified/i.test(error.message)) {
             throw new Error(
               "Check your inbox — you need to verify your email before logging in.",
@@ -86,11 +82,11 @@ export function AuthForm({ mode }: { mode: "login" | "signup" }) {
     return (
       <div className="w-full max-w-md">
         <HeaderLogo />
-        <div className="glass-strong mt-8 rounded-3xl p-8 text-center">
-          <div className="mx-auto grid h-14 w-14 place-items-center rounded-2xl bg-brand-500/15 text-brand-300">
+        <div className="mt-8 rounded-3xl border border-border bg-surface p-8 shadow-sm text-center">
+          <div className="mx-auto grid h-14 w-14 place-items-center rounded-2xl bg-brand-50 text-brand-600">
             <MailCheck className="h-7 w-7" />
           </div>
-          <h1 className="mt-5 text-2xl font-semibold tracking-tight">
+          <h1 className="mt-5 text-2xl font-bold tracking-tight">
             Check your inbox
           </h1>
           <p className="mt-2 text-sm text-muted">
@@ -101,10 +97,7 @@ export function AuthForm({ mode }: { mode: "login" | "signup" }) {
             <Button variant="secondary" onClick={resend}>
               Re-send verification email
             </Button>
-            <Link
-              href="/login"
-              className="text-sm text-muted hover:text-ink"
-            >
+            <Link href="/login" className="text-sm text-muted hover:text-ink">
               Already verified? Log in
             </Link>
           </div>
@@ -119,15 +112,15 @@ export function AuthForm({ mode }: { mode: "login" | "signup" }) {
   // ── Normal form ─────────────────────────────────────────
   return (
     <div className="w-full max-w-md">
-      <Logo />
-      <div className="glass-strong mt-8 rounded-3xl p-8">
-        <h1 className="text-2xl font-semibold tracking-tight">
-          {isSignup ? "Create your account" : "Welcome back, player one"}
+      <HeaderLogo />
+      <div className="mt-8 rounded-3xl border border-border bg-surface p-8 shadow-sm">
+        <h1 className="text-2xl font-bold tracking-tight">
+          {isSignup ? "Create your account" : "Welcome back"}
         </h1>
         <p className="mt-1.5 text-sm text-muted">
           {isSignup
-            ? "30 free credits a month. No card required."
-            : "Log in to your creator loadout."}
+            ? "30 free credits a month. No credit card."
+            : "Log in to your dashboard."}
         </p>
 
         <form onSubmit={onSubmit} className="mt-6 space-y-4">
@@ -155,9 +148,9 @@ export function AuthForm({ mode }: { mode: "login" | "signup" }) {
             onToggle={() => setShowPw((v) => !v)}
           />
 
-          <Button type="submit" className="w-full" disabled={loading}>
+          <Button type="submit" size="lg" className="w-full" disabled={loading}>
             {loading && <Loader2 className="h-4 w-4 animate-spin" />}
-            {isSignup ? "Create account" : "Log in"}
+            {isSignup ? "Create account" : "Sign in"}
           </Button>
         </form>
 
@@ -165,9 +158,9 @@ export function AuthForm({ mode }: { mode: "login" | "signup" }) {
           {isSignup ? "Already have an account?" : "New here?"}{" "}
           <Link
             href={isSignup ? "/login" : "/signup"}
-            className="font-medium text-brand-300 hover:text-brand-400"
+            className="font-medium text-brand-600 hover:underline"
           >
-            {isSignup ? "Log in" : "Create a free account"}
+            {isSignup ? "Sign in" : "Get early access"}
           </Link>
         </p>
       </div>
@@ -178,7 +171,7 @@ export function AuthForm({ mode }: { mode: "login" | "signup" }) {
 function HeaderLogo() {
   return (
     <Link href="/" className="flex justify-center">
-      <Logo size={36} />
+      <Logo size={32} />
     </Link>
   );
 }
@@ -207,7 +200,7 @@ function Field({
         required={required}
         placeholder={placeholder}
         onChange={(e) => onChange(e.target.value)}
-        className="h-11 w-full rounded-xl border border-border bg-surface px-3.5 text-sm outline-none transition-colors placeholder:text-muted/60 focus:border-brand-500/60 focus:ring-2 focus:ring-brand-500/20"
+        className="h-11 w-full rounded-xl border border-border bg-bg-soft px-3.5 text-sm outline-none transition-colors placeholder:text-muted/60 focus:border-brand-500/60 focus:ring-2 focus:ring-brand-500/15"
       />
     </label>
   );
@@ -235,13 +228,13 @@ function PasswordField({
           minLength={6}
           placeholder="••••••••"
           onChange={(e) => onChange(e.target.value)}
-          className="h-11 w-full rounded-xl border border-border bg-surface pl-3.5 pr-11 text-sm outline-none transition-colors placeholder:text-muted/60 focus:border-brand-500/60 focus:ring-2 focus:ring-brand-500/20"
+          className="h-11 w-full rounded-xl border border-border bg-bg-soft pl-3.5 pr-11 text-sm outline-none transition-colors placeholder:text-muted/60 focus:border-brand-500/60 focus:ring-2 focus:ring-brand-500/15"
         />
         <button
           type="button"
           onClick={onToggle}
           aria-label={show ? "Hide password" : "Show password"}
-          className="absolute right-1 top-1 grid h-9 w-9 place-items-center rounded-lg text-muted transition-colors hover:bg-surface hover:text-ink"
+          className="absolute right-1 top-1 grid h-9 w-9 place-items-center rounded-lg text-muted transition-colors hover:bg-bg-soft hover:text-ink"
         >
           {show ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
         </button>

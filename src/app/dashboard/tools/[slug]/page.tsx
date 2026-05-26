@@ -14,6 +14,37 @@ export async function generateMetadata({
   return { title: tool?.name ?? "Tool" };
 }
 
+/**
+ * Map saved memory-bank fields into per-tool field defaults.
+ * Tools that have an "audience" field auto-fill from channel_audience, etc.
+ */
+function memoryDefaults(
+  tool: ReturnType<typeof getTool>,
+  profile: {
+    channel_niche: string | null;
+    channel_audience: string | null;
+    channel_style: string | null;
+  },
+): Record<string, string> {
+  if (!tool) return {};
+  const defaults: Record<string, string> = {};
+  for (const f of tool.fields) {
+    if (f.name === "audience" && profile.channel_audience) {
+      defaults.audience = profile.channel_audience;
+    }
+    if (f.name === "niche" && profile.channel_niche) {
+      defaults.niche = profile.channel_niche;
+    }
+    if (f.name === "yourNiche" && profile.channel_niche) {
+      defaults.yourNiche = profile.channel_niche;
+    }
+    if (f.name === "tone" && profile.channel_style) {
+      defaults.tone = profile.channel_style;
+    }
+  }
+  return defaults;
+}
+
 export default async function ToolPage({
   params,
 }: {
@@ -25,6 +56,7 @@ export default async function ToolPage({
 
   const account = (await getAccount())!;
   const locked = !!tool.studioOnly && !account.plan.studioUnlocked;
+  const defaults = memoryDefaults(tool, account.profile);
 
   return (
     <ToolRunner
@@ -32,6 +64,7 @@ export default async function ToolPage({
       locked={locked}
       cleanExports={account.plan.cleanExports}
       canSaveVideo={account.plan.videoLibrary}
+      memoryDefaults={defaults}
     />
   );
 }

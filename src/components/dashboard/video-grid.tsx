@@ -65,7 +65,7 @@ export function VideoGrid({
             className="glass overflow-hidden rounded-2xl transition-all"
           >
             {/* Thumbnail-style header */}
-            <div className="relative grid h-32 place-items-center overflow-hidden border-b border-border bg-gradient-to-br from-brand-500/30 via-fuchsia-500/20 to-accent/30">
+            <div className="relative grid h-32 place-items-center overflow-hidden border-b border-border bg-gradient-to-br from-brand-500/30 via-indigo-500/20 to-amber-500/20">
               <div className="px-4 text-center">
                 <div className="font-mono text-xs uppercase tracking-wider text-white/70">
                   {row.style ?? "Studio"}

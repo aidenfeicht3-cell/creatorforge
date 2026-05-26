@@ -6,16 +6,16 @@ export type ButtonSize = "sm" | "md" | "lg";
 
 const variants: Record<ButtonVariant, string> = {
   primary:
-    "bg-gradient-to-r from-brand-500 to-accent text-white shadow-lg shadow-brand-600/25 hover:opacity-95 hover:shadow-brand-600/40",
+    "bg-brand-500 text-white shadow-[0_8px_24px_-8px_rgba(37,99,235,0.5)] hover:bg-brand-600",
   secondary: "bg-surface text-ink border border-border hover:bg-bg-soft",
-  ghost: "text-muted hover:text-ink hover:bg-surface",
-  outline: "border border-border text-ink hover:bg-surface",
+  ghost: "text-muted hover:text-ink hover:bg-bg-soft",
+  outline: "border border-border bg-surface text-ink hover:border-brand-500/50 hover:text-brand-600",
 };
 
 const sizes: Record<ButtonSize, string> = {
-  sm: "h-9 px-3.5 text-sm rounded-lg",
-  md: "h-11 px-5 text-sm rounded-xl",
-  lg: "h-13 px-7 text-base rounded-xl",
+  sm: "h-9 px-4 text-sm",
+  md: "h-11 px-5 text-sm",
+  lg: "h-13 px-7 text-base",
 };
 
 /** Shared class string — apply to <Link> for button-styled links. */
@@ -25,7 +25,7 @@ export function buttonClasses(
   className?: string,
 ) {
   return cn(
-    "inline-flex items-center justify-center gap-2 font-medium transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400/60 disabled:cursor-not-allowed disabled:opacity-50",
+    "inline-flex items-center justify-center gap-2 rounded-full font-medium transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500/40 disabled:cursor-not-allowed disabled:opacity-50",
     variants[variant],
     sizes[size],
     className,

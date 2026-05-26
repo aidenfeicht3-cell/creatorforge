@@ -1,28 +1,41 @@
 @import "tailwindcss";
 
+/* Tailwind v4: enable class-based dark mode. */
+@custom-variant dark (&:where(.dark, .dark *));
+
 /* ───────────────────────────────────────────────
-   CreatorForge AI — design tokens (Tailwind v4)
+   CreatorForge AI — design tokens
+   Clean white + electric blue (light, default).
+   Dark theme overrides below.
    ─────────────────────────────────────────────── */
 @theme {
-  --color-bg: #07070b;
-  --color-bg-soft: #0d0d14;
-  --color-surface: #12121c;
-  --color-border: #1f1f2e;
+  /* Backgrounds — pure white surface with a pale blue page tint */
+  --color-bg:      #ffffff;
+  --color-bg-soft: #f5f8fd;
+  --color-surface: #ffffff;
+  --color-border:  #e6ecf3;
 
-  --color-brand-50: #f4f1ff;
-  --color-brand-300: #c4b5fd;
-  --color-brand-400: #a78bfa;
-  --color-brand-500: #8b5cf6;
-  --color-brand-600: #7c3aed;
-  --color-accent: #ec4899;
+  /* Primary — electric blue (ViewMax-style) */
+  --color-brand-50:  #eff6ff;
+  --color-brand-300: #60a5fa;
+  --color-brand-400: #3b82f6;
+  --color-brand-500: #2563eb;
+  --color-brand-600: #1d4ed8;
+  --color-brand-700: #1e40af;
 
-  --color-ink: #f5f5fa;
-  --color-muted: #9b9bb4;
+  /* Accent (used sparingly) */
+  --color-accent:     #2563eb;
+  --color-accent-300: #60a5fa;
+  --color-accent-500: #2563eb;
+
+  /* Text */
+  --color-ink:   #0a0f1f;
+  --color-muted: #64748b;
 
   --font-sans: var(--font-inter), "Inter", ui-sans-serif, system-ui, -apple-system, sans-serif;
   --font-mono: var(--font-jetbrains), ui-monospace, "JetBrains Mono", "SF Mono", Menlo, Consolas, monospace;
 
-  --radius-xl: 1rem;
+  --radius-xl:  1rem;
   --radius-2xl: 1.5rem;
 }
 
@@ -39,79 +52,106 @@ body {
   scroll-behavior: smooth;
 }
 
-/* Ambient gradient backdrop + faint grid (less "AI startup", more workshop). */
+/* ─── Dark theme overrides ─── */
+.dark {
+  --color-bg:      #0a0f1f;
+  --color-bg-soft: #131a2d;
+  --color-surface: #1a2238;
+  --color-border:  #2a3450;
+  --color-ink:     #f4f6fb;
+  --color-muted:   #8b97b1;
+
+  --color-brand-50:  #1e3a8a;
+  --color-brand-300: #60a5fa;
+  --color-brand-400: #60a5fa;
+  --color-brand-500: #3b82f6;
+  --color-brand-600: #93c5fd;
+  --color-brand-700: #bfdbfe;
+}
+
+/* Soft top-down gradient backdrop — adapts to theme */
 body::before {
   content: "";
   position: fixed;
   inset: 0;
   z-index: -1;
   background:
-    radial-gradient(60rem 40rem at 12% -8%, rgba(124, 58, 237, 0.22), transparent 60%),
-    radial-gradient(50rem 36rem at 92% 4%, rgba(236, 72, 153, 0.16), transparent 60%),
-    radial-gradient(70rem 50rem at 50% 110%, rgba(139, 92, 246, 0.14), transparent 60%);
+    linear-gradient(180deg, #eaf1fb 0%, #ffffff 55%, #ffffff 100%);
   pointer-events: none;
 }
-body::after {
-  content: "";
-  position: fixed;
-  inset: 0;
-  z-index: -1;
-  background-image:
-    linear-gradient(rgba(255, 255, 255, 0.025) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.025) 1px, transparent 1px);
-  background-size: 40px 40px;
-  mask-image: radial-gradient(ellipse at center, black 0%, transparent 75%);
-  pointer-events: none;
+.dark body::before {
+  background:
+    linear-gradient(180deg, #0d1428 0%, #0a0f1f 55%, #0a0f1f 100%);
 }
 
-/* ─── Glassmorphism utilities ─── */
+/* ─── Card utilities (use --color-surface so they adapt to theme) ─── */
 @utility glass {
-  background: rgba(18, 18, 28, 0.6);
-  backdrop-filter: blur(18px) saturate(160%);
-  -webkit-backdrop-filter: blur(18px) saturate(160%);
-  border: 1px solid rgba(255, 255, 255, 0.07);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  box-shadow:
+    0 1px 2px rgba(15, 23, 42, 0.04),
+    0 4px 16px rgba(15, 23, 42, 0.04);
 }
 
 @utility glass-strong {
-  background: rgba(13, 13, 20, 0.85);
-  backdrop-filter: blur(24px) saturate(180%);
-  -webkit-backdrop-filter: blur(24px) saturate(180%);
-  border: 1px solid rgba(255, 255, 255, 0.09);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  box-shadow:
+    0 2px 6px rgba(15, 23, 42, 0.04),
+    0 12px 40px rgba(15, 23, 42, 0.08);
 }
 
 @utility text-gradient {
-  background: linear-gradient(120deg, #fff 10%, #c4b5fd 50%, #ec4899 90%);
+  background: linear-gradient(120deg, #0a0f1f 0%, #2563eb 100%);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
 }
 
 @utility glow-brand {
-  box-shadow: 0 0 0 1px rgba(139, 92, 246, 0.25), 0 16px 50px -12px rgba(124, 58, 237, 0.55);
+  box-shadow:
+    0 0 0 1px rgba(37, 99, 235, 0.12),
+    0 16px 40px -10px rgba(37, 99, 235, 0.25);
 }
 
-/* Scrollbar */
-::-webkit-scrollbar {
-  width: 9px;
-  height: 9px;
-}
-::-webkit-scrollbar-track {
-  background: transparent;
-}
+::-webkit-scrollbar { width: 9px; height: 9px; }
+::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb {
-  background: #26263a;
+  background: #d6dde7;
   border-radius: 9999px;
 }
-::-webkit-scrollbar-thumb:hover {
-  background: #34344e;
-}
+::-webkit-scrollbar-thumb:hover { background: #b9c3d2; }
 
-/* Animations */
 @keyframes float {
   0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-12px); }
+  50%      { transform: translateY(-8px); }
 }
 .animate-float { animation: float 6s ease-in-out infinite; }
+
+/* ─── Dashboard aurora — animated background glows ─── */
+@keyframes aurora-drift-a {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33%      { transform: translate(40px, -30px) scale(1.1); }
+  66%      { transform: translate(-30px, 20px) scale(0.95); }
+}
+@keyframes aurora-drift-b {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50%      { transform: translate(-50px, 40px) scale(1.15); }
+}
+@keyframes aurora-drift-c {
+  0%, 100% { transform: translate(0, 0) scale(0.9); }
+  50%      { transform: translate(30px, -50px) scale(1.1); }
+}
+.aurora-blob {
+  position: absolute;
+  border-radius: 9999px;
+  filter: blur(80px);
+  opacity: 0.55;
+  pointer-events: none;
+}
+.aurora-a { animation: aurora-drift-a 18s ease-in-out infinite; }
+.aurora-b { animation: aurora-drift-b 22s ease-in-out infinite; }
+.aurora-c { animation: aurora-drift-c 26s ease-in-out infinite; }
 
 @keyframes shimmer {
   100% { transform: translateX(100%); }
@@ -119,13 +159,14 @@ body::after {
 .skeleton {
   position: relative;
   overflow: hidden;
-  background: #16161f;
+  background: #eef2f7;
+  border-radius: 0.75rem;
 }
 .skeleton::after {
   content: "";
   position: absolute;
   inset: 0;
   transform: translateX(-100%);
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.06), transparent);
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.8), transparent);
   animation: shimmer 1.5s infinite;
 }

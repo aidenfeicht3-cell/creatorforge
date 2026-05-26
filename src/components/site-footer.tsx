@@ -6,15 +6,13 @@ const COLUMNS = [
     title: "Product",
     links: [
       { href: "/#features", label: "Features" },
-      { href: "/pricing", label: "Pricing" },
-      { href: "/dashboard", label: "Dashboard" },
-      { href: "/signup", label: "Get started" },
+      { href: "/#how", label: "How it works" },
+      { href: "/waitlist", label: "Join waitlist" },
     ],
   },
   {
-    title: "Creators",
+    title: "Account",
     links: [
-      { href: "/dashboard/affiliate", label: "Affiliate program" },
       { href: "/#faq", label: "FAQ" },
       { href: "/login", label: "Log in" },
     ],

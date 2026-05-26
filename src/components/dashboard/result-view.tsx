@@ -1,7 +1,16 @@
 "use client";
 
-import { Copy, Check } from "lucide-react";
-import { useState } from "react";
+import {
+  Copy,
+  Check,
+  ExternalLink,
+  Crosshair,
+  Download,
+  RotateCw,
+  Loader2,
+} from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import type { ToolSlug } from "@/lib/tools";
 
@@ -43,58 +52,303 @@ function Card({
 }
 
 const Label = ({ children }: { children: React.ReactNode }) => (
-  <span className="text-xs font-semibold uppercase tracking-wider text-muted">
+  <span className="font-mono text-[10px] uppercase tracking-wider text-muted">
     {children}
   </span>
 );
+
+function SourceBar({ url }: { url: string }) {
+  return (
+    <a
+      href={url}
+      target="_blank"
+      rel="noreferrer"
+      className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-bg-soft px-3 py-1.5 text-xs text-muted hover:text-ink"
+    >
+      <ExternalLink className="h-3 w-3" />
+      <span className="font-mono">source video</span>
+    </a>
+  );
+}
 
 type Any = Record<string, unknown>;
 
 /* ── Per-tool renderers ─────────────────────────────────── */
 
-function Thumbnails({ data }: { data: Any }) {
-  const concepts = (data.concepts as Any[]) || [];
+/**
+ * Thumbnails — renders each AI image with the headline text composited via
+ * canvas. Image models butcher in-image text, so we generate the image clean
+ * (per the prompt in `thumbnailPromptFor`) and bake the overlay here. The
+ * Download button exports the composed PNG; Regenerate re-rolls just the image.
+ */
+function Thumbnails({ data, style }: { data: Any; style?: string }) {
+  const initial = [...((data.concepts as Any[]) || [])].sort(
+    (a, b) => Number(b.ctrScore || 0) - Number(a.ctrScore || 0),
+  );
+  const [concepts, setConcepts] = useState<Any[]>(initial);
+
+  function updateConcept(i: number, patch: Partial<Any>) {
+    setConcepts((prev) => {
+      const next = [...prev];
+      next[i] = { ...next[i], ...patch };
+      return next;
+    });
+  }
+
   return (
     <div className="grid gap-4 sm:grid-cols-2">
       {concepts.map((c, i) => (
-        <Card
+        <ThumbnailCard
           key={i}
-          header={
-            <>
-              <span className="font-semibold">{String(c.title)}</span>
-              <Badge score={Number(c.ctrScore)}>
-                CTR {String(c.ctrScore)}
-              </Badge>
-            </>
-          }
-        >
-          <div className="space-y-3 text-sm">
-            <div className="rounded-xl border border-dashed border-border bg-bg-soft p-4 text-center">
-              <Label>Overlay text</Label>
-              <div className="mt-1 text-lg font-bold text-gradient">
-                {String(c.overlayText)}
-              </div>
-            </div>
-            <p>
-              <Label>Composition</Label>
-              <br />
-              {String(c.composition)}
-            </p>
-            <p>
-              <Label>Emotional angle</Label>
-              <br />
-              {String(c.emotionalAngle)}
-            </p>
-            <p className="text-muted">{String(c.colorPalette)}</p>
-          </div>
-        </Card>
+          concept={c}
+          style={style}
+          onRegenerated={(image) => updateConcept(i, { image })}
+        />
       ))}
     </div>
   );
 }
 
+function ThumbnailCard({
+  concept,
+  style,
+  onRegenerated,
+}: {
+  concept: Any;
+  style?: string;
+  onRegenerated: (image: string) => void;
+}) {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [regenerating, setRegenerating] = useState(false);
+  const [imageLoaded, setImageLoaded] = useState(false);
+
+  const overlayText = String(concept.overlayText || "");
+  const imageSrc = concept.image ? String(concept.image) : "";
+
+  // Composite: draw the AI image + bottom gradient + thick stroked headline.
+  // Re-runs whenever the image or text changes (e.g. after regenerate).
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    // Target a high-res 16:9 canvas so downloaded PNGs look crisp.
+    canvas.width = 1280;
+    canvas.height = 720;
+
+    const drawText = () => {
+      if (!overlayText) return;
+      const text = overlayText.toUpperCase();
+
+      // Bottom gradient for readability regardless of the image's contents.
+      const grad = ctx.createLinearGradient(0, canvas.height * 0.45, 0, canvas.height);
+      grad.addColorStop(0, "rgba(0,0,0,0)");
+      grad.addColorStop(1, "rgba(0,0,0,0.78)");
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, canvas.height * 0.45, canvas.width, canvas.height * 0.55);
+
+      // Headline — chunky stroked sans, bottom-aligned, wrapped to 2 lines max.
+      const fontSize = 96;
+      ctx.font = `900 ${fontSize}px Inter, system-ui, -apple-system, sans-serif`;
+      ctx.fillStyle = "#fff";
+      ctx.strokeStyle = "#000";
+      ctx.lineWidth = 12;
+      ctx.lineJoin = "round";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "bottom";
+
+      const lines = wrapToLines(ctx, text, canvas.width - 120).slice(0, 2);
+      let y = canvas.height - 50;
+      for (let i = lines.length - 1; i >= 0; i--) {
+        ctx.strokeText(lines[i], canvas.width / 2, y);
+        ctx.fillText(lines[i], canvas.width / 2, y);
+        y -= fontSize + 12;
+      }
+    };
+
+    if (!imageSrc) {
+      // No image yet — fill a placeholder so the canvas isn't blank.
+      ctx.fillStyle = "#111";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      drawText();
+      return;
+    }
+
+    const img = new Image();
+    img.crossOrigin = "anonymous";
+    img.onload = () => {
+      // Cover-fit
+      const imgAspect = img.width / img.height;
+      const cAspect = canvas.width / canvas.height;
+      let dw, dh, dx, dy;
+      if (imgAspect > cAspect) {
+        dh = canvas.height;
+        dw = imgAspect * dh;
+        dx = (canvas.width - dw) / 2;
+        dy = 0;
+      } else {
+        dw = canvas.width;
+        dh = dw / imgAspect;
+        dx = 0;
+        dy = (canvas.height - dh) / 2;
+      }
+      ctx.fillStyle = "#000";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.drawImage(img, dx, dy, dw, dh);
+      drawText();
+      setImageLoaded(true);
+    };
+    img.onerror = () => {
+      // CDN/CORS — still show the placeholder + text so the user sees the design.
+      ctx.fillStyle = "#1a1a1a";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      drawText();
+    };
+    img.src = imageSrc;
+  }, [imageSrc, overlayText]);
+
+  async function regenerate() {
+    setRegenerating(true);
+    try {
+      const res = await fetch("/api/thumbnail/regenerate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          concept: {
+            composition: String(concept.composition || ""),
+            overlayText,
+            emotionalAngle: String(concept.emotionalAngle || ""),
+            colorPalette: String(concept.colorPalette || ""),
+            style,
+          },
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Regen failed");
+      onRegenerated(String(data.image));
+      toast.success(`New image · ${data.creditsCharged} credit used.`);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Couldn't regenerate");
+    } finally {
+      setRegenerating(false);
+    }
+  }
+
+  function downloadComposed() {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    canvas.toBlob((blob) => {
+      if (!blob) {
+        toast.error(
+          "Couldn't export — the image source blocked direct download. Right-click the preview to save it instead.",
+        );
+        return;
+      }
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `thumbnail-${(concept.title || "concept")
+        .toString()
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "-")}.png`;
+      a.click();
+      URL.revokeObjectURL(url);
+    }, "image/png");
+  }
+
+  return (
+    <Card
+      header={
+        <>
+          <span className="font-semibold">{String(concept.title)}</span>
+          <Badge score={Number(concept.ctrScore)}>
+            CTR {String(concept.ctrScore)}
+          </Badge>
+        </>
+      }
+    >
+      <div className="space-y-3 text-sm">
+        <div className="overflow-hidden rounded-xl border border-border bg-bg-soft">
+          <canvas
+            ref={canvasRef}
+            className="block h-auto w-full"
+            style={{ aspectRatio: "16 / 9" }}
+          />
+        </div>
+
+        <div className="flex flex-wrap gap-2">
+          <button
+            type="button"
+            onClick={downloadComposed}
+            disabled={!imageLoaded}
+            className="inline-flex items-center gap-1.5 rounded-full border border-border bg-bg-soft px-3 py-1.5 text-xs font-medium hover:border-brand-500/40 hover:text-brand-600 disabled:opacity-50"
+          >
+            <Download className="h-3 w-3" />
+            Download PNG
+          </button>
+          <button
+            type="button"
+            onClick={regenerate}
+            disabled={regenerating}
+            className="inline-flex items-center gap-1.5 rounded-full border border-border bg-bg-soft px-3 py-1.5 text-xs font-medium hover:border-brand-500/40 hover:text-brand-600 disabled:opacity-50"
+          >
+            {regenerating ? (
+              <Loader2 className="h-3 w-3 animate-spin" />
+            ) : (
+              <RotateCw className="h-3 w-3" />
+            )}
+            {regenerating ? "Regenerating…" : "Regenerate (1 credit)"}
+          </button>
+        </div>
+
+        <p>
+          <Label>Overlay text</Label>
+          <br />
+          <span className="text-base font-semibold">{overlayText}</span>
+        </p>
+        <p>
+          <Label>Composition</Label>
+          <br />
+          {String(concept.composition)}
+        </p>
+        <p>
+          <Label>Emotional angle</Label>
+          <br />
+          {String(concept.emotionalAngle)}
+        </p>
+        <p className="text-muted">{String(concept.colorPalette)}</p>
+      </div>
+    </Card>
+  );
+}
+
+/** Wrap a string onto canvas lines that fit within maxWidth at current font. */
+function wrapToLines(
+  ctx: CanvasRenderingContext2D,
+  text: string,
+  maxWidth: number,
+): string[] {
+  const words = text.split(/\s+/);
+  const lines: string[] = [];
+  let line = "";
+  for (const w of words) {
+    const test = line ? `${line} ${w}` : w;
+    if (ctx.measureText(test).width > maxWidth && line) {
+      lines.push(line);
+      line = w;
+    } else {
+      line = test;
+    }
+  }
+  if (line) lines.push(line);
+  return lines;
+}
+
 function Titles({ data }: { data: Any }) {
-  const titles = (data.titles as Any[]) || [];
+  const titles = [...((data.titles as Any[]) || [])].sort(
+    (a, b) => Number(b.ctrScore || 0) - Number(a.ctrScore || 0),
+  );
   return (
     <div className="space-y-3">
       {titles.map((t, i) => (
@@ -102,13 +356,18 @@ function Titles({ data }: { data: Any }) {
           <div className="flex items-start justify-between gap-3">
             <div>
               <div className="font-medium">{String(t.text)}</div>
+              {t.pattern && (
+                <div className="mt-1 font-mono text-[10px] uppercase tracking-wider text-brand-600">
+                  pattern: {String(t.pattern)}
+                </div>
+              )}
               <div className="mt-1 text-sm text-muted">
                 {String(t.reasoning)}
               </div>
             </div>
             <div className="flex shrink-0 flex-col items-end gap-1.5">
               <Badge score={Number(t.ctrScore)}>CTR {String(t.ctrScore)}</Badge>
-              <span className="text-xs uppercase text-muted">
+              <span className="font-mono text-[10px] uppercase text-muted">
                 {String(t.type)}
               </span>
             </div>
@@ -123,7 +382,9 @@ function Titles({ data }: { data: Any }) {
 }
 
 function Hooks({ data }: { data: Any }) {
-  const hooks = (data.hooks as Any[]) || [];
+  const hooks = [...((data.hooks as Any[]) || [])].sort(
+    (a, b) => Number(b.retentionScore || 0) - Number(a.retentionScore || 0),
+  );
   return (
     <div className="space-y-3">
       {hooks.map((h, i) => (
@@ -150,6 +411,14 @@ function Hooks({ data }: { data: Any }) {
 
 function Script({ data }: { data: Any }) {
   const sections = (data.sections as Any[]) || [];
+  const voiceText = [
+    String(data.hook || ""),
+    ...sections.map((s) => String((s as Any).script || "")),
+    String(data.cta || ""),
+  ]
+    .filter(Boolean)
+    .join("\n\n");
+
   return (
     <div className="space-y-4">
       <Card header={<span className="font-semibold">{String(data.title)}</span>}>
@@ -164,16 +433,36 @@ function Script({ data }: { data: Any }) {
           <p className="whitespace-pre-line text-[15px] leading-relaxed">
             {String(s.script)}
           </p>
-          <p className="mt-3 rounded-lg bg-brand-500/10 px-3 py-2 text-xs text-brand-300">
-            Pacing: {String(s.pacingNote)}
-          </p>
+          <div className="mt-3 flex flex-wrap items-center gap-2">
+            <span className="rounded-lg bg-brand-500/10 px-3 py-1 text-xs text-brand-600">
+              Pacing: {String(s.pacingNote)}
+            </span>
+            {s.approxSeconds && (
+              <span className="rounded-lg bg-bg-soft px-3 py-1 font-mono text-xs text-muted">
+                ~{String(s.approxSeconds)}s
+              </span>
+            )}
+          </div>
         </Card>
       ))}
       <Card header={<Label>Call to action</Label>}>
         <p className="text-[15px]">{String(data.cta)}</p>
       </Card>
+      {data.retentionStrategy && (
+        <Card header={<Label>Retention strategy</Label>}>
+          <p className="text-sm">{String(data.retentionStrategy)}</p>
+        </Card>
+      )}
+      <ScriptVoice text={voiceText} />
     </div>
   );
+}
+
+function ScriptVoice({ text }: { text: string }) {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const Comp = require("@/components/dashboard/voice-generator")
+    .VoiceGenerator;
+  return <Comp text={text} />;
 }
 
 function Seo({ data }: { data: Any }) {
@@ -218,9 +507,7 @@ function Seo({ data }: { data: Any }) {
       </Card>
       <Card header={<Label>Ranking tips</Label>}>
         <ul className="list-disc space-y-1.5 pl-5 text-sm">
-          {tips.map((t, i) => (
-            <li key={i}>{t}</li>
-          ))}
+          {tips.map((t, i) => <li key={i}>{t}</li>)}
         </ul>
       </Card>
     </div>
@@ -239,7 +526,7 @@ function Ideas({ data }: { data: Any }) {
         const items = (data[g.key] as Any[]) || [];
         return (
           <div key={g.key}>
-            <h3 className="mb-2 text-sm font-semibold text-brand-300">
+            <h3 className="mb-2 text-sm font-semibold text-brand-600">
               {g.label}
             </h3>
             <div className="space-y-3">
@@ -259,46 +546,202 @@ function Ideas({ data }: { data: Any }) {
   );
 }
 
+/** New Shorts renderer — grounded in real transcript with timestamps. */
 function Shorts({ data }: { data: Any }) {
-  const shorts = (data.shorts as Any[]) || [];
+  const shorts = [...((data.shorts as Any[]) || [])].sort(
+    (a, b) => Number(b.viralScore || 0) - Number(a.viralScore || 0),
+  );
+  const sourceUrl = data.sourceUrl ? String(data.sourceUrl) : null;
+
   return (
-    <div className="grid gap-4 sm:grid-cols-2">
-      {shorts.map((s, i) => (
-        <Card
-          key={i}
-          header={<span className="font-semibold">Short #{i + 1}</span>}
-        >
-          <div className="space-y-2.5 text-sm">
-            <p>
-              <Label>Angle</Label>
-              <br />
-              {String(s.angle)}
-            </p>
-            <p>
-              <Label>Hook</Label>
-              <br />“{String(s.hook)}”
-            </p>
-            <p>
-              <Label>Caption</Label>
-              <br />
-              {String(s.caption)}
-            </p>
-            <p className="text-muted">
-              <Label>Clip</Label> {String(s.clipSuggestion)}
-            </p>
-          </div>
-        </Card>
-      ))}
+    <div className="space-y-4">
+      {sourceUrl && (
+        <div className="flex items-center justify-between">
+          <Label>Analyzed from real transcript</Label>
+          <SourceBar url={sourceUrl} />
+        </div>
+      )}
+      <div className="grid gap-4 sm:grid-cols-2">
+        {shorts.map((s, i) => (
+          <Card
+            key={i}
+            header={
+              <>
+                <span className="font-semibold">
+                  Short #{i + 1}
+                  <span className="ml-2 font-mono text-xs text-muted">
+                    {String(s.startHint)}
+                  </span>
+                </span>
+                <Badge score={Number(s.viralScore)}>
+                  Viral {String(s.viralScore)}
+                </Badge>
+              </>
+            }
+          >
+            <div className="space-y-3 text-sm">
+              <div className="rounded-lg border-l-2 border-brand-400 bg-bg-soft px-3 py-2 italic text-muted">
+                "{String(s.spokenLine)}"
+              </div>
+              <p>
+                <Label>Angle</Label>
+                <br />
+                {String(s.angle)}
+              </p>
+              <p>
+                <Label>Hook (new)</Label>
+                <br />“{String(s.hook)}”
+              </p>
+              <div className="rounded-lg bg-surface px-3 py-2">
+                <Label>On-screen caption</Label>
+                <div className="mt-0.5 font-semibold">
+                  {String(s.caption)}
+                </div>
+              </div>
+              <p className="text-muted">
+                <Label>Cut</Label> {String(s.clipDirection)}
+              </p>
+              <p className="text-xs text-muted">
+                <span className="text-brand-600">Why it'll travel:</span>{" "}
+                {String(s.reason)}
+              </p>
+            </div>
+          </Card>
+        ))}
+      </div>
     </div>
   );
 }
 
+/** Reverse Engineer renderer — the viral teardown. */
+function Reverse({ data }: { data: Any }) {
+  const sourceUrl = data.sourceUrl ? String(data.sourceUrl) : null;
+  const tactics = (data.retentionTactics as Any[]) || [];
+  const hook = (data.hookAnalysis as Any) || {};
+  const thumb = (data.thumbnailGuess as Any) || {};
+  const remix = (data.remixForYourNiche as Any) || {};
+  const outline = (remix.outline as Any[]) || [];
+  const beats = (data.stealableBeats as string[]) || [];
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <Label>Teardown of real transcript</Label>
+        {sourceUrl && <SourceBar url={sourceUrl} />}
+      </div>
+
+      <Card
+        header={
+          <>
+            <span className="inline-flex items-center gap-2 font-semibold">
+              <Crosshair className="h-4 w-4 text-red-400" />
+              Why this video worked
+            </span>
+            <Badge score={Number(data.viralScore)}>
+              Viral {String(data.viralScore)}
+            </Badge>
+          </>
+        }
+      >
+        <div className="space-y-3 text-sm">
+          <div>
+            <Label>The hook</Label>
+            <p className="mt-1 italic">"{String(hook.theHook)}"</p>
+            <p className="mt-1 text-muted">
+              <span className="text-brand-600">{String(hook.technique)}</span>
+              {" — "}
+              {String(hook.whyItWorks)}
+            </p>
+          </div>
+        </div>
+      </Card>
+
+      <Card header={<Label>Retention tactics in play</Label>}>
+        <ul className="space-y-3 text-sm">
+          {tactics.map((t, i) => (
+            <li key={i}>
+              <span className="font-medium text-brand-600">{String(t.tactic)}</span>
+              <p className="mt-0.5 text-muted">
+                {String(t.example)} — {String(t.whyItWorks)}
+              </p>
+            </li>
+          ))}
+        </ul>
+      </Card>
+
+      <div className="grid gap-4 sm:grid-cols-2">
+        <Card header={<Label>Emotional arc</Label>}>
+          <p className="text-sm">{String(data.emotionalArc)}</p>
+        </Card>
+        <Card header={<Label>Title formula</Label>}>
+          <p className="font-mono text-sm">{String(data.titleFormula)}</p>
+        </Card>
+      </div>
+
+      <Card header={<Label>Likely thumbnail</Label>}>
+        <div className="rounded-xl border border-dashed border-border bg-bg-soft p-4 text-center">
+          <div className="text-lg font-bold text-gradient">
+            {String(thumb.overlayText)}
+          </div>
+        </div>
+        <p className="mt-3 text-sm text-muted">{String(thumb.likelyComposition)}</p>
+      </Card>
+
+      <Card
+        header={
+          <span className="inline-flex items-center gap-2 font-semibold">
+            🎬 Remix for your niche
+          </span>
+        }
+      >
+        <div className="space-y-3 text-sm">
+          <div>
+            <Label>Your version's title</Label>
+            <div className="mt-1 text-base font-semibold">
+              {String(remix.videoTitle)}
+            </div>
+          </div>
+          <div>
+            <Label>Adapted hook</Label>
+            <p className="mt-1 italic">"{String(remix.openingHook)}"</p>
+          </div>
+          <div>
+            <Label>Outline</Label>
+            <ol className="mt-1.5 space-y-1.5">
+              {outline.map((s, i) => (
+                <li key={i}>
+                  <span className="font-medium">{String(s.section)}</span>
+                  <span className="text-muted"> — {String(s.beat)}</span>
+                </li>
+              ))}
+            </ol>
+          </div>
+          <div>
+            <Label>Closing CTA</Label>
+            <p className="mt-1">{String(remix.cta)}</p>
+          </div>
+        </div>
+      </Card>
+
+      <Card header={<Label>Steal these beats</Label>}>
+        <ul className="list-disc space-y-1 pl-5 text-sm">
+          {beats.map((b, i) => <li key={i}>{b}</li>)}
+        </ul>
+      </Card>
+    </div>
+  );
+}
+
+/** Studio renderer — updated for the richer prompt. */
 function Studio({ data }: { data: Any }) {
   const thumb = (data.thumbnail as Any) || {};
   const title = (data.title as Any) || {};
+  const hook = (data.hook as Any) || {};
   const outline = (data.scriptOutline as Any[]) || [];
   const seo = (data.seo as Any) || {};
   const tags = (seo.tags as string[]) || [];
+  const posting = (data.postingStrategy as Any) || {};
+
   return (
     <div className="space-y-4">
       <Card
@@ -312,7 +755,16 @@ function Studio({ data }: { data: Any }) {
         }
       >
         <p className="text-lg font-semibold">{String(title.text)}</p>
+        {title.pattern && (
+          <p className="mt-1 font-mono text-xs uppercase tracking-wider text-brand-600">
+            pattern: {String(title.pattern)}
+          </p>
+        )}
+        {title.whyItWorks && (
+          <p className="mt-2 text-sm text-muted">{String(title.whyItWorks)}</p>
+        )}
       </Card>
+
       <Card header={<Label>Thumbnail concept</Label>}>
         <div className="rounded-xl border border-dashed border-border bg-bg-soft p-4 text-center">
           <div className="text-lg font-bold text-gradient">
@@ -321,62 +773,944 @@ function Studio({ data }: { data: Any }) {
         </div>
         <p className="mt-3 text-sm">{String(thumb.composition)}</p>
         <p className="mt-1 text-sm text-muted">{String(thumb.emotionalAngle)}</p>
+        {thumb.colorPalette && (
+          <p className="mt-2 font-mono text-xs text-muted">
+            {String(thumb.colorPalette)}
+          </p>
+        )}
       </Card>
+
       <Card header={<Label>Hook</Label>}>
-        <p className="text-[15px]">“{String(data.hook)}”</p>
+        <p className="text-[15px]">“{String(hook.spoken || hook)}”</p>
+        {hook.technique && (
+          <p className="mt-2 text-xs text-brand-600">
+            {String(hook.technique)} · payoff: {String(hook.payoffTiming)}
+          </p>
+        )}
       </Card>
+
       <Card header={<Label>Script outline</Label>}>
-        <ol className="space-y-2 text-sm">
+        <ol className="space-y-3 text-sm">
           {outline.map((s, i) => (
             <li key={i}>
               <span className="font-medium">{String(s.heading)}</span>
               <span className="text-muted"> — {String(s.beat)}</span>
+              {s.retentionDevice && (
+                <div className="mt-0.5 font-mono text-[10px] uppercase tracking-wider text-brand-600">
+                  retention: {String(s.retentionDevice)}
+                </div>
+              )}
             </li>
           ))}
         </ol>
       </Card>
-      <Card header={<Label>SEO</Label>}>
-        <p className="text-sm">{String(seo.description)}</p>
-        <div className="mt-3 flex flex-wrap gap-2">
-          {tags.map((t) => (
-            <span
-              key={t}
-              className="rounded-md bg-surface px-2 py-1 text-xs text-muted"
-            >
-              {t}
-            </span>
-          ))}
-        </div>
-      </Card>
+
+      <div className="grid gap-4 sm:grid-cols-2">
+        <Card header={<Label>SEO</Label>}>
+          <p className="text-sm">{String(seo.description)}</p>
+          <div className="mt-3 flex flex-wrap gap-2">
+            {tags.map((t) => (
+              <span
+                key={t}
+                className="rounded-md bg-surface px-2 py-1 text-xs text-muted"
+              >
+                {t}
+              </span>
+            ))}
+          </div>
+          {seo.primaryKeyword && (
+            <p className="mt-3 font-mono text-xs text-brand-600">
+              primary: {String(seo.primaryKeyword)}
+            </p>
+          )}
+        </Card>
+        <Card header={<Label>Competitive edge</Label>}>
+          <p className="text-sm">{String(data.competitiveEdge)}</p>
+        </Card>
+      </div>
+
       <Card header={<Label>Clip brief</Label>}>
         <p className="whitespace-pre-line text-sm leading-relaxed">
           {String(data.clipBrief)}
         </p>
       </Card>
-      <Card header={<Label>Posting tip</Label>}>
-        <p className="text-sm text-brand-300">{String(data.postingTip)}</p>
+
+      <Card header={<Label>Posting strategy</Label>}>
+        <div className="grid gap-2 text-sm sm:grid-cols-3">
+          <div>
+            <Label>Best day</Label>
+            <div className="mt-0.5 font-medium">{String(posting.bestDay)}</div>
+          </div>
+          <div>
+            <Label>Best time</Label>
+            <div className="mt-0.5 font-medium">{String(posting.bestTime)}</div>
+          </div>
+          <div>
+            <Label>First hour</Label>
+            <div className="mt-0.5 font-medium">{String(posting.firstHourTactic)}</div>
+          </div>
+        </div>
       </Card>
     </div>
   );
 }
 
-const RENDERERS: Record<ToolSlug, (p: { data: Any }) => React.ReactNode> = {
-  thumbnails: Thumbnails,
+function PFP({ data }: { data: Any }) {
+  const concepts = (data.concepts as Any[]) || [];
+  return (
+    <div className="grid gap-4 sm:grid-cols-2">
+      {concepts.map((c, i) => (
+        <Card
+          key={i}
+          header={<span className="font-semibold">{String(c.name)}</span>}
+        >
+          {c.image && (
+            <a
+              href={String(c.image)}
+              download={`pfp-${i + 1}.png`}
+              className="mb-3 block overflow-hidden rounded-2xl border border-border bg-bg-soft"
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={String(c.image)}
+                alt={String(c.name)}
+                className="aspect-square w-full object-cover"
+              />
+            </a>
+          )}
+          <p className="text-sm">{String(c.description)}</p>
+          <p className="mt-2 font-mono text-xs text-muted">{String(c.colors)}</p>
+          <p className="mt-2 text-xs text-brand-600">{String(c.reasoning)}</p>
+        </Card>
+      ))}
+    </div>
+  );
+}
+
+function Banner({ data }: { data: Any }) {
+  const concept = (data.concept as Any) || {};
+  return (
+    <div className="space-y-4">
+      {data.image && (
+        <a
+          href={String(data.image)}
+          download="banner.png"
+          className="block overflow-hidden rounded-2xl border border-border bg-bg-soft"
+        >
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={String(data.image)}
+            alt="Banner"
+            className="w-full object-cover"
+          />
+        </a>
+      )}
+      <Card header={<Label>Composition</Label>}>
+        <p className="text-sm">{String(concept.composition)}</p>
+      </Card>
+      <div className="grid gap-4 sm:grid-cols-2">
+        <Card header={<Label>Centerpiece</Label>}>
+          <p className="text-sm">{String(concept.centerpiece)}</p>
+        </Card>
+        <Card header={<Label>Text placement</Label>}>
+          <p className="text-sm">{String(concept.textPlacement)}</p>
+        </Card>
+        <Card header={<Label>Color palette</Label>}>
+          <p className="font-mono text-sm">{String(concept.colorPalette)}</p>
+        </Card>
+        <Card header={<Label>Mood</Label>}>
+          <p className="text-sm">{String(concept.mood)}</p>
+        </Card>
+      </div>
+      {data.alternateTagline && (
+        <Card header={<Label>Alt tagline</Label>}>
+          <p className="text-base font-medium">{String(data.alternateTagline)}</p>
+        </Card>
+      )}
+    </div>
+  );
+}
+
+function Bio({ data }: { data: Any }) {
+  const bios = (data.bios as Any[]) || [];
+  return (
+    <div className="space-y-3">
+      {bios.map((b, i) => {
+        const charCount = Number(b.charCount || 0);
+        const limit = Number(b.limit || 0);
+        const over = limit > 0 && charCount > limit;
+        return (
+          <Card
+            key={i}
+            header={
+              <>
+                <span className="font-semibold">{String(b.platform)}</span>
+                <span
+                  className={`font-mono text-xs ${
+                    over ? "text-rose-600" : "text-muted"
+                  }`}
+                >
+                  {charCount} / {limit} chars
+                </span>
+              </>
+            }
+          >
+            <p className="whitespace-pre-line text-[15px] leading-relaxed">
+              {String(b.text)}
+            </p>
+            <div className="mt-3 flex items-center justify-between">
+              <p className="text-xs text-brand-600">{String(b.why)}</p>
+              <CopyButton text={String(b.text)} />
+            </div>
+          </Card>
+        );
+      })}
+    </div>
+  );
+}
+
+function ChannelName({ data }: { data: Any }) {
+  const names = [...((data.names as Any[]) || [])].sort(
+    (a, b) =>
+      Number(b.memorabilityScore || 0) - Number(a.memorabilityScore || 0),
+  );
+  return (
+    <div className="space-y-3">
+      {names.map((n, i) => (
+        <Card key={i}>
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <div className="text-lg font-semibold">{String(n.name)}</div>
+              <div className="font-mono text-xs text-brand-600">
+                {String(n.handle)}
+              </div>
+              <p className="mt-1.5 text-sm text-muted">{String(n.why)}</p>
+              {n.tagline && (
+                <p className="mt-1 text-sm italic">"{String(n.tagline)}"</p>
+              )}
+            </div>
+            <Badge score={Number(n.memorabilityScore)}>
+              {String(n.memorabilityScore)}
+            </Badge>
+          </div>
+          <div className="mt-2">
+            <CopyButton text={String(n.name)} />
+          </div>
+        </Card>
+      ))}
+    </div>
+  );
+}
+
+function Niche({ data }: { data: Any }) {
+  const niches = [...((data.niches as Any[]) || [])].sort(
+    (a, b) => Number(b.dominationScore || 0) - Number(a.dominationScore || 0),
+  );
+  return (
+    <div className="space-y-4">
+      {niches.map((n, i) => (
+        <Card
+          key={i}
+          header={
+            <>
+              <span className="font-semibold">{String(n.name)}</span>
+              <Badge score={Number(n.dominationScore)}>
+                Domination {String(n.dominationScore)}
+              </Badge>
+            </>
+          }
+        >
+          <p className="text-sm">
+            <Label>Why underserved</Label>
+            <br />
+            {String(n.whyUnderserved)}
+          </p>
+          <div className="mt-3">
+            <Label>Example videos</Label>
+            <ul className="mt-1 list-disc space-y-0.5 pl-5 text-sm">
+              {((n.exampleVideos as string[]) || []).map((v, j) => (
+                <li key={j}>{v}</li>
+              ))}
+            </ul>
+          </div>
+          {n.sampleHook && (
+            <p className="mt-3 rounded-lg border-l-2 border-brand-500 bg-bg-soft px-3 py-2 text-sm italic">
+              "{String(n.sampleHook)}"
+            </p>
+          )}
+          {n.competitorsToWatch && (
+            <p className="mt-3 text-xs text-muted">
+              <Label>Watch:</Label>{" "}
+              {((n.competitorsToWatch as string[]) || []).join(" · ")}
+            </p>
+          )}
+        </Card>
+      ))}
+    </div>
+  );
+}
+
+function Storyboard({ data }: { data: Any }) {
+  const frames = (data.frames as Any[]) || [];
+  return (
+    <div className="grid gap-4 sm:grid-cols-2">
+      {frames.map((f, i) => (
+        <Card
+          key={i}
+          header={
+            <>
+              <span className="font-semibold">
+                Frame {String(f.frameNumber || i + 1)}
+              </span>
+              <span className="font-mono text-xs text-muted">
+                {String(f.shotType)} · {String(f.timeSec)}
+              </span>
+            </>
+          }
+        >
+          {f.image && (
+            <a
+              href={String(f.image)}
+              download={`frame-${i + 1}.png`}
+              className="mb-3 block overflow-hidden rounded-xl border border-border"
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={String(f.image)}
+                alt={`Frame ${i + 1}`}
+                className="aspect-video w-full object-cover"
+              />
+            </a>
+          )}
+          <p className="text-sm">{String(f.whatHappens)}</p>
+          <p className="mt-2 text-xs text-brand-600">
+            📷 {String(f.cameraMove)}
+          </p>
+          {f.narration && (
+            <p className="mt-2 rounded-lg border-l-2 border-border bg-bg-soft px-3 py-2 text-sm italic">
+              "{String(f.narration)}"
+            </p>
+          )}
+        </Card>
+      ))}
+    </div>
+  );
+}
+
+function Broll({ data }: { data: Any }) {
+  const shots = (data.shots as Any[]) || [];
+  return (
+    <div className="grid gap-4 sm:grid-cols-2">
+      {shots.map((s, i) => (
+        <Card
+          key={i}
+          header={<span className="font-semibold">{String(s.name)}</span>}
+        >
+          {s.image && (
+            <a
+              href={String(s.image)}
+              download={`broll-${i + 1}.png`}
+              className="mb-3 block overflow-hidden rounded-xl border border-border"
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={String(s.image)}
+                alt={String(s.name)}
+                className="aspect-video w-full object-cover"
+              />
+            </a>
+          )}
+          <p className="text-sm">{String(s.description)}</p>
+          <div className="mt-3 flex flex-wrap gap-2 text-xs text-muted">
+            <span className="rounded-md bg-bg-soft px-2 py-1 font-mono">
+              {String(s.duration)}
+            </span>
+            <span className="rounded-md bg-bg-soft px-2 py-1">
+              {String(s.useWhen)}
+            </span>
+          </div>
+        </Card>
+      ))}
+    </div>
+  );
+}
+
+function NicheBend({ data }: { data: Any }) {
+  const pivots = [...((data.pivots as Any[]) || [])].sort(
+    (a, b) => Number(b.viability || 0) - Number(a.viability || 0),
+  );
+  const rec = (data.recommended as Any) || {};
+  const pfp = (rec.profilePicture as Any) || {};
+  const plan = (rec.postingPlan as Any) || {};
+  const ideas = (plan.videoIdeas as Any[]) || [];
+
+  return (
+    <div className="space-y-5">
+      {/* The 3 pivots */}
+      <div>
+        <h3 className="mb-3 text-xs font-semibold uppercase tracking-[0.12em] text-muted">
+          3 niche pivots
+        </h3>
+        <div className="space-y-3">
+          {pivots.map((p, i) => (
+            <Card
+              key={i}
+              header={
+                <>
+                  <span className="font-semibold">{String(p.niche)}</span>
+                  <Badge score={Number(p.viability)}>
+                    {String(p.viability)}/100
+                  </Badge>
+                </>
+              }
+            >
+              <p className="text-sm">{String(p.angle)}</p>
+              <div className="mt-3">
+                <Label>Sample titles</Label>
+                <ul className="mt-1 list-disc space-y-1 pl-5 text-sm">
+                  {((p.sampleTitles as string[]) || []).map((t, j) => (
+                    <li key={j}>{t}</li>
+                  ))}
+                </ul>
+              </div>
+              <p className="mt-3 text-xs text-muted">
+                <Label>Audience:</Label> {String(p.audience)}
+              </p>
+            </Card>
+          ))}
+        </div>
+      </div>
+
+      {/* Recommended launch kit */}
+      <Card
+        header={
+          <>
+            <span className="inline-flex items-center gap-2 font-semibold">
+              <span className="text-brand-600">★</span> Recommended:{" "}
+              {String(rec.niche)}
+            </span>
+          </>
+        }
+      >
+        <p className="text-sm italic text-muted">
+          "{String(rec.whyStrongest)}"
+        </p>
+
+        <div className="mt-5 grid gap-5 sm:grid-cols-[160px_1fr]">
+          {pfp.image && (
+            <a
+              href={String(pfp.image)}
+              download="profile-picture.png"
+              className="block overflow-hidden rounded-2xl border border-border bg-bg-soft"
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={String(pfp.image)}
+                alt="Profile picture concept"
+                className="aspect-square w-full object-cover"
+              />
+            </a>
+          )}
+          <div className="space-y-3">
+            <div>
+              <Label>Channel name</Label>
+              <div className="text-lg font-bold">{String(rec.channelName)}</div>
+              <div className="font-mono text-xs text-brand-600">
+                {String(rec.handle)}
+              </div>
+            </div>
+            <div>
+              <Label>Tagline</Label>
+              <p className="text-sm italic">"{String(rec.tagline)}"</p>
+            </div>
+            <div>
+              <Label>Profile picture concept</Label>
+              <p className="text-sm">{String(pfp.concept)}</p>
+              <p className="mt-1 font-mono text-xs text-muted">
+                {String(pfp.colors)}
+              </p>
+            </div>
+          </div>
+        </div>
+      </Card>
+
+      {/* Posting plan */}
+      <Card
+        header={
+          <span className="font-semibold">📅 30-day posting plan</span>
+        }
+      >
+        <div className="grid gap-3 sm:grid-cols-2">
+          <div className="rounded-xl bg-bg-soft px-3 py-2.5">
+            <Label>Cadence</Label>
+            <p className="mt-0.5 text-sm">{String(plan.cadence)}</p>
+          </div>
+          <div className="rounded-xl bg-bg-soft px-3 py-2.5">
+            <Label>Week 1 action</Label>
+            <p className="mt-0.5 text-sm">{String(plan.firstWeek)}</p>
+          </div>
+        </div>
+
+        <div className="mt-4">
+          <Label>First 8 video ideas</Label>
+          <ol className="mt-2 space-y-2">
+            {ideas.map((v, i) => (
+              <li
+                key={i}
+                className="flex gap-3 rounded-xl border border-border bg-surface p-3 text-sm"
+              >
+                <span className="font-mono text-xs text-brand-600">
+                  W{String(v.week)}
+                </span>
+                <div>
+                  <div className="font-medium">{String(v.title)}</div>
+                  <p className="mt-0.5 text-xs text-muted">{String(v.why)}</p>
+                </div>
+              </li>
+            ))}
+          </ol>
+        </div>
+      </Card>
+    </div>
+  );
+}
+
+function ShotList({ data }: { data: Any }) {
+  const scenes = (data.scenes as Any[]) || [];
+  const tips = (data.gearTips as string[]) || [];
+  return (
+    <div className="space-y-5">
+      {scenes.map((scene, i) => {
+        const shots = (scene.shots as Any[]) || [];
+        return (
+          <Card
+            key={i}
+            header={
+              <span className="font-semibold">
+                Scene {i + 1} · {String(scene.sceneName)}
+              </span>
+            }
+          >
+            <div className="space-y-3">
+              {shots.map((s, j) => (
+                <div
+                  key={j}
+                  className="rounded-xl border border-border bg-bg-soft p-3.5 text-sm"
+                >
+                  <div className="flex items-baseline justify-between gap-3">
+                    <span className="font-mono font-semibold text-brand-600">
+                      {String(s.shotNumber)}
+                    </span>
+                    <span className="font-mono text-xs text-muted">
+                      {String(s.durationSec)}s
+                    </span>
+                  </div>
+                  <div className="mt-1 grid gap-1 sm:grid-cols-2">
+                    <div>
+                      <Label>Angle</Label>
+                      <div>{String(s.angle)}</div>
+                    </div>
+                    <div>
+                      <Label>Move</Label>
+                      <div>{String(s.move)}</div>
+                    </div>
+                    <div>
+                      <Label>Lens</Label>
+                      <div>{String(s.lens)}</div>
+                    </div>
+                    <div>
+                      <Label>Lighting</Label>
+                      <div>{String(s.lighting)}</div>
+                    </div>
+                  </div>
+                  <p className="mt-2 text-muted">{String(s.direction)}</p>
+                </div>
+              ))}
+            </div>
+          </Card>
+        );
+      })}
+      {tips.length > 0 && (
+        <Card header={<Label>Gear tips</Label>}>
+          <ul className="list-disc space-y-1 pl-5 text-sm">
+            {tips.map((t, i) => <li key={i}>{t}</li>)}
+          </ul>
+        </Card>
+      )}
+    </div>
+  );
+}
+
+function Rising({ data }: { data: Any }) {
+  const channels = [...((data.channels as Any[]) || [])].sort(
+    (a, b) =>
+      Number(b.confidenceScore || 0) - Number(a.confidenceScore || 0),
+  );
+  const note = data.metaNote ? String(data.metaNote) : null;
+
+  return (
+    <div className="space-y-4">
+      {note && (
+        <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-xs italic text-amber-900">
+          {note}
+        </div>
+      )}
+      {channels.map((c, i) => {
+        const formats = (c.winningFormats as string[]) || [];
+        const plan = (c.replicationPlan as Any[]) || [];
+        return (
+          <Card
+            key={i}
+            header={
+              <>
+                <span className="font-semibold">{String(c.name)}</span>
+                <Badge score={Number(c.confidenceScore)}>
+                  {String(c.confidenceScore)}
+                </Badge>
+              </>
+            }
+          >
+            <p className="text-sm italic text-muted">
+              "{String(c.positioning)}"
+            </p>
+
+            <div className="mt-4">
+              <Label>Why they're growing</Label>
+              <p className="mt-1 text-sm">{String(c.whyGrowing)}</p>
+            </div>
+
+            <div className="mt-4 grid gap-3 sm:grid-cols-2">
+              <div>
+                <Label>Upload cadence</Label>
+                <p className="mt-1 text-sm">{String(c.uploadCadence)}</p>
+              </div>
+              <div>
+                <Label>Thumbnail style</Label>
+                <p className="mt-1 text-sm">{String(c.thumbnailStyle)}</p>
+              </div>
+            </div>
+
+            <div className="mt-4">
+              <Label>Winning formats</Label>
+              <ul className="mt-1.5 space-y-1 text-sm">
+                {formats.map((f, j) => (
+                  <li key={j}>• {f}</li>
+                ))}
+              </ul>
+            </div>
+
+            <div className="mt-4 rounded-xl bg-bg-soft p-4">
+              <Label>Your replication plan</Label>
+              <ol className="mt-2 space-y-1.5">
+                {plan.map((s, j) => (
+                  <li key={j} className="flex gap-2.5 text-sm">
+                    <span className="font-mono font-semibold text-brand-600">
+                      {String(s.step)}.
+                    </span>
+                    <span>{String(s.action)}</span>
+                  </li>
+                ))}
+              </ol>
+            </div>
+
+            <div className="mt-4 rounded-xl border-l-2 border-brand-500 bg-bg-soft px-3 py-2">
+              <span className="text-xs font-semibold text-brand-700">
+                First video to make ▸
+              </span>
+              <p className="mt-0.5 text-sm">{String(c.firstVideoIdea)}</p>
+            </div>
+          </Card>
+        );
+      })}
+    </div>
+  );
+}
+
+function Audit({ data }: { data: Any }) {
+  const strengths = (data.strengths as Any[]) || [];
+  const weaknesses = (data.weaknesses as Any[]) || [];
+  const actionPlan = (data.actionPlan as Any[]) || [];
+  const best = (data.bestVideoBreakdown as Any) || {};
+  const worst = (data.worstVideoBreakdown as Any) || {};
+
+  return (
+    <div className="space-y-4">
+      <Card
+        header={
+          <>
+            <span className="font-semibold">Overall</span>
+            <Badge score={Number(data.overallScore)}>
+              {String(data.overallScore)}/100
+            </Badge>
+          </>
+        }
+      >
+        <p className="text-[15px] leading-relaxed">{String(data.summary)}</p>
+      </Card>
+
+      <Card
+        header={
+          <span className="inline-flex items-center gap-2 font-semibold text-emerald-700">
+            ✓ Strengths
+          </span>
+        }
+      >
+        <ul className="space-y-3 text-sm">
+          {strengths.map((s, i) => (
+            <li key={i}>
+              <div className="font-medium">{String(s.area)}</div>
+              <p className="mt-0.5 text-muted">
+                <span className="italic">"{String(s.evidence)}"</span> —{" "}
+                {String(s.whyItMatters)}
+              </p>
+            </li>
+          ))}
+        </ul>
+      </Card>
+
+      <Card
+        header={
+          <span className="inline-flex items-center gap-2 font-semibold text-rose-700">
+            ✗ Weaknesses
+          </span>
+        }
+      >
+        <ul className="space-y-3 text-sm">
+          {weaknesses.map((w, i) => (
+            <li key={i}>
+              <div className="font-medium">{String(w.area)}</div>
+              <p className="mt-0.5 text-muted">
+                <span className="italic">"{String(w.evidence)}"</span> —{" "}
+                {String(w.whyItHurts)}
+              </p>
+            </li>
+          ))}
+        </ul>
+      </Card>
+
+      <div className="grid gap-4 sm:grid-cols-2">
+        <Card header={<Label>★ Best performer</Label>}>
+          <p className="text-sm font-medium">"{String(best.title)}"</p>
+          <p className="mt-1 font-mono text-xs text-brand-600">
+            {String(best.viewsVsAverage)}
+          </p>
+          <p className="mt-3 text-sm">
+            <span className="font-medium">Why it worked:</span>{" "}
+            {String(best.whyItWorked)}
+          </p>
+          <p className="mt-2 rounded-lg bg-emerald-50 px-3 py-2 text-xs text-emerald-800">
+            <span className="font-semibold">Pattern to repeat:</span>{" "}
+            {String(best.whatToRepeat)}
+          </p>
+        </Card>
+        <Card header={<Label>✗ Worst performer</Label>}>
+          <p className="text-sm font-medium">"{String(worst.title)}"</p>
+          <p className="mt-1 font-mono text-xs text-rose-600">
+            {String(worst.viewsVsAverage)}
+          </p>
+          <p className="mt-3 text-sm">
+            <span className="font-medium">What flopped:</span>{" "}
+            {String(worst.whatFlopped)}
+          </p>
+        </Card>
+      </div>
+
+      <Card header={<Label>Title patterns</Label>}>
+        <p className="text-sm">{String(data.titlePatterns)}</p>
+      </Card>
+
+      <Card header={<Label>Upload cadence</Label>}>
+        <p className="text-sm">{String(data.uploadCadenceVerdict)}</p>
+      </Card>
+
+      <Card
+        header={
+          <span className="inline-flex items-center gap-2 font-semibold">
+            <span className="text-brand-600">★</span> The ONE thing to change
+          </span>
+        }
+      >
+        <p className="text-[15px] leading-relaxed">{String(data.theOneThing)}</p>
+      </Card>
+
+      <Card header={<Label>4-week action plan</Label>}>
+        <ol className="space-y-2">
+          {actionPlan.map((a, i) => (
+            <li
+              key={i}
+              className="flex gap-3 rounded-xl border border-border bg-bg-soft p-3 text-sm"
+            >
+              <span className="font-mono text-xs font-semibold text-brand-600">
+                W{String(a.week)}
+              </span>
+              <span>{String(a.action)}</span>
+            </li>
+          ))}
+        </ol>
+      </Card>
+    </div>
+  );
+}
+
+function Clipper({ data }: { data: Any }) {
+  const clips = [...((data.clips as Any[]) || [])].sort(
+    (a, b) => Number(b.viralScore || 0) - Number(a.viralScore || 0),
+  );
+  const sourceUrl = data.sourceUrl ? String(data.sourceUrl) : null;
+  const platform = data.platform ? String(data.platform) : "TikTok";
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <Label>Clip packages · ready for {platform}</Label>
+        {sourceUrl && <SourceBar url={sourceUrl} />}
+      </div>
+
+      <div className="space-y-4">
+        {clips.map((c, i) => (
+          <Card
+            key={i}
+            header={
+              <>
+                <span className="font-semibold">
+                  Clip #{i + 1}
+                  <span className="ml-2 font-mono text-xs text-muted">
+                    {String(c.startHint)} · {String(c.clipLengthSec)}s
+                  </span>
+                </span>
+                <Badge score={Number(c.viralScore)}>
+                  Viral {String(c.viralScore)}
+                </Badge>
+              </>
+            }
+          >
+            <div className="space-y-3 text-sm">
+              <div className="rounded-lg border-l-2 border-brand-500 bg-bg-soft px-3 py-2 italic text-muted">
+                "{String(c.spokenLine)}"
+              </div>
+
+              <div className="rounded-xl bg-gradient-to-br from-brand-50 to-surface p-3">
+                <Label>Hook overlay (top of screen, big font)</Label>
+                <div className="mt-1 text-lg font-bold text-gradient">
+                  {String(c.hookOverlay)}
+                </div>
+              </div>
+
+              <div>
+                <Label>Body caption</Label>
+                <p className="mt-1">{String(c.bodyCaption)}</p>
+              </div>
+
+              {c.voiceoverIntro && (
+                <div className="rounded-lg border border-border bg-bg-soft px-3 py-2">
+                  <Label>Voiceover intro (AI-readable)</Label>
+                  <p className="mt-1 italic">"{String(c.voiceoverIntro)}"</p>
+                </div>
+              )}
+
+              <div>
+                <Label>Sound effect</Label>
+                <p className="mt-1">🔊 {String(c.soundEffectCue)}</p>
+              </div>
+
+              <div>
+                <Label>Hashtags</Label>
+                <div className="mt-1 flex flex-wrap gap-1.5">
+                  {((c.hashtags as string[]) || []).map((h) => (
+                    <span
+                      key={h}
+                      className="rounded-md bg-bg-soft px-2 py-0.5 font-mono text-xs text-brand-600"
+                    >
+                      {h.startsWith("#") ? h : `#${h}`}
+                    </span>
+                  ))}
+                </div>
+                <div className="mt-2">
+                  <CopyButton
+                    text={((c.hashtags as string[]) || [])
+                      .map((h) => (h.startsWith("#") ? h : `#${h}`))
+                      .join(" ")}
+                  />
+                </div>
+              </div>
+
+              <p className="text-xs text-muted">
+                <span className="font-medium text-brand-600">Edit:</span>{" "}
+                {String(c.editNotes)}
+              </p>
+              <p className="text-xs text-muted">
+                <span className="font-medium">Why it works:</span>{" "}
+                {String(c.whyItWorks)}
+              </p>
+            </div>
+          </Card>
+        ))}
+      </div>
+
+      <Card header={<Label>How to actually publish these</Label>}>
+        <ol className="list-decimal space-y-1.5 pl-5 text-sm">
+          <li>
+            Download the source video (use a free YouTube downloader for the
+            channel you own, or your own upload).
+          </li>
+          <li>
+            Open CapCut → import → cut to the timestamp above (~{platform === "TikTok" ? "30-60s" : "60s"}).
+          </li>
+          <li>
+            Add the hook overlay as bold top-screen text. Add body caption
+            as auto-captions.
+          </li>
+          <li>
+            Drop the sound effect cue. Optional: generate the voiceover intro
+            with the Voice tool, layer on top.
+          </li>
+          <li>Paste the hashtag block. Export 9:16 vertical. Post.</li>
+        </ol>
+      </Card>
+    </div>
+  );
+}
+
+/**
+ * Renderers can optionally consume the original `inputs` so they can echo
+ * user-selected metadata (e.g. style) back into follow-up calls like
+ * /api/thumbnail/regenerate. Most renderers ignore it.
+ */
+type RendererProps = { data: Any; inputs?: Any };
+
+const RENDERERS: Record<ToolSlug, (p: RendererProps) => React.ReactNode> = {
+  thumbnails: ({ data, inputs }) => (
+    <Thumbnails data={data} style={inputs?.style as string | undefined} />
+  ),
   titles: Titles,
   hooks: Hooks,
   scripts: Script,
   seo: Seo,
   ideas: Ideas,
   shorts: Shorts,
+  reverse: Reverse,
   studio: Studio,
+  pfp: PFP,
+  banner: Banner,
+  bio: Bio,
+  channelname: ChannelName,
+  niche: Niche,
+  storyboard: Storyboard,
+  broll: Broll,
+  shotlist: ShotList,
+  nichebend: NicheBend,
+  audit: Audit,
+  clipper: Clipper,
 };
 
 export function ResultView({
   tool,
   data,
+  inputs,
 }: {
   tool: ToolSlug;
   data: Any;
+  inputs?: Any;
 }) {
   const Renderer = RENDERERS[tool];
   if (!Renderer) {
@@ -386,5 +1720,81 @@ export function ResultView({
       </pre>
     );
   }
-  return <Renderer data={data} />;
+  return (
+    <div className="space-y-5">
+      <Renderer data={data} inputs={inputs} />
+      <InsightsFooter data={data} />
+    </div>
+  );
+}
+
+/** Common footer rendering the AI's reasoning meta fields. */
+function InsightsFooter({ data }: { data: Any }) {
+  const topPick = data.topPick ? String(data.topPick) : null;
+  const honest = data.honestAssessment ? String(data.honestAssessment) : null;
+  const watchOutFor = (data.watchOutFor as string[]) || [];
+  const nextStep = data.nextStep ? String(data.nextStep) : null;
+  const honestRisks = (data.honestRisks as string[]) || [];
+
+  if (
+    !topPick &&
+    !honest &&
+    watchOutFor.length === 0 &&
+    !nextStep &&
+    honestRisks.length === 0
+  )
+    return null;
+
+  return (
+    <div className="space-y-3">
+      {topPick && (
+        <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-5">
+          <div className="font-mono text-[10px] uppercase tracking-wider text-emerald-700">
+            ★ Top pick
+          </div>
+          <p className="mt-2 text-[15px] leading-relaxed">{topPick}</p>
+        </div>
+      )}
+
+      {honest && (
+        <div className="rounded-2xl border border-border bg-bg-soft p-5">
+          <div className="font-mono text-[10px] uppercase tracking-wider text-muted">
+            Honest take
+          </div>
+          <p className="mt-2 text-[15px] italic leading-relaxed">{honest}</p>
+        </div>
+      )}
+
+      {(watchOutFor.length > 0 || honestRisks.length > 0) && (
+        <div className="rounded-2xl border border-amber-200 bg-amber-50 p-5">
+          <div className="font-mono text-[10px] uppercase tracking-wider text-amber-700">
+            Watch out for
+          </div>
+          <ul className="mt-3 space-y-1.5 text-sm">
+            {watchOutFor.map((w, i) => (
+              <li key={`w${i}`} className="flex items-start gap-2">
+                <span className="mt-1.5 inline-block h-1 w-1 shrink-0 rounded-full bg-amber-700" />
+                <span>{w}</span>
+              </li>
+            ))}
+            {honestRisks.map((r, i) => (
+              <li key={`r${i}`} className="flex items-start gap-2">
+                <span className="mt-1.5 inline-block h-1 w-1 shrink-0 rounded-full bg-amber-700" />
+                <span>{r}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {nextStep && (
+        <div className="rounded-2xl border border-brand-500/30 bg-brand-50 p-5">
+          <div className="font-mono text-[10px] uppercase tracking-wider text-brand-700">
+            Next step →
+          </div>
+          <p className="mt-2 text-[15px] leading-relaxed">{nextStep}</p>
+        </div>
+      )}
+    </div>
+  );
 }

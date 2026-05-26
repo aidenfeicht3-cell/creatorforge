@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { Sidebar } from "@/components/dashboard/sidebar";
+import { DashboardShell } from "@/components/dashboard/dashboard-shell";
 import { getAccount } from "@/lib/account";
 
 export default async function DashboardLayout({
@@ -10,18 +10,18 @@ export default async function DashboardLayout({
   const account = await getAccount();
   if (!account) redirect("/login?next=/dashboard");
 
+  // First-time users go through onboarding (which lives outside /dashboard).
+  if (!account.profile.onboarding_complete) {
+    redirect("/onboarding");
+  }
+
   return (
-    <div className="flex min-h-screen">
-      <Sidebar
-        plan={account.profile.plan}
-        creditsLeft={account.creditsLeft}
-        creditsCap={account.creditsCap}
-      />
-      <main className="flex-1">
-        <div className="mx-auto max-w-5xl px-5 py-8 lg:px-10 lg:py-10">
-          {children}
-        </div>
-      </main>
-    </div>
+    <DashboardShell
+      plan={account.profile.plan}
+      creditsLeft={account.creditsLeft}
+      creditsCap={account.creditsCap}
+    >
+      {children}
+    </DashboardShell>
   );
 }

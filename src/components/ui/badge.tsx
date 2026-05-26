@@ -12,7 +12,7 @@ export function Badge({
 }) {
   const tone =
     score === undefined
-      ? "bg-brand-500/15 text-brand-300 border-brand-500/30"
+      ? "bg-brand-500/15 text-brand-600 border-brand-500/30"
       : score >= 80
         ? "bg-emerald-500/15 text-emerald-300 border-emerald-500/30"
         : score >= 60

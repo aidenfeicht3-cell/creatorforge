@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
-import { Inter, JetBrains_Mono } from "next/font/google";
+import { Inter, JetBrains_Mono, Instrument_Serif } from "next/font/google";
 import { Toaster } from "sonner";
+import { ThemeScript } from "@/components/theme-toggle";
 import "./globals.css";
 
 const SITE = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
@@ -15,25 +16,26 @@ const mono = JetBrains_Mono({
   variable: "--font-jetbrains",
   display: "swap",
 });
+const serif = Instrument_Serif({
+  subsets: ["latin"],
+  weight: "400",
+  style: ["normal", "italic"],
+  variable: "--font-serif",
+  display: "swap",
+});
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE),
   title: {
-    default: "CreatorForge AI — Level up your YouTube channel",
+    default: "CreatorForge AI — the AI that actually reads YouTube",
     template: "%s · CreatorForge AI",
   },
   description:
-    "The creator's loadout. Generate thumbnails, viral titles, hooks, scripts, SEO and Shorts from one dashboard — built for YouTubers, powered by Claude.",
-  keywords: [
-    "YouTube AI tools",
-    "thumbnail generator",
-    "viral title generator",
-    "YouTube script writer",
-    "content creator AI",
-  ],
+    "I got sick of generic AI tools for creators so I built one that fetches real YouTube transcripts and reverse-engineers why videos go viral.",
   openGraph: {
     title: "CreatorForge AI",
-    description: "The creator's loadout for YouTube growth.",
+    description:
+      "The AI tool that actually reads YouTube. Built by a creator, for creators.",
     url: SITE,
     siteName: "CreatorForge AI",
     type: "website",
@@ -49,18 +51,22 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`dark ${inter.variable} ${mono.variable}`}
+      className={`${inter.variable} ${mono.variable} ${serif.variable}`}
+      suppressHydrationWarning
     >
+      <head>
+        <ThemeScript />
+      </head>
       <body className="min-h-screen antialiased">
         {children}
         <Toaster
-          theme="dark"
+          theme="system"
           position="top-center"
           toastOptions={{
             style: {
-              background: "rgba(18,18,28,0.9)",
-              border: "1px solid rgba(255,255,255,0.08)",
-              color: "#f5f5fa",
+              background: "rgba(255,255,255,0.96)",
+              border: "1px solid rgba(12,19,34,0.08)",
+              color: "#0c1322",
             },
           }}
         />

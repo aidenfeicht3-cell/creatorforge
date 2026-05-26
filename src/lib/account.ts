@@ -1,4 +1,4 @@
-/** Server helpers for reading a user's profile, plan, and usage. */
+/** Server helpers for reading a user's profile, plan, usage, and onboarding. */
 import { PLANS, type PlanId, creditsRemaining } from "./plans";
 import { createClient } from "./supabase/server";
 
@@ -8,12 +8,23 @@ export interface Profile {
   display_name: string | null;
   plan: PlanId;
   credits_used: number;
+  bonus_credits: number;
   referral_code: string;
   referred_by: string | null;
   stripe_customer_id: string | null;
+
+  // Onboarding + memory bank
+  onboarding_complete: boolean;
+  has_channel: "yes" | "new" | "no" | null;
+  channel_handle: string | null;
+  channel_niche: string | null;
+  channel_audience: string | null;
+  channel_style: string | null;
+
+  // Community moderation
+  workshop_suspended_until: string | null;
 }
 
-/** Returns the signed-in user's profile, or null if not authenticated. */
 export async function getProfile(): Promise<Profile | null> {
   const supabase = await createClient();
   const {
@@ -30,20 +41,20 @@ export async function getProfile(): Promise<Profile | null> {
   return (data as Profile) ?? null;
 }
 
-/** Convenience: profile + computed plan & credit info. */
 export async function getAccount() {
   const profile = await getProfile();
   if (!profile) return null;
   const plan = PLANS[profile.plan];
+  const bonus = profile.bonus_credits ?? 0;
   return {
     profile,
     plan,
-    creditsLeft: creditsRemaining(profile.plan, profile.credits_used),
-    creditsCap: plan.monthlyCredits,
+    creditsLeft: creditsRemaining(profile.plan, profile.credits_used, bonus),
+    creditsCap: plan.monthlyCredits + bonus,
+    bonus,
   };
 }
 
-/** Count of referrals credited to this user. */
 export async function getReferralCount(userId: string): Promise<number> {
   const supabase = await createClient();
   const { count } = await supabase
@@ -51,4 +62,10 @@ export async function getReferralCount(userId: string): Promise<number> {
     .select("id", { count: "exact", head: true })
     .eq("referred_by", userId);
   return count ?? 0;
+}
+
+/** True if the user is currently suspended from posting in the Workshop. */
+export function isWorkshopSuspended(profile: Profile): boolean {
+  if (!profile.workshop_suspended_until) return false;
+  return new Date(profile.workshop_suspended_until).getTime() > Date.now();
 }

@@ -4,7 +4,8 @@
       "Bash(ls -la)",
       "Bash(node --version)",
       "Bash(npm --version)",
-      "WebFetch(domain:raw.githubusercontent.com)"
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "PowerShell(npm run typecheck 2>&1)"
     ]
   }
 }

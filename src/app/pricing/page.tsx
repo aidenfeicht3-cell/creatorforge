@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import { PricingCards } from "@/components/pricing-cards";
+import { CreditSlider } from "@/components/credit-slider";
 import { Faq } from "@/components/faq";
 import { createClient } from "@/lib/supabase/server";
 
@@ -29,11 +30,15 @@ export default async function PricingPage() {
         </p>
       </section>
 
-      <section className="mx-auto max-w-7xl px-5 pb-20">
+      <section className="mx-auto max-w-7xl px-5 pb-12">
         <PricingCards authed={!!user} />
         <p className="mt-8 text-center text-sm text-muted">
           Prices in USD. Cancel anytime — no contracts, no lock-in.
         </p>
+      </section>
+
+      <section className="mx-auto max-w-3xl px-5 pb-20">
+        <CreditSlider authed={!!user} />
       </section>
 
       <section className="mx-auto max-w-7xl px-5 py-16">
