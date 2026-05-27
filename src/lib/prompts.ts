@@ -178,15 +178,20 @@ Return JSON: {
 
 For each: tie it to a specific moment, quote the EXACT line that anchors it, and explain why this clip survives the 3-second test (the first 3 seconds must hook a viewer who's never seen the channel).
 
-TRANSCRIPT:
+TIMESTAMPED CUES (use these to pick startSec/endSec precisely — each line is "[t=Ns] text"):
 """
-${context.transcript}
+${context.cues
+  .slice(0, 400)
+  .map((c) => `[t=${Math.round(c.start)}s] ${c.text}`)
+  .join("\n")}
 """
 
 Return JSON: {
   "sourceUrl":"${context.url}",
   "shorts":[{
-    "startHint":"approximate location in source",
+    "startHint":"approximate location like '5:23-5:48'",
+    "startSec":number — start time of the clip in seconds from the source video,
+    "endSec":number — end time of the clip in seconds (15-60s long, max 60),
     "spokenLine":"the verbatim line from the transcript",
     "angle":"the specific clip-worthy take",
     "hook":"the first 3-5 spoken words for the Short",
@@ -197,7 +202,9 @@ Return JSON: {
   }],
   "watchOutFor":["common Shorts mistake"],
   "nextStep":"recommended next move"
-}`,
+}
+
+IMPORTANT: startSec and endSec MUST be precise integers in seconds, NOT hh:mm:ss strings. End-start should be 15-60 seconds. Reference the transcript cue timestamps to pick exact boundaries.`,
       };
     }
 

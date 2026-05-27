@@ -3,7 +3,11 @@ import { createClient } from "@/lib/supabase/server";
 import { hasCredits, type PlanId } from "@/lib/plans";
 import { getClipMp4Url, extractClipSlug } from "@/lib/twitch-clip-mp4";
 import { transcribeUrl } from "@/lib/transcribe";
-import { createRender, getRenderStatus } from "@/lib/video-render";
+import {
+  createRender,
+  getRenderStatus,
+  type RenderOptions,
+} from "@/lib/video-render";
 import { rateLimit } from "@/lib/rate-limit";
 
 export const runtime = "nodejs";
@@ -21,6 +25,12 @@ interface ClipRequest {
   /** Clip length in seconds — Creatomate needs it up front. */
   durationSec: number;
 }
+
+/**
+ * Caption density passed through to Deepgram bucketing. 1 = single-word
+ * pop-out (TikTok style), 2 = small phrases (default), 3 = readable sentences.
+ */
+type WordsPerBlock = 1 | 2 | 3;
 
 /**
  * POST /api/clipper/render
@@ -47,7 +57,11 @@ export async function POST(req: Request) {
     );
   }
 
-  let body: { clips?: ClipRequest[] };
+  let body: {
+    clips?: ClipRequest[];
+    options?: RenderOptions;
+    wordsPerBlock?: WordsPerBlock;
+  };
   try {
     body = await req.json();
   } catch {
@@ -58,6 +72,13 @@ export async function POST(req: Request) {
   if (clips.length === 0) {
     return NextResponse.json({ error: "No clips to render." }, { status: 400 });
   }
+
+  // Per-batch render options (defaults apply if undefined). Validate
+  // wordsPerBlock since it's a narrow union.
+  const renderOptions = body.options ?? {};
+  const wpbRaw = body.wordsPerBlock;
+  const wordsPerBlock: WordsPerBlock =
+    wpbRaw === 1 || wpbRaw === 2 || wpbRaw === 3 ? wpbRaw : 2;
 
   const totalCost = COST_PER_CLIP * clips.length;
 
@@ -100,7 +121,7 @@ export async function POST(req: Request) {
         // Falls back to no captions, just the hook overlay.
         let captions: Awaited<ReturnType<typeof transcribeUrl>> = null;
         try {
-          captions = await transcribeUrl(mp4, 2);
+          captions = await transcribeUrl(mp4, wordsPerBlock);
         } catch (err) {
           console.warn(
             `[clipper/render] transcribe failed for ${slug}, rendering captionless:`,
@@ -113,6 +134,7 @@ export async function POST(req: Request) {
           hookText: clip.hookText || "",
           captions: captions?.captions ?? [],
           durationSec: clip.durationSec || 30,
+          options: renderOptions,
         });
 
         return {

@@ -6,9 +6,12 @@
  * Docs: https://creatomate.com/docs/api
  *
  * Architecture:
- *  - Source clip is cover-fit into 1080×1920 (9:16) with motion-cropped frame.
- *  - Top: bold 3-6 word hook overlay text, styled like a viral TikTok.
- *  - Bottom-middle: word-by-word captions from Deepgram, burned in.
+ *  - Source clip is laid into 1080×1920 (9:16) — either cover-cropped or
+ *    centered over a blurred copy of itself (cinema mode, default).
+ *  - Hook overlay sits in the top safe zone with a dark backplate.
+ *  - Captions from Deepgram render block-by-block with a snap-in animation.
+ *
+ * Everything visual is configurable via `RenderOptions` — see the type below.
  */
 import type { Caption } from "./transcribe";
 
@@ -24,6 +27,46 @@ export interface RenderJob {
   snapshotUrl?: string;
 }
 
+/**
+ * Visual customization the UI exposes to the user. All optional — sensible
+ * defaults below produce a clean TikTok-style short out of the box.
+ */
+export interface RenderOptions {
+  /** "bottom" = TikTok safe zone (default), "top" = newsticker, "middle" = MrBeast splash */
+  captionPosition?: "top" | "middle" | "bottom";
+  /** Caption fill color (hex string) — defaults to white. Accepts any hex. */
+  captionColor?: string;
+  /** Caption stroke / outline color */
+  captionStrokeColor?: string;
+  /** Caption font size in vmin. Defaults to 10 (medium). 7=small, 13=large, 16=huge. */
+  captionSizeVmin?: number;
+  /** "cinema" = clip centered over its own blurred copy (default); "cover" = naive crop */
+  background?: "cinema" | "cover";
+  /** Tint applied to the blurred background — null = match clip colors */
+  backgroundTint?: string | null;
+  /** Show the headline hook at the top. */
+  showHook?: boolean;
+  /** Where the hook lives if shown. */
+  hookPosition?: "top" | "bottom";
+  /** Trim source to a specific time window. Both in seconds, relative to original. */
+  trimStartSec?: number;
+  /** If set with trimStartSec, render only this much of the clip. */
+  trimDurationSec?: number;
+}
+
+const DEFAULTS: Required<RenderOptions> = {
+  captionPosition: "bottom",
+  captionColor: "#FFFFFF",
+  captionStrokeColor: "#000000",
+  captionSizeVmin: 10,
+  background: "cinema",
+  backgroundTint: null,
+  showHook: true,
+  hookPosition: "top",
+  trimStartSec: 0,
+  trimDurationSec: 0,
+};
+
 interface CreatomateResponse {
   id: string;
   status: RenderJob["status"];
@@ -34,46 +77,173 @@ interface CreatomateResponse {
 
 /**
  * Build the Creatomate JSON scene. Returns the request body for /v1/renders.
- *
- * The template is intentionally embedded (vs. saved in Creatomate's UI) so
- * everything is in code-reviewable in one place — if you want to tweak the
- * caption font or hook color, change it here.
+ * Tracks (z-order):
+ *   1: blurred background fill (if cinema mode)
+ *   2: actual source clip
+ *   3: hook overlay text
+ *   4: caption text blocks
  */
 function buildScene(opts: {
   sourceMp4: string;
   hookText: string;
   captions: Caption[];
   durationSec: number;
+  options: Required<RenderOptions>;
 }) {
-  // Caption tracks: one text element per caption block, each visible for the
-  // exact time window Deepgram returned. Creatomate handles up to ~200
-  // elements per render easily.
+  const o = opts.options;
+
+  // Caption Y positions in % from top
+  const captionY =
+    o.captionPosition === "top"
+      ? "20%"
+      : o.captionPosition === "middle"
+        ? "50%"
+        : "76%";
+
+  // Hook Y positions
+  const hookY = o.hookPosition === "bottom" ? "84%" : "12%";
+
+  // Per-block caption element with a snap-in animation on entry — the slight
+  // scale + fade is what makes TikTok captions feel "alive" vs. a static
+  // subtitle track.
+  const sizeVmin = Math.max(5, Math.min(20, o.captionSizeVmin));
   const captionElements = opts.captions.map((c, i) => ({
     name: `caption_${i}`,
     type: "text",
-    track: 3,
+    track: 4,
     time: c.start,
     duration: Math.max(0.1, c.end - c.start),
     x: "50%",
-    y: "72%",
-    width: "85%",
-    height: "16%",
+    y: captionY,
+    width: "88%",
+    height: "18%",
     x_anchor: "50%",
     y_anchor: "50%",
     text: c.text,
     font_family: "Inter",
     font_weight: "900",
-    font_size: "8 vmin",
-    font_size_minimum: "5 vmin",
-    fill_color: "#FFFFFF",
-    stroke_color: "#000000",
-    stroke_width: "1 vmin",
+    font_size: `${sizeVmin} vmin`,
+    font_size_minimum: `${Math.max(4, sizeVmin - 4)} vmin`,
+    fill_color: o.captionColor,
+    stroke_color: o.captionStrokeColor,
+    stroke_width: "1.2 vmin",
     text_alignment: "center",
     text_transform: "uppercase",
     line_height: "100%",
-    shadow_color: "rgba(0,0,0,0.6)",
-    shadow_blur: "2 vmin",
+    shadow_color: "rgba(0,0,0,0.7)",
+    shadow_blur: "2.4 vmin",
+    shadow_x: "0",
+    shadow_y: "0.4 vmin",
+    animations: [
+      {
+        time: 0,
+        duration: 0.18,
+        easing: "quadratic-out",
+        type: "scale",
+        scope: "element",
+        x_anchor: "50%",
+        y_anchor: "50%",
+        start_scale: "70%",
+        end_scale: "100%",
+      },
+      {
+        time: 0,
+        duration: 0.18,
+        easing: "linear",
+        type: "fade",
+      },
+    ],
   }));
+
+  // Common source-video properties used by both background and foreground
+  // copies. Volume is on the FOREGROUND copy only so we don't double-up audio.
+  //
+  // If the caller passed trimStartSec/trimDurationSec, we pass Creatomate's
+  // `trim_start` so the rendered clip starts at that offset in the source.
+  // Used by the "YouTube long-form → key moment shorts" pipeline.
+  const hasTrim = o.trimStartSec > 0 || o.trimDurationSec > 0;
+  const sourceCommon: Record<string, unknown> = {
+    source: opts.sourceMp4,
+    duration: opts.durationSec,
+    ...(hasTrim
+      ? {
+          trim_start: o.trimStartSec,
+          ...(o.trimDurationSec > 0 ? { trim_duration: o.trimDurationSec } : {}),
+        }
+      : {}),
+  };
+
+  // Background layer — blurred + dimmed copy filling the full 9:16 frame.
+  // Skipped in "cover" mode.
+  const backgroundElements =
+    o.background === "cinema"
+      ? [
+          {
+            name: "bg_blur",
+            type: "video",
+            track: 1,
+            ...sourceCommon,
+            fit: "cover",
+            volume: 0,
+            blur_radius: "12 vmin",
+            color_overlay: o.backgroundTint ?? "rgba(0,0,0,0.35)",
+          },
+        ]
+      : [];
+
+  // Foreground clip — in cinema mode, "contain" preserves the full 16:9 frame
+  // centered over the blurred bg. In cover mode it crops to 9:16 (legacy
+  // behavior; user opts in if they want it).
+  const foregroundFit = o.background === "cinema" ? "contain" : "cover";
+
+  const hookElement = o.showHook
+    ? [
+        {
+          name: "hook",
+          type: "text",
+          track: 3,
+          time: 0,
+          duration: opts.durationSec,
+          x: "50%",
+          y: hookY,
+          width: "92%",
+          height: "13%",
+          x_anchor: "50%",
+          y_anchor: "50%",
+          text: (opts.hookText || "").toUpperCase(),
+          font_family: "Inter",
+          font_weight: "900",
+          font_size: "10 vmin",
+          font_size_minimum: "6 vmin",
+          fill_color: "#FFFFFF",
+          stroke_color: "#000000",
+          stroke_width: "1 vmin",
+          text_alignment: "center",
+          line_height: "100%",
+          background_color: "rgba(0,0,0,0.7)",
+          background_x_padding: "6%",
+          background_y_padding: "15%",
+          background_border_radius: "8%",
+          shadow_color: "rgba(0,0,0,0.6)",
+          shadow_blur: "1.5 vmin",
+          animations: [
+            {
+              time: 0,
+              duration: 0.4,
+              easing: "quadratic-out",
+              type: "scale",
+              start_scale: "85%",
+              end_scale: "100%",
+            },
+            {
+              time: 0,
+              duration: 0.4,
+              type: "fade",
+            },
+          ],
+        },
+      ]
+    : [];
 
   return {
     output_format: "mp4",
@@ -82,43 +252,16 @@ function buildScene(opts: {
     height: 1920,
     duration: opts.durationSec,
     elements: [
-      // Source clip cover-fitted to 9:16
+      ...backgroundElements,
       {
         name: "source",
         type: "video",
-        track: 1,
-        source: opts.sourceMp4,
-        fit: "cover",
+        track: 2,
+        ...sourceCommon,
+        fit: foregroundFit,
         volume: 1,
       },
-      // Hook overlay — fixed top band, full duration
-      {
-        name: "hook",
-        type: "text",
-        track: 2,
-        time: 0,
-        duration: opts.durationSec,
-        x: "50%",
-        y: "12%",
-        width: "90%",
-        height: "14%",
-        x_anchor: "50%",
-        y_anchor: "50%",
-        text: opts.hookText.toUpperCase(),
-        font_family: "Inter",
-        font_weight: "900",
-        font_size: "9 vmin",
-        font_size_minimum: "6 vmin",
-        fill_color: "#FFFFFF",
-        stroke_color: "#000000",
-        stroke_width: "1.2 vmin",
-        text_alignment: "center",
-        line_height: "100%",
-        background_color: "rgba(0,0,0,0.55)",
-        background_x_padding: "5%",
-        background_y_padding: "10%",
-        background_border_radius: "4%",
-      },
+      ...hookElement,
       ...captionElements,
     ],
   };
@@ -133,6 +276,7 @@ export async function createRender(opts: {
   hookText: string;
   captions: Caption[];
   durationSec: number;
+  options?: RenderOptions;
 }): Promise<RenderJob> {
   const key = process.env.CREATOMATE_API_KEY;
   if (!key) {
@@ -141,13 +285,17 @@ export async function createRender(opts: {
     );
   }
 
+  const merged: Required<RenderOptions> = { ...DEFAULTS, ...(opts.options ?? {}) };
+
   const res = await fetch(CREATOMATE_ENDPOINT, {
     method: "POST",
     headers: {
       Authorization: `Bearer ${key}`,
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({ source: buildScene(opts) }),
+    body: JSON.stringify({
+      source: buildScene({ ...opts, options: merged }),
+    }),
   });
 
   if (!res.ok) {
@@ -155,8 +303,6 @@ export async function createRender(opts: {
     throw new Error(`Creatomate ${res.status}: ${text.slice(0, 300)}`);
   }
 
-  // Creatomate returns either an array (one item per render) or a single
-  // object; normalise.
   const data = await res.json();
   const job = (Array.isArray(data) ? data[0] : data) as CreatomateResponse;
   return {

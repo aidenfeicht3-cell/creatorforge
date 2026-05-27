@@ -673,68 +673,297 @@ function Ideas({ data }: { data: Any }) {
   );
 }
 
-/** New Shorts renderer — grounded in real transcript with timestamps. */
+/** Shorts renderer — grounded in real transcript with timestamps + per-moment render. */
 function Shorts({ data }: { data: Any }) {
   const shorts = [...((data.shorts as Any[]) || [])].sort(
     (a, b) => Number(b.viralScore || 0) - Number(a.viralScore || 0),
   );
   const sourceUrl = data.sourceUrl ? String(data.sourceUrl) : null;
 
+  // Render-all state: jobs are tracked by their original moment index.
+  const [jobs, setJobs] = useState<
+    Record<number, {
+      status: "idle" | "starting" | "rendering" | "succeeded" | "failed";
+      renderId?: string;
+      url?: string;
+      error?: string;
+    }>
+  >({});
+  const [bulkLoading, setBulkLoading] = useState(false);
+
+  // Poll any in-flight renders every 3s.
+  useEffect(() => {
+    const inFlight = Object.entries(jobs).filter(
+      ([, j]) => j.status === "rendering" && j.renderId,
+    );
+    if (inFlight.length === 0) return;
+    const ids = inFlight.map(([, j]) => j.renderId!).join(",");
+    let cancelled = false;
+    const tick = async () => {
+      try {
+        const res = await fetch(`/api/clipper/render?ids=${ids}`, {
+          cache: "no-store",
+        });
+        const data = await res.json();
+        if (cancelled) return;
+        const byId = new Map<string, Any>();
+        for (const j of data.jobs ?? []) byId.set(j.id, j);
+        setJobs((prev) => {
+          const next = { ...prev };
+          for (const [idx, j] of inFlight) {
+            const fresh = byId.get(j.renderId!);
+            if (!fresh) continue;
+            if (fresh.status === "succeeded") {
+              next[Number(idx)] = {
+                status: "succeeded",
+                renderId: j.renderId,
+                url: String(fresh.url || ""),
+              };
+            } else if (fresh.status === "failed") {
+              next[Number(idx)] = {
+                status: "failed",
+                renderId: j.renderId,
+                error: fresh.error || "Failed",
+              };
+            }
+          }
+          return next;
+        });
+      } catch (err) {
+        console.error("[shorts] poll failed:", err);
+      }
+    };
+    const id = setInterval(tick, 3000);
+    tick();
+    return () => {
+      cancelled = true;
+      clearInterval(id);
+    };
+  }, [jobs]);
+
+  async function renderOne(i: number, s: Any) {
+    if (!sourceUrl) return;
+    if (s.startSec == null || s.endSec == null) {
+      toast.error("This short is missing precise timestamps — regenerate the analysis.");
+      return;
+    }
+    setJobs((prev) => ({ ...prev, [i]: { status: "starting" } }));
+    try {
+      const res = await fetch("/api/shorts/render", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          youtubeUrl: sourceUrl,
+          moments: [
+            {
+              startSec: Number(s.startSec),
+              endSec: Number(s.endSec),
+              hookText: String(s.hook || s.caption || ""),
+            },
+          ],
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Render failed");
+      const job = (data.jobs ?? [])[0];
+      if (!job) throw new Error("No job returned");
+      if (job.error) throw new Error(job.error);
+      if (job.url && job.status === "succeeded") {
+        setJobs((p) => ({ ...p, [i]: { status: "succeeded", url: job.url, renderId: job.renderId } }));
+      } else {
+        setJobs((p) => ({ ...p, [i]: { status: "rendering", renderId: job.renderId } }));
+      }
+      toast.success(`Rendering short ${i + 1}. ${data.creditsCharged} credits.`);
+    } catch (err) {
+      setJobs((p) => ({
+        ...p,
+        [i]: { status: "failed", error: err instanceof Error ? err.message : "Failed" },
+      }));
+      toast.error(err instanceof Error ? err.message : "Render failed");
+    }
+  }
+
+  async function renderAll() {
+    if (!sourceUrl) return;
+    const moments = shorts
+      .map((s, i) => ({ s, i }))
+      .filter(({ s }) => s.startSec != null && s.endSec != null)
+      .slice(0, 5);
+    if (moments.length === 0) {
+      toast.error("No moments have precise timestamps.");
+      return;
+    }
+    setBulkLoading(true);
+    try {
+      const res = await fetch("/api/shorts/render", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          youtubeUrl: sourceUrl,
+          moments: moments.map(({ s }) => ({
+            startSec: Number(s.startSec),
+            endSec: Number(s.endSec),
+            hookText: String(s.hook || s.caption || ""),
+          })),
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Render failed");
+      const newJobs: typeof jobs = {};
+      (data.jobs ?? []).forEach((job: Any, k: number) => {
+        const idx = moments[k]?.i;
+        if (idx == null) return;
+        if (job.error) {
+          newJobs[idx] = { status: "failed", error: String(job.error) };
+        } else if (job.url && job.status === "succeeded") {
+          newJobs[idx] = { status: "succeeded", url: String(job.url), renderId: String(job.renderId) };
+        } else {
+          newJobs[idx] = { status: "rendering", renderId: String(job.renderId) };
+        }
+      });
+      setJobs((p) => ({ ...p, ...newJobs }));
+      toast.success(
+        `Rendering ${moments.length} shorts. ${data.creditsCharged} credits.`,
+      );
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Render failed");
+    } finally {
+      setBulkLoading(false);
+    }
+  }
+
+  const renderableCount = shorts.filter(
+    (s) => s.startSec != null && s.endSec != null,
+  ).length;
+
   return (
     <div className="space-y-4">
       {sourceUrl && (
-        <div className="flex items-center justify-between">
+        <div className="flex flex-wrap items-center justify-between gap-3">
           <Label>Analyzed from real transcript</Label>
-          <SourceBar url={sourceUrl} />
+          <div className="flex items-center gap-2">
+            {renderableCount > 0 && (
+              <button
+                type="button"
+                onClick={renderAll}
+                disabled={bulkLoading}
+                className="inline-flex items-center gap-1.5 rounded-full bg-brand-500 px-4 py-1.5 text-xs font-semibold text-white hover:bg-brand-600 disabled:opacity-50"
+              >
+                {bulkLoading ? (
+                  <Loader2 className="h-3 w-3 animate-spin" />
+                ) : (
+                  <Download className="h-3 w-3" />
+                )}
+                Render all {renderableCount} as 9:16 shorts ({renderableCount * 10} credits)
+              </button>
+            )}
+            <SourceBar url={sourceUrl} />
+          </div>
         </div>
       )}
       <div className="grid gap-4 sm:grid-cols-2">
-        {shorts.map((s, i) => (
-          <Card
-            key={i}
-            header={
-              <>
-                <span className="font-semibold">
-                  Short #{i + 1}
-                  <span className="ml-2 font-mono text-xs text-muted">
-                    {String(s.startHint)}
+        {shorts.map((s, i) => {
+          const job = jobs[i];
+          return (
+            <Card
+              key={i}
+              header={
+                <>
+                  <span className="font-semibold">
+                    Short #{i + 1}
+                    <span className="ml-2 font-mono text-xs text-muted">
+                      {String(s.startHint)}
+                    </span>
                   </span>
-                </span>
-                <Badge score={Number(s.viralScore)}>
-                  Viral {String(s.viralScore)}
-                </Badge>
-              </>
-            }
-          >
-            <div className="space-y-3 text-sm">
-              <div className="rounded-lg border-l-2 border-brand-400 bg-bg-soft px-3 py-2 italic text-muted">
-                "{String(s.spokenLine)}"
-              </div>
-              <p>
-                <Label>Angle</Label>
-                <br />
-                {String(s.angle)}
-              </p>
-              <p>
-                <Label>Hook (new)</Label>
-                <br />“{String(s.hook)}”
-              </p>
-              <div className="rounded-lg bg-surface px-3 py-2">
-                <Label>On-screen caption</Label>
-                <div className="mt-0.5 font-semibold">
-                  {String(s.caption)}
+                  <Badge score={Number(s.viralScore)}>
+                    Viral {String(s.viralScore)}
+                  </Badge>
+                </>
+              }
+            >
+              <div className="space-y-3 text-sm">
+                <div className="rounded-lg border-l-2 border-brand-400 bg-bg-soft px-3 py-2 italic text-muted">
+                  "{String(s.spokenLine)}"
                 </div>
+                <p>
+                  <Label>Angle</Label>
+                  <br />
+                  {String(s.angle)}
+                </p>
+                <p>
+                  <Label>Hook (new)</Label>
+                  <br />“{String(s.hook)}”
+                </p>
+                <div className="rounded-lg bg-surface px-3 py-2">
+                  <Label>On-screen caption</Label>
+                  <div className="mt-0.5 font-semibold">
+                    {String(s.caption)}
+                  </div>
+                </div>
+                <p className="text-muted">
+                  <Label>Cut</Label> {String(s.clipDirection)}
+                </p>
+
+                {/* Render UI */}
+                {sourceUrl && s.startSec != null && s.endSec != null && (
+                  <div className="rounded-lg border border-brand-500/30 bg-gradient-to-br from-brand-50 to-surface p-3">
+                    {(!job || job.status === "idle") && (
+                      <button
+                        type="button"
+                        onClick={() => renderOne(i, s)}
+                        className="inline-flex w-full items-center justify-center gap-1.5 rounded-full bg-brand-500 px-3 py-1.5 text-xs font-semibold text-white hover:bg-brand-600"
+                      >
+                        <Download className="h-3 w-3" />
+                        Render this short (10 credits)
+                      </button>
+                    )}
+                    {(job?.status === "starting" || job?.status === "rendering") && (
+                      <div className="flex items-center gap-2 text-xs text-muted">
+                        <Loader2 className="h-3 w-3 animate-spin text-brand-600" />
+                        {job.status === "starting"
+                          ? "Kicking off render…"
+                          : "Rendering 9:16 with captions…"}
+                      </div>
+                    )}
+                    {job?.status === "succeeded" && job.url && (
+                      <div className="space-y-2">
+                        <video
+                          src={job.url}
+                          controls
+                          playsInline
+                          className="mx-auto block aspect-[9/16] h-auto w-full max-w-[200px] rounded-lg bg-black"
+                        />
+                        <a
+                          href={job.url}
+                          download={`short-${i + 1}.mp4`}
+                          className="inline-flex w-full items-center justify-center gap-1.5 rounded-full bg-brand-500 px-3 py-1.5 text-xs font-semibold text-white hover:bg-brand-600"
+                        >
+                          <Download className="h-3 w-3" />
+                          Download MP4
+                        </a>
+                      </div>
+                    )}
+                    {job?.status === "failed" && (
+                      <div className="space-y-1">
+                        <div className="text-xs font-medium text-rose-700">
+                          Failed
+                        </div>
+                        <p className="text-[11px] text-muted">{job.error}</p>
+                        <button
+                          type="button"
+                          onClick={() => renderOne(i, s)}
+                          className="text-xs text-brand-600 hover:underline"
+                        >
+                          Try again
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
-              <p className="text-muted">
-                <Label>Cut</Label> {String(s.clipDirection)}
-              </p>
-              <p className="text-xs text-muted">
-                <span className="text-brand-600">Why it'll travel:</span>{" "}
-                {String(s.reason)}
-              </p>
-            </div>
-          </Card>
-        ))}
+            </Card>
+          );
+        })}
       </div>
     </div>
   );

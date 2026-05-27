@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <!--
+    CreatorForge AI logo.
+    Concept: a flame anvil — "Creator + Forge". The C forms a half-ring, an
+    upward chevron sparks out of it. Sized as a square PFP that reads cleanly
+    at 32px (favicon) all the way up to 1024px (social profile).
+  -->
+  <defs>
+    <linearGradient id="brand" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#8B5CF6"/>
+      <stop offset="55%" stop-color="#6366F1"/>
+      <stop offset="100%" stop-color="#2563EB"/>
+    </linearGradient>
+    <linearGradient id="spark" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#FBBF24"/>
+      <stop offset="100%" stop-color="#F97316"/>
+    </linearGradient>
+    <filter id="glow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="8" result="b"/>
+      <feMerge>
+        <feMergeNode in="b"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Rounded square background -->
+  <rect x="0" y="0" width="512" height="512" rx="120" fill="url(#brand)"/>
+
+  <!-- Subtle inner shine -->
+  <rect x="0" y="0" width="512" height="256" rx="120" fill="white" opacity="0.07"/>
+
+  <!-- C-ring (the "Creator" half) -->
+  <g filter="url(#glow)">
+    <path
+      d="M 256 96
+         a 160 160 0 1 0 113 273
+         l -45 -45
+         a 96 96 0 1 1 0 -184
+         l 45 -44
+         A 160 160 0 0 0 256 96 z"
+      fill="#FFFFFF"
+      opacity="0.96"
+    />
+  </g>
+
+  <!-- Spark / chevron (the "Forge" half) -->
+  <path
+    d="M 296 200
+       L 380 256
+       L 296 312
+       L 320 256
+       Z"
+    fill="url(#spark)"
+  />
+
+  <!-- Tiny ember accent -->
+  <circle cx="402" cy="180" r="10" fill="url(#spark)" opacity="0.85"/>
+  <circle cx="416" cy="156" r="5" fill="#FBBF24" opacity="0.7"/>
+</svg>

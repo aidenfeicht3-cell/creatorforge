@@ -19,6 +19,7 @@
     "@anthropic-ai/sdk": "^0.39.0",
     "@google/generative-ai": "^0.21.0",
     "youtube-transcript": "^1.2.1",
+    "@distube/ytdl-core": "^4.16.4",
     "stripe": "^17.6.0",
     "motion": "^11.18.2",
     "lucide-react": "^0.474.0",

@@ -48,15 +48,27 @@ interface PreRenderJob {
   error?: string;
 }
 
+/** Settings forwarded from the packager so per-clip render respects user choices. */
+interface ClipRenderSettings {
+  captionPosition: "top" | "middle" | "bottom";
+  captionColor: string;
+  captionSizeVmin: number;
+  background: "cinema" | "cover";
+  showHook: boolean;
+  wordsPerBlock: 1 | 2 | 3;
+}
+
 /** Editor for a single Twitch clip — preview, edit overlay, export cover image. */
 export function ClipEditor({
   clip,
   parentDomain,
   initialRender,
+  renderSettings,
 }: {
   clip: ClipPackage;
   parentDomain: string;
   initialRender?: unknown;
+  renderSettings?: ClipRenderSettings;
 }) {
   const [editing, setEditing] = useState(false);
   const [hookOverlay, setHookOverlay] = useState(clip.hookOverlay);
@@ -143,6 +155,18 @@ export function ClipEditor({
               durationSec: Math.max(5, Math.round(clip.duration)),
             },
           ],
+          // Pass through any settings the packager forwarded; server applies
+          // its own defaults for anything missing.
+          options: renderSettings
+            ? {
+                captionPosition: renderSettings.captionPosition,
+                captionColor: renderSettings.captionColor,
+                captionSizeVmin: renderSettings.captionSizeVmin,
+                background: renderSettings.background,
+                showHook: renderSettings.showHook,
+              }
+            : undefined,
+          wordsPerBlock: renderSettings?.wordsPerBlock,
         }),
       });
       const data = await res.json();

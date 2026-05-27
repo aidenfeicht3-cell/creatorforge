@@ -9,6 +9,8 @@ import {
   Check,
   Film,
   Flame,
+  Sliders,
+  ChevronDown,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -44,6 +46,45 @@ interface ClipPackage {
 
 const MAX_SELECTION = 5;
 
+/**
+ * Render-style settings that the user can tweak before kicking off a batch.
+ * Mirrors `RenderOptions` in src/lib/video-render.ts plus a `wordsPerBlock`
+ * field that controls Deepgram's caption density.
+ */
+interface RenderSettings {
+  captionPosition: "top" | "middle" | "bottom";
+  captionColor: string;
+  captionSizeVmin: number;
+  background: "cinema" | "cover";
+  showHook: boolean;
+  wordsPerBlock: 1 | 2 | 3;
+}
+
+const DEFAULT_SETTINGS: RenderSettings = {
+  captionPosition: "bottom",
+  captionColor: "#FFFFFF",
+  captionSizeVmin: 10,
+  background: "cinema",
+  showHook: true,
+  wordsPerBlock: 2,
+};
+
+const CAPTION_SIZES: { label: string; vmin: number }[] = [
+  { label: "S", vmin: 7 },
+  { label: "M", vmin: 10 },
+  { label: "L", vmin: 13 },
+  { label: "XL", vmin: 16 },
+];
+
+// Caption color presets — labelled options vs free-form hex picker since
+// only ~3 colors actually look good against burned-in stroked captions.
+const CAPTION_COLORS = [
+  { hex: "#FFFFFF", label: "White" },
+  { hex: "#FFE600", label: "Yellow" },
+  { hex: "#9B59FF", label: "Purple" },
+  { hex: "#22FF88", label: "Green" },
+] as const;
+
 // Filter tab definitions — what each tab includes from the recencyTier field.
 const TABS = [
   { key: "24h", label: "Hot · 24h", icon: Flame, tiers: new Set(["24h"]) },
@@ -64,6 +105,8 @@ export function ClipPackager({
   const [packages, setPackages] = useState<ClipPackage[] | null>(null);
   const [packageLoading, setPackageLoading] = useState(false);
   const [renderLoading, setRenderLoading] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [settings, setSettings] = useState<RenderSettings>(DEFAULT_SETTINGS);
   const [tab, setTab] = useState<TabKey>(() => {
     // Auto-pick the first tab that actually has clips so the user doesn't land
     // on "Hot 24h" and see nothing for a streamer who was offline today.
@@ -201,6 +244,14 @@ export function ClipPackager({
             hookText: quickHook(c.title),
             durationSec: Math.max(5, Math.round(c.duration)),
           })),
+          options: {
+            captionPosition: settings.captionPosition,
+            captionColor: settings.captionColor,
+            captionSizeVmin: settings.captionSizeVmin,
+            background: settings.background,
+            showHook: settings.showHook,
+          },
+          wordsPerBlock: settings.wordsPerBlock,
         }),
       });
       const data = await res.json();
@@ -267,6 +318,7 @@ export function ClipPackager({
               initialRender={
                 (p as ClipPackage & { __preRender?: unknown }).__preRender
               }
+              renderSettings={settings}
             />
           ))}
         </div>
@@ -306,6 +358,174 @@ export function ClipPackager({
             </button>
           );
         })}
+      </div>
+
+      {/* Render style settings (collapsible) */}
+      <div className="overflow-hidden rounded-2xl border border-border bg-surface">
+        <button
+          type="button"
+          onClick={() => setSettingsOpen((v) => !v)}
+          className="flex w-full items-center justify-between gap-3 px-5 py-3 text-left hover:bg-bg-soft"
+        >
+          <div className="flex items-center gap-2">
+            <Sliders className="h-4 w-4 text-brand-600" />
+            <span className="text-sm font-semibold">Render style</span>
+            <span className="font-mono text-[11px] text-muted">
+              {settings.captionPosition} · {settings.wordsPerBlock}-word ·{" "}
+              {settings.captionSizeVmin <= 7
+                ? "S"
+                : settings.captionSizeVmin <= 10
+                  ? "M"
+                  : settings.captionSizeVmin <= 13
+                    ? "L"
+                    : "XL"}{" "}
+              · {settings.background === "cinema" ? "cinema bg" : "cover"}
+              {settings.showHook ? " · hook on" : " · hook off"}
+            </span>
+          </div>
+          <ChevronDown
+            className={`h-4 w-4 text-muted transition-transform ${
+              settingsOpen ? "rotate-180" : ""
+            }`}
+          />
+        </button>
+        {settingsOpen && (
+          <div className="grid gap-4 border-t border-border bg-bg-soft p-5 sm:grid-cols-2 lg:grid-cols-3">
+            {/* Caption position */}
+            <SettingGroup label="Caption position">
+              {(["top", "middle", "bottom"] as const).map((pos) => (
+                <Pill
+                  key={pos}
+                  active={settings.captionPosition === pos}
+                  onClick={() =>
+                    setSettings((s) => ({ ...s, captionPosition: pos }))
+                  }
+                >
+                  {pos}
+                </Pill>
+              ))}
+            </SettingGroup>
+
+            {/* Caption density */}
+            <SettingGroup label="Caption density">
+              {([1, 2, 3] as const).map((n) => (
+                <Pill
+                  key={n}
+                  active={settings.wordsPerBlock === n}
+                  onClick={() =>
+                    setSettings((s) => ({ ...s, wordsPerBlock: n }))
+                  }
+                  preserveCase
+                >
+                  {n} word{n === 1 ? "" : "s"}
+                  {n === 1 && " · TikTok"}
+                  {n === 3 && " · readable"}
+                </Pill>
+              ))}
+            </SettingGroup>
+
+            {/* Caption color — presets + free hex picker */}
+            <SettingGroup label="Caption color">
+              {CAPTION_COLORS.map((c) => (
+                <button
+                  key={c.hex}
+                  type="button"
+                  onClick={() =>
+                    setSettings((s) => ({ ...s, captionColor: c.hex }))
+                  }
+                  className={`flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs transition-colors ${
+                    settings.captionColor.toUpperCase() === c.hex
+                      ? "border-brand-500 bg-brand-50 text-brand-700"
+                      : "border-border bg-surface text-muted hover:text-ink"
+                  }`}
+                >
+                  <span
+                    className="inline-block h-3 w-3 rounded-full border border-black/20"
+                    style={{ backgroundColor: c.hex }}
+                  />
+                  {c.label}
+                </button>
+              ))}
+              <label
+                className="inline-flex cursor-pointer items-center gap-1.5 rounded-full border border-border bg-surface px-2.5 py-1 text-xs hover:border-brand-500/40"
+                title="Pick any color"
+              >
+                <input
+                  type="color"
+                  value={settings.captionColor}
+                  onChange={(e) =>
+                    setSettings((s) => ({ ...s, captionColor: e.target.value }))
+                  }
+                  className="h-4 w-4 cursor-pointer rounded border-0 p-0"
+                />
+                <span className="font-mono text-[10px]">custom</span>
+              </label>
+            </SettingGroup>
+
+            {/* Caption size */}
+            <SettingGroup label="Caption size">
+              {CAPTION_SIZES.map((sz) => (
+                <Pill
+                  key={sz.label}
+                  active={settings.captionSizeVmin === sz.vmin}
+                  onClick={() =>
+                    setSettings((s) => ({ ...s, captionSizeVmin: sz.vmin }))
+                  }
+                  preserveCase
+                >
+                  {sz.label}
+                </Pill>
+              ))}
+            </SettingGroup>
+
+            {/* Background */}
+            <SettingGroup label="Background">
+              <Pill
+                active={settings.background === "cinema"}
+                onClick={() =>
+                  setSettings((s) => ({ ...s, background: "cinema" }))
+                }
+              >
+                Cinema blur
+              </Pill>
+              <Pill
+                active={settings.background === "cover"}
+                onClick={() =>
+                  setSettings((s) => ({ ...s, background: "cover" }))
+                }
+              >
+                Crop to fit
+              </Pill>
+            </SettingGroup>
+
+            {/* Hook overlay toggle */}
+            <SettingGroup label="Hook overlay">
+              <Pill
+                active={settings.showHook}
+                onClick={() => setSettings((s) => ({ ...s, showHook: true }))}
+              >
+                On
+              </Pill>
+              <Pill
+                active={!settings.showHook}
+                onClick={() => setSettings((s) => ({ ...s, showHook: false }))}
+              >
+                Off
+              </Pill>
+            </SettingGroup>
+
+            {/* Reset */}
+            <SettingGroup label="Defaults">
+              <button
+                type="button"
+                onClick={() => setSettings(DEFAULT_SETTINGS)}
+                className="rounded-full border border-border bg-surface px-3 py-1 text-xs font-medium text-muted hover:text-ink"
+              >
+                Reset to defaults
+              </button>
+            </SettingGroup>
+          </div>
+        )}
       </div>
 
       {/* Sticky action bar */}
@@ -444,6 +664,54 @@ export function ClipPackager({
         </div>
       )}
     </>
+  );
+}
+
+/** Small labelled section used inside the settings panel. */
+function SettingGroup({
+  label,
+  children,
+}: {
+  label: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div>
+      <div className="mb-1.5 font-mono text-[10px] uppercase tracking-wider text-muted">
+        {label}
+      </div>
+      <div className="flex flex-wrap gap-1.5">{children}</div>
+    </div>
+  );
+}
+
+/** Toggleable pill button used throughout the settings panel. */
+function Pill({
+  active,
+  onClick,
+  children,
+  preserveCase = false,
+}: {
+  active: boolean;
+  onClick: () => void;
+  children: React.ReactNode;
+  /** Set true to skip the `capitalize` Tailwind class — e.g. for "TikTok". */
+  preserveCase?: boolean;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`rounded-full border px-3 py-1 text-xs font-medium transition-colors ${
+        preserveCase ? "" : "capitalize"
+      } ${
+        active
+          ? "border-brand-500 bg-brand-50 text-brand-700"
+          : "border-border bg-surface text-muted hover:text-ink"
+      }`}
+    >
+      {children}
+    </button>
   );
 }
 
