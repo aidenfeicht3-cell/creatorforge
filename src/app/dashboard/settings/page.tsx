@@ -3,8 +3,14 @@ import Link from "next/link";
 import { Sparkles, Zap, CreditCard } from "lucide-react";
 import { buttonClasses } from "@/components/ui/button";
 import { SettingsForm } from "@/components/dashboard/settings-form";
+import { FeedbackPanel } from "@/components/dashboard/feedback-panel";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { getAccount } from "@/lib/account";
+
+// Single source of truth for the admin email (keep in sync with /api/feedback).
+const ADMIN_EMAIL = (
+  process.env.ADMIN_EMAIL || "aidenfeicht345@gmail.com"
+).toLowerCase();
 
 export const metadata: Metadata = { title: "Settings" };
 
@@ -92,6 +98,10 @@ export default async function SettingsPage() {
         initialName={profile.display_name ?? ""}
         email={profile.email}
         referralCode={profile.referral_code}
+      />
+
+      <FeedbackPanel
+        isAdmin={(profile.email || "").toLowerCase() === ADMIN_EMAIL}
       />
     </div>
   );

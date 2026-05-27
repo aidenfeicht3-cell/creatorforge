@@ -107,6 +107,20 @@ create table if not exists public.workshop_upvotes (
   primary key (channel_id, user_id)
 );
 
+-- ─── feedback ───────────────────────────────────────────────────
+-- Users submit feedback from /dashboard/settings. Only the admin email
+-- (server-side gated, see /api/feedback) can read all rows. Users see only
+-- their own via RLS so they can confirm their submission landed.
+create table if not exists public.feedback (
+  id          uuid primary key default gen_random_uuid(),
+  user_id     uuid references public.profiles(id) on delete set null,
+  user_email  text,
+  message     text not null check (length(message) between 3 and 4000),
+  created_at  timestamptz not null default now()
+);
+create index if not exists feedback_recent_idx
+  on public.feedback (created_at desc);
+
 -- ─── waitlist ───────────────────────────────────────────────────
 -- Anyone (signed in or not) can join. On signup, their bonus is auto-granted.
 create table if not exists public.waitlist (
@@ -136,6 +150,19 @@ alter table public.waitlist          enable row level security;
 alter table public.workshop_channels enable row level security;
 alter table public.workshop_tips     enable row level security;
 alter table public.workshop_upvotes  enable row level security;
+alter table public.feedback          enable row level security;
+
+-- Feedback: signed-in users can INSERT their own row + SELECT their own
+-- (so they can see "✓ submitted" feedback in their history). Cross-user
+-- SELECT (for the admin view) is handled in the API route using the
+-- service-role key + email check, not by RLS.
+drop policy if exists "feedback_insert_own" on public.feedback;
+create policy "feedback_insert_own" on public.feedback
+  for insert with check (auth.uid() = user_id);
+
+drop policy if exists "feedback_select_own" on public.feedback;
+create policy "feedback_select_own" on public.feedback
+  for select using (auth.uid() = user_id);
 
 -- Workshop channels: anyone signed in reads; owner inserts/deletes
 drop policy if exists "workshop_channels_read" on public.workshop_channels;

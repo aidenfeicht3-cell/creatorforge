@@ -40,8 +40,16 @@ export interface RenderOptions {
   captionStrokeColor?: string;
   /** Caption font size in vmin. Defaults to 10 (medium). 7=small, 13=large, 16=huge. */
   captionSizeVmin?: number;
-  /** "cinema" = clip centered over its own blurred copy (default); "cover" = naive crop */
-  background?: "cinema" | "cover";
+  /**
+   * Layout for the source clip in the 9:16 frame:
+   *  - "cinema" (default): clip centered over its own blurred copy
+   *  - "cover": naive crop to 9:16
+   *  - "gaming": facecam region (right side of source) on top, gameplay on
+   *    bottom — the classic Twitch/streamer split. Assumes facecam lives in
+   *    the right ~30% of the source frame. BETA: may need tweaking for
+   *    streamers whose facecam isn't in the standard position.
+   */
+  background?: "cinema" | "cover" | "gaming";
   /** Tint applied to the blurred background — null = match clip colors */
   backgroundTint?: string | null;
   /** Show the headline hook at the top. */
@@ -52,6 +60,12 @@ export interface RenderOptions {
   trimStartSec?: number;
   /** If set with trimStartSec, render only this much of the clip. */
   trimDurationSec?: number;
+  /**
+   * Fine-tune caption Y position: -20 = shift up 20% of frame, +20 = shift
+   * down. Combined with captionPosition's base preset. Lets users move
+   * captions without leaving their preferred preset.
+   */
+  captionYOffsetPct?: number;
 }
 
 const DEFAULTS: Required<RenderOptions> = {
@@ -65,6 +79,7 @@ const DEFAULTS: Required<RenderOptions> = {
   hookPosition: "top",
   trimStartSec: 0,
   trimDurationSec: 0,
+  captionYOffsetPct: 0,
 };
 
 interface CreatomateResponse {
@@ -92,13 +107,18 @@ function buildScene(opts: {
 }) {
   const o = opts.options;
 
-  // Caption Y positions in % from top
-  const captionY =
+  // Caption Y position: base preset + user offset, clamped to safe bounds.
+  const captionYBase =
     o.captionPosition === "top"
-      ? "20%"
+      ? 20
       : o.captionPosition === "middle"
-        ? "50%"
-        : "76%";
+        ? 50
+        : 76;
+  const captionYFinal = Math.max(
+    8,
+    Math.min(92, captionYBase + (o.captionYOffsetPct || 0)),
+  );
+  const captionY = `${captionYFinal}%`;
 
   // Hook Y positions
   const hookY = o.hookPosition === "bottom" ? "84%" : "12%";
@@ -173,8 +193,17 @@ function buildScene(opts: {
       : {}),
   };
 
-  // Background layer — blurred + dimmed copy filling the full 9:16 frame.
-  // Skipped in "cover" mode.
+  // Background + foreground source layers vary by layout mode.
+  //
+  // - "cinema": blurred copy fills 9:16 + foreground source in "contain" fit
+  //   over the top (preserves the full 16:9 image, no awkward face-cropping)
+  // - "cover":  single source cover-fit (legacy 9:16 crop)
+  // - "gaming": split the 9:16 into top + bottom halves. Top shows the
+  //   facecam region (right ~30% of source). Bottom shows the gameplay
+  //   region (left ~70% of source). Uses composition elements so each
+  //   half can clip independently. BETA — assumes facecam is right-side.
+  const isGaming = o.background === "gaming";
+
   const backgroundElements =
     o.background === "cinema"
       ? [
@@ -191,9 +220,6 @@ function buildScene(opts: {
         ]
       : [];
 
-  // Foreground clip — in cinema mode, "contain" preserves the full 16:9 frame
-  // centered over the blurred bg. In cover mode it crops to 9:16 (legacy
-  // behavior; user opts in if they want it).
   const foregroundFit = o.background === "cinema" ? "contain" : "cover";
 
   const hookElement = o.showHook
@@ -245,6 +271,93 @@ function buildScene(opts: {
       ]
     : [];
 
+  // Gaming layout: two stacked composition elements clipping different
+  // regions of the source. Skips the regular foreground source layer.
+  const gamingElements = isGaming
+    ? [
+        // TOP HALF — facecam (right portion of source)
+        {
+          name: "facecam_pane",
+          type: "composition",
+          track: 2,
+          time: 0,
+          duration: opts.durationSec,
+          x: "0%",
+          y: "0%",
+          x_anchor: "0%",
+          y_anchor: "0%",
+          width: "100%",
+          height: "50%",
+          clip: true, // children clipped to bounds
+          elements: [
+            {
+              name: "facecam_src",
+              type: "video",
+              ...sourceCommon,
+              // Oversize + offset so only the bottom-right corner of the
+              // source falls inside the visible window. 333% width × 333%
+              // height; positioned with bottom-right of video at bottom-right
+              // of container.
+              x: "100%",
+              y: "100%",
+              x_anchor: "100%",
+              y_anchor: "100%",
+              width: "333%",
+              height: "333%",
+              fit: "cover",
+              volume: 0, // audio comes from the gameplay layer only
+            },
+          ],
+        },
+        // BOTTOM HALF — gameplay (left portion of source)
+        {
+          name: "gameplay_pane",
+          type: "composition",
+          track: 3,
+          time: 0,
+          duration: opts.durationSec,
+          x: "0%",
+          y: "50%",
+          x_anchor: "0%",
+          y_anchor: "0%",
+          width: "100%",
+          height: "50%",
+          clip: true,
+          elements: [
+            {
+              name: "gameplay_src",
+              type: "video",
+              ...sourceCommon,
+              // Slight zoom so the left side of the source fills the bottom
+              // pane. 143% gives the gameplay a generous frame while
+              // pushing the facecam corner out of view.
+              x: "0%",
+              y: "50%",
+              x_anchor: "0%",
+              y_anchor: "50%",
+              width: "143%",
+              height: "143%",
+              fit: "cover",
+              volume: 1,
+            },
+          ],
+        },
+      ]
+    : [];
+
+  const standardForeground = isGaming
+    ? []
+    : [
+        {
+          name: "source",
+          type: "video",
+          track: 2,
+          ...sourceCommon,
+          fit: foregroundFit,
+          volume: 1,
+        },
+      ];
+
   return {
     output_format: "mp4",
     frame_rate: 30,
@@ -253,14 +366,8 @@ function buildScene(opts: {
     duration: opts.durationSec,
     elements: [
       ...backgroundElements,
-      {
-        name: "source",
-        type: "video",
-        track: 2,
-        ...sourceCommon,
-        fit: foregroundFit,
-        volume: 1,
-      },
+      ...standardForeground,
+      ...gamingElements,
       ...hookElement,
       ...captionElements,
     ],

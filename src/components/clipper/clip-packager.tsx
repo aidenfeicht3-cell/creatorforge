@@ -55,7 +55,8 @@ interface RenderSettings {
   captionPosition: "top" | "middle" | "bottom";
   captionColor: string;
   captionSizeVmin: number;
-  background: "cinema" | "cover";
+  captionYOffsetPct: number;
+  background: "cinema" | "cover" | "gaming";
   showHook: boolean;
   wordsPerBlock: 1 | 2 | 3;
 }
@@ -64,6 +65,7 @@ const DEFAULT_SETTINGS: RenderSettings = {
   captionPosition: "bottom",
   captionColor: "#FFFFFF",
   captionSizeVmin: 10,
+  captionYOffsetPct: 0,
   background: "cinema",
   showHook: true,
   wordsPerBlock: 2,
@@ -248,6 +250,7 @@ export function ClipPackager({
             captionPosition: settings.captionPosition,
             captionColor: settings.captionColor,
             captionSizeVmin: settings.captionSizeVmin,
+            captionYOffsetPct: settings.captionYOffsetPct,
             background: settings.background,
             showHook: settings.showHook,
           },
@@ -478,8 +481,8 @@ export function ClipPackager({
               ))}
             </SettingGroup>
 
-            {/* Background */}
-            <SettingGroup label="Background">
+            {/* Background / layout */}
+            <SettingGroup label="Layout">
               <Pill
                 active={settings.background === "cinema"}
                 onClick={() =>
@@ -496,6 +499,32 @@ export function ClipPackager({
               >
                 Crop to fit
               </Pill>
+              <Pill
+                active={settings.background === "gaming"}
+                onClick={() =>
+                  setSettings((s) => ({ ...s, background: "gaming" }))
+                }
+              >
+                Gaming (facecam top)
+              </Pill>
+            </SettingGroup>
+
+            {/* Caption fine Y-offset */}
+            <SettingGroup label={`Caption Y offset (${settings.captionYOffsetPct > 0 ? "+" : ""}${settings.captionYOffsetPct})`}>
+              <input
+                type="range"
+                min={-20}
+                max={20}
+                step={1}
+                value={settings.captionYOffsetPct}
+                onChange={(e) =>
+                  setSettings((s) => ({
+                    ...s,
+                    captionYOffsetPct: Number(e.target.value),
+                  }))
+                }
+                className="h-1 w-full cursor-pointer appearance-none rounded-full bg-border accent-brand-500"
+              />
             </SettingGroup>
 
             {/* Hook overlay toggle */}

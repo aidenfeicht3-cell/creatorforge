@@ -53,7 +53,8 @@ interface ClipRenderSettings {
   captionPosition: "top" | "middle" | "bottom";
   captionColor: string;
   captionSizeVmin: number;
-  background: "cinema" | "cover";
+  captionYOffsetPct: number;
+  background: "cinema" | "cover" | "gaming";
   showHook: boolean;
   wordsPerBlock: 1 | 2 | 3;
 }
@@ -162,6 +163,7 @@ export function ClipEditor({
                 captionPosition: renderSettings.captionPosition,
                 captionColor: renderSettings.captionColor,
                 captionSizeVmin: renderSettings.captionSizeVmin,
+                captionYOffsetPct: renderSettings.captionYOffsetPct,
                 background: renderSettings.background,
                 showHook: renderSettings.showHook,
               }
