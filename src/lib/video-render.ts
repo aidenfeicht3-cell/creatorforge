@@ -68,11 +68,14 @@ export interface RenderOptions {
   captionYOffsetPct?: number;
 }
 
+// Defaults tuned to match OpusClip / Submagic visual density: small but
+// legible captions that don't dominate the frame, modest hook overlay that
+// fits a single line for most 5-7 word headlines.
 const DEFAULTS: Required<RenderOptions> = {
   captionPosition: "bottom",
   captionColor: "#FFFFFF",
   captionStrokeColor: "#000000",
-  captionSizeVmin: 10,
+  captionSizeVmin: 7,
   background: "cinema",
   backgroundTint: null,
   showHook: true,
@@ -233,22 +236,24 @@ function buildScene(opts: {
           x: "50%",
           y: hookY,
           width: "92%",
-          height: "13%",
+          height: "9%",
           x_anchor: "50%",
           y_anchor: "50%",
           text: (opts.hookText || "").toUpperCase(),
           font_family: "Inter",
           font_weight: "900",
-          font_size: "10 vmin",
-          font_size_minimum: "6 vmin",
+          // Sized to keep most 4-6 word hooks on a SINGLE line at 1080×1920.
+          // Auto-shrinks if needed via font_size_minimum.
+          font_size: "7 vmin",
+          font_size_minimum: "4.5 vmin",
           fill_color: "#FFFFFF",
           stroke_color: "#000000",
-          stroke_width: "1 vmin",
+          stroke_width: "0.8 vmin",
           text_alignment: "center",
-          line_height: "100%",
+          line_height: "105%",
           background_color: "rgba(0,0,0,0.7)",
-          background_x_padding: "6%",
-          background_y_padding: "15%",
+          background_x_padding: "5%",
+          background_y_padding: "12%",
           background_border_radius: "8%",
           shadow_color: "rgba(0,0,0,0.6)",
           shadow_blur: "1.5 vmin",

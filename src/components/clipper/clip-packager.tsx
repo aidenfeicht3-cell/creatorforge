@@ -107,7 +107,9 @@ export function ClipPackager({
   const [packages, setPackages] = useState<ClipPackage[] | null>(null);
   const [packageLoading, setPackageLoading] = useState(false);
   const [renderLoading, setRenderLoading] = useState(false);
-  const [settingsOpen, setSettingsOpen] = useState(false);
+  // Open by default — burying the customization options behind a collapsed
+  // accordion was the #1 reason users thought "there's no customization."
+  const [settingsOpen, setSettingsOpen] = useState(true);
   const [settings, setSettings] = useState<RenderSettings>(DEFAULT_SETTINGS);
   const [tab, setTab] = useState<TabKey>(() => {
     // Auto-pick the first tab that actually has clips so the user doesn't land
