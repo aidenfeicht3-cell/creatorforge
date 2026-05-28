@@ -24,12 +24,11 @@ export function LogoMark({
       width={size}
       height={size}
       aria-hidden="true"
-      // text-brand-500 sets the currentColor, which the path inherits — so
-      // the wedge tracks whatever the credit-bar / accent color is in the
-      // Tailwind theme. Background stays a constant dark plate.
+      // No background — just the bare wedge. Color tracks the Tailwind
+      // brand-500 token via currentColor, so the mark matches the credit
+      // bar / accents wherever it's rendered.
       className={cn("text-brand-500", className)}
     >
-      <rect width="32" height="32" rx="7" fill="#0E0B1A" />
       <path
         d="M 18.5 6
            L 9 17.5
