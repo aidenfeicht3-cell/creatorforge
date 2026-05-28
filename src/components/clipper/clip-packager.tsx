@@ -62,12 +62,12 @@ interface RenderSettings {
 }
 
 const DEFAULT_SETTINGS: RenderSettings = {
-  captionPosition: "bottom",
+  captionPosition: "bottom", // bottom-centered
   captionColor: "#FFFFFF",
-  captionSizeVmin: 10,
+  captionSizeVmin: 5, // halved from 10 — smaller, OpusClip-style readability
   captionYOffsetPct: 0,
   background: "cinema",
-  showHook: true,
+  showHook: false, // hook is opt-in now, users flip it on if they want it
   wordsPerBlock: 2,
 };
 

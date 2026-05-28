@@ -72,13 +72,13 @@ export interface RenderOptions {
 // legible captions that don't dominate the frame, modest hook overlay that
 // fits a single line for most 5-7 word headlines.
 const DEFAULTS: Required<RenderOptions> = {
-  captionPosition: "bottom",
+  captionPosition: "bottom", // bottom-centered (x=50% in scene builder)
   captionColor: "#FFFFFF",
   captionStrokeColor: "#000000",
-  captionSizeVmin: 7,
+  captionSizeVmin: 5, // half the previous default — small, OpusClip-style
   background: "cinema",
   backgroundTint: null,
-  showHook: true,
+  showHook: false, // hook overlay is opt-in; users toggle on if they want it
   hookPosition: "top",
   trimStartSec: 0,
   trimDurationSec: 0,
