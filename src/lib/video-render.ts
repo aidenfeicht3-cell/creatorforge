@@ -276,92 +276,27 @@ function buildScene(opts: {
       ]
     : [];
 
-  // Gaming layout: two stacked composition elements clipping different
-  // regions of the source. Skips the regular foreground source layer.
-  const gamingElements = isGaming
-    ? [
-        // TOP HALF — facecam (right portion of source)
-        {
-          name: "facecam_pane",
-          type: "composition",
-          track: 2,
-          time: 0,
-          duration: opts.durationSec,
-          x: "0%",
-          y: "0%",
-          x_anchor: "0%",
-          y_anchor: "0%",
-          width: "100%",
-          height: "50%",
-          clip: true, // children clipped to bounds
-          elements: [
-            {
-              name: "facecam_src",
-              type: "video",
-              ...sourceCommon,
-              // Oversize + offset so only the bottom-right corner of the
-              // source falls inside the visible window. 333% width × 333%
-              // height; positioned with bottom-right of video at bottom-right
-              // of container.
-              x: "100%",
-              y: "100%",
-              x_anchor: "100%",
-              y_anchor: "100%",
-              width: "333%",
-              height: "333%",
-              fit: "cover",
-              volume: 0, // audio comes from the gameplay layer only
-            },
-          ],
-        },
-        // BOTTOM HALF — gameplay (left portion of source)
-        {
-          name: "gameplay_pane",
-          type: "composition",
-          track: 3,
-          time: 0,
-          duration: opts.durationSec,
-          x: "0%",
-          y: "50%",
-          x_anchor: "0%",
-          y_anchor: "0%",
-          width: "100%",
-          height: "50%",
-          clip: true,
-          elements: [
-            {
-              name: "gameplay_src",
-              type: "video",
-              ...sourceCommon,
-              // Slight zoom so the left side of the source fills the bottom
-              // pane. 143% gives the gameplay a generous frame while
-              // pushing the facecam corner out of view.
-              x: "0%",
-              y: "50%",
-              x_anchor: "0%",
-              y_anchor: "50%",
-              width: "143%",
-              height: "143%",
-              fit: "cover",
-              volume: 1,
-            },
-          ],
-        },
-      ]
-    : [];
+  // Gaming layout: was a composition-based top/bottom split, but Creatomate
+  // didn't honor the clip property and the bottom pane rendered black.
+  // Temporary fallback: render the source full-frame cover-fit (same as
+  // "cover" mode). Captions/hook still work. True facecam-split needs a
+  // different approach — likely face-detect + Creatomate `crop` syntax.
+  const gamingElements: never[] = [];
 
-  const standardForeground = isGaming
-    ? []
-    : [
-        {
-          name: "source",
-          type: "video",
-          track: 2,
-          ...sourceCommon,
-          fit: foregroundFit,
-          volume: 1,
-        },
-      ];
+  // Always emit a foreground source video. For "gaming" we fall back to
+  // cover-fit (same as cover mode) so renders don't break while a proper
+  // split-screen impl is pending.
+  const effectiveFit = isGaming ? "cover" : foregroundFit;
+  const standardForeground = [
+    {
+      name: "source",
+      type: "video",
+      track: 2,
+      ...sourceCommon,
+      fit: effectiveFit,
+      volume: 1,
+    },
+  ];
 
   return {
     output_format: "mp4",
