@@ -1,11 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
   <!--
-    CreatorForge mark — the simplest version.
-    Two elements only: dark navy plate + amber play wedge.
-    Matches the rest of the brand system in brand-marks.tsx without the
-    extra glow / spark / gradient flourishes. Reads cleanly at 16px.
+    Snipd mark — a sharp lightning-cut wedge.
+    Reads as both "play / next" and "snip / cut motion."
+    Two shapes only: near-black plate + electric-lime cut.
   -->
-  <rect width="512" height="512" rx="112" fill="#0B1322"/>
-  <path d="M 168 140 L 380 256 L 168 372 Z" fill="#FBBF24"/>
+  <rect width="512" height="512" rx="112" fill="#0A0A0A"/>
+  <path
+    d="M 300 96
+       L 144 280
+       L 232 280
+       L 184 416
+       L 376 224
+       L 280 224 Z"
+    fill="#B6FF1A"
+  />
 </svg>

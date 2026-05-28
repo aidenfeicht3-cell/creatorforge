@@ -31,7 +31,7 @@ export function ExportMenu({
     return () => document.removeEventListener("mousedown", onClick);
   }, [open]);
 
-  const filenameBase = `creatorforge-${tool}-${Date.now()}`;
+  const filenameBase = `snipd-${tool}-${Date.now()}`;
   const md = () => resultToMarkdown(tool, data, watermark);
   const json = () => JSON.stringify(data, null, 2);
 

@@ -1,8 +1,8 @@
 {
-  "name": "creatorforge-ai",
+  "name": "snipd",
   "version": "0.1.0",
   "private": true,
-  "description": "CreatorForge AI - the all-in-one AI toolkit for YouTubers and content creators.",
+  "description": "Snipd - the AI that turns long-form videos into ready-to-post 9:16 shorts in one click.",
   "scripts": {
     "dev": "next dev",
     "build": "next build",

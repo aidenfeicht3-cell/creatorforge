@@ -7,7 +7,7 @@ import { WaitlistForm } from "@/components/waitlist-form";
 export const metadata: Metadata = {
   title: "Join the waitlist",
   description:
-    "Get bonus credits or a custom promo code when CreatorForge launches. The AI tool that actually reads YouTube.",
+    "Get bonus credits or a custom promo code when Snipd launches. The AI that turns YouTube videos into 9:16 shorts in one click.",
 };
 
 /**

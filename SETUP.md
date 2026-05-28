@@ -1,4 +1,4 @@
-# CreatorForge AI — Setup Guide
+# Snipd — Setup Guide
 
 Everything you need to get this app live on Vercel with the best AI stack for each role.
 

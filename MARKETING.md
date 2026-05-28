@@ -1,4 +1,4 @@
-# CreatorForge AI — Organic Growth Plan to First 100 Users
+# Snipd — Organic Growth Plan to First 100 Users
 
 **Goal:** First paying customer in 30 days, 100 paying users in 90 days. Zero ad spend.
 
@@ -26,11 +26,11 @@ If someone reads it once they should be able to tell their friend what you do.
 ### 2. Set up tracked socials
 | Platform | Handle | Why it matters |
 |---|---|---|
-| TikTok | `@creatorforgeai` | Where your customers live. **#1 channel.** |
-| X / Twitter | `@creatorforgeai` | Where developers + agencies discover tools |
+| TikTok | `@snipd` | Where your customers live. **#1 channel.** |
+| X / Twitter | `@snipd` | Where developers + agencies discover tools |
 | YouTube | `Creator Forge AI` | SEO + long-form tutorials |
-| Reddit | `u/creatorforge` | Distribution in `r/NewTubers`, `r/CreatorServices`, `r/SideProject` |
-| Threads / IG | `@creatorforgeai` | Same posts as TikTok, double dipping |
+| Reddit | `u/snipd` | Distribution in `r/NewTubers`, `r/CreatorServices`, `r/SideProject` |
+| Threads / IG | `@snipd` | Same posts as TikTok, double dipping |
 
 Use the same PFP + bio everywhere. Brand assets live at `/brand` on your site.
 
@@ -62,7 +62,7 @@ TikTok is your golden funnel. **Post 3 videos a day for 30 days minimum.** That'
 - Hook in the first second: the *result*, not the process
 
 **Pillar 3 — Comparison / controversy** (15%)
-- "I tested CreatorForge vs OpusClip vs Submagic. Results were not what I expected."
+- "I tested Snipd vs OpusClip vs Submagic. Results were not what I expected."
 - "Why I stopped paying $50/mo for OpusClip" (you're cheaper)
 - Be FAIR — name competitors, don't lie. Audiences smell it.
 
@@ -238,7 +238,7 @@ This single funnel will 3x your free→paid conversion.
 
 These features convert users into your marketers:
 
-1. **Watermark on free exports** — "Made with CreatorForge.ai" lower-third → every shared TikTok is a billboard
+1. **Watermark on free exports** — "Made with Snipd.ai" lower-third → every shared TikTok is a billboard
 2. **Public share pages** — every generation gets a public URL with OG image → people share results, SEO + acquisition
 3. **Two-sided referrals** — both sides get 50 bonus credits → friction-free invites
 4. **Trending creator leaderboard** — public page showing top users → social proof + ego incentive

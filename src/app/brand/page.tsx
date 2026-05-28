@@ -96,7 +96,7 @@ export default function BrandPage() {
           <li>
             Paste your waitlist link as your bio URL:{" "}
             <code className="rounded bg-surface px-1.5 py-0.5 font-mono text-xs">
-              creatorforge.com/waitlist
+              snipd.ai/waitlist
             </code>{" "}
             (use your real domain).
           </li>
@@ -132,7 +132,7 @@ function LogoCard({ logo }: { logo: LogoBlock }) {
         const dl = URL.createObjectURL(blob);
         const a = document.createElement("a");
         a.href = dl;
-        a.download = `creatorforge-${logo.id}.png`;
+        a.download = `snipd-${logo.id}.png`;
         a.click();
         URL.revokeObjectURL(dl);
       }, "image/png");
@@ -151,7 +151,7 @@ function LogoCard({ logo }: { logo: LogoBlock }) {
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `creatorforge-${logo.id}.svg`;
+    a.download = `snipd-${logo.id}.svg`;
     a.click();
     URL.revokeObjectURL(url);
   }

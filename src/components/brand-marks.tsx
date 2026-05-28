@@ -1,10 +1,35 @@
 /**
- * Brand-mark SVGs sized for TikTok/social. Used on the /brand download page.
- * Each component renders an SVG at high resolution; the brand page wraps them
- * in a canvas-to-PNG download helper.
+ * Snipd brand-mark SVGs. Used on the /brand download page.
+ * Visual system: near-black plate (#0A0A0A) + electric-lime cut (#B6FF1A).
+ * Lowercase wordmark in the spirit of `linear` / `vercel` / `stripe`.
  */
 
-/** 1024×1024 dark profile-picture variant — navy bg, glowing amber blade. */
+const BG = "#0A0A0A";
+const LIME = "#B6FF1A";
+
+/** Shared cut-wedge path, scaled into a 1024×1024 viewport from a 512 center. */
+function CutWedge({ scale = 1, cx = 512, cy = 512 }: { scale?: number; cx?: number; cy?: number }) {
+  // The geometry below is calibrated for a viewport centered on (512, 512).
+  // Apply translation + scale via transform so the same shape can be reused
+  // across PFP / square / wide variants without recomputing every coord.
+  const tx = cx - 512;
+  const ty = cy - 512;
+  return (
+    <g transform={`translate(${tx} ${ty}) scale(${scale})`} transform-origin="512 512">
+      <path
+        d="M 600 192
+           L 288 560
+           L 464 560
+           L 368 832
+           L 752 448
+           L 560 448 Z"
+        fill={LIME}
+      />
+    </g>
+  );
+}
+
+/** 1024×1024 dark profile-picture variant — solid plate + bold lime cut. */
 export function PFPSvg() {
   return (
     <svg
@@ -13,61 +38,13 @@ export function PFPSvg() {
       height="100%"
       xmlns="http://www.w3.org/2000/svg"
     >
-      <defs>
-        <linearGradient id="pfp-bg" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stopColor="#142447" />
-          <stop offset="100%" stopColor="#06080f" />
-        </linearGradient>
-        <linearGradient id="pfp-blade" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stopColor="#ffffff" />
-          <stop offset="55%" stopColor="#fbbf24" />
-          <stop offset="100%" stopColor="#d97706" />
-        </linearGradient>
-        <radialGradient id="pfp-glow" cx="0.7" cy="0.3" r="0.7">
-          <stop offset="0%" stopColor="rgba(59, 130, 246, 0.35)" />
-          <stop offset="100%" stopColor="rgba(59, 130, 246, 0)" />
-        </radialGradient>
-        <filter id="pfp-blade-glow">
-          <feGaussianBlur stdDeviation="14" result="blur" />
-          <feMerge>
-            <feMergeNode in="blur" />
-            <feMergeNode in="SourceGraphic" />
-          </feMerge>
-        </filter>
-      </defs>
-
-      {/* Background */}
-      <rect width="1024" height="1024" fill="url(#pfp-bg)" />
-      <rect width="1024" height="1024" fill="url(#pfp-glow)" />
-
-      {/* Forge blade — play arrow with internal notch */}
-      <g transform="translate(512 512)">
-        <path
-          d="M -160 -240 L 240 0 L -160 240 L -80 0 Z"
-          fill="url(#pfp-blade)"
-          filter="url(#pfp-blade-glow)"
-        />
-      </g>
-
-      {/* Spark accent */}
-      <circle cx="780" cy="230" r="22" fill="#fbbf24" />
-      <circle cx="780" cy="230" r="44" fill="rgba(251, 191, 36, 0.2)" />
-
-      {/* Subtle inner border */}
-      <rect
-        x="3"
-        y="3"
-        width="1018"
-        height="1018"
-        rx="0"
-        fill="none"
-        stroke="rgba(255,255,255,0.04)"
-      />
+      <rect width="1024" height="1024" fill={BG} />
+      <CutWedge />
     </svg>
   );
 }
 
-/** 1024×1024 square mark with "CF" wordmark below — for posts. */
+/** 1024×1024 square mark with "snipd" wordmark below — for posts. */
 export function MarkSquareSvg() {
   return (
     <svg
@@ -76,53 +53,37 @@ export function MarkSquareSvg() {
       height="100%"
       xmlns="http://www.w3.org/2000/svg"
     >
-      <defs>
-        <linearGradient id="ms-bg" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#1a2a4d" />
-          <stop offset="100%" stopColor="#0c1322" />
-        </linearGradient>
-        <linearGradient id="ms-blade" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stopColor="#ffffff" />
-          <stop offset="100%" stopColor="#fbbf24" />
-        </linearGradient>
-      </defs>
+      <rect width="1024" height="1024" fill={BG} />
 
-      <rect width="1024" height="1024" fill="url(#ms-bg)" />
-
-      {/* Blade */}
-      <g transform="translate(512 410)">
-        <path
-          d="M -130 -190 L 200 0 L -130 190 L -60 0 Z"
-          fill="url(#ms-blade)"
-        />
+      {/* Cut, lifted toward the top half */}
+      <g transform="translate(0 -120)">
+        <CutWedge scale={0.85} />
       </g>
-
-      <circle cx="700" cy="245" r="16" fill="#fbbf24" />
 
       {/* Wordmark */}
       <text
         x="512"
-        y="780"
+        y="800"
         fontFamily="Inter, system-ui, sans-serif"
-        fontWeight="700"
-        fontSize="92"
-        letterSpacing="-2"
+        fontWeight="900"
+        fontSize="180"
+        letterSpacing="-6"
         textAnchor="middle"
-        fill="#ffffff"
+        fill="#FFFFFF"
       >
-        CreatorForge
+        snip<tspan fill={LIME}>d</tspan>
       </text>
       <text
         x="512"
-        y="850"
+        y="880"
         fontFamily="JetBrains Mono, monospace"
         fontWeight="500"
-        fontSize="32"
-        letterSpacing="6"
+        fontSize="34"
+        letterSpacing="8"
         textAnchor="middle"
-        fill="#fbbf24"
+        fill="rgba(255,255,255,0.55)"
       >
-        AI · FOR · YOUTUBE
+        AI · CLIPS · IN · ONE · CLICK
       </text>
     </svg>
   );
@@ -137,49 +98,34 @@ export function WordmarkWideSvg() {
       height="100%"
       xmlns="http://www.w3.org/2000/svg"
     >
-      <defs>
-        <linearGradient id="ww-bg" x1="0" y1="0" x2="1" y2="0">
-          <stop offset="0%" stopColor="#0c1322" />
-          <stop offset="100%" stopColor="#1a2a4d" />
-        </linearGradient>
-        <linearGradient id="ww-blade" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stopColor="#ffffff" />
-          <stop offset="100%" stopColor="#fbbf24" />
-        </linearGradient>
-      </defs>
+      <rect width="2048" height="512" fill={BG} />
 
-      <rect width="2048" height="512" fill="url(#ww-bg)" />
-
-      {/* Blade */}
-      <g transform="translate(280 256)">
-        <path
-          d="M -80 -120 L 130 0 L -80 120 L -35 0 Z"
-          fill="url(#ww-blade)"
-        />
+      {/* Cut on the left side */}
+      <g transform="translate(-180 -240) scale(0.55)">
+        <CutWedge />
       </g>
-      <circle cx="430" cy="170" r="10" fill="#fbbf24" />
 
       <text
-        x="500"
-        y="255"
+        x="460"
+        y="270"
         fontFamily="Inter, system-ui, sans-serif"
-        fontWeight="700"
-        fontSize="140"
-        letterSpacing="-4"
-        fill="#ffffff"
+        fontWeight="900"
+        fontSize="220"
+        letterSpacing="-10"
+        fill="#FFFFFF"
       >
-        CreatorForge
+        snip<tspan fill={LIME}>d</tspan>
       </text>
       <text
-        x="500"
-        y="335"
+        x="460"
+        y="350"
         fontFamily="JetBrains Mono, monospace"
         fontWeight="500"
         fontSize="38"
         letterSpacing="8"
-        fill="#fbbf24"
+        fill="rgba(255,255,255,0.55)"
       >
-        THE AI THAT READS YOUTUBE
+        THE AI THAT CLIPS YOUR YOUTUBE
       </text>
     </svg>
   );

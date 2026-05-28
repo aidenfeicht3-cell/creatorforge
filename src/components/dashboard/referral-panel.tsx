@@ -24,8 +24,8 @@ export function ReferralPanel({ code }: { code: string }) {
   async function share() {
     if (navigator.share) {
       await navigator.share({
-        title: "CreatorForge AI",
-        text: "Grow your YouTube channel faster with AI — join me on CreatorForge:",
+        title: "Snipd",
+        text: "Turn your long-form videos into TikTok-ready shorts with AI — join me on Snipd:",
         url: link,
       });
     } else {

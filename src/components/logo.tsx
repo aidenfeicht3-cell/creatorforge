@@ -1,9 +1,9 @@
 import { cn } from "@/lib/utils";
 
 /**
- * Custom CreatorForge mark — an angular play-arrow with an internal notch.
- * Reads as both a "play" symbol and a forged blade. Distinct from the usual
- * Lucide flame/sparkle every AI product uses.
+ * Snipd mark — a sharp lightning-cut wedge.
+ * Reads as both "play / next" and "snip / cut motion." Two shapes only,
+ * sized for the in-app header at 32px and scales up cleanly.
  */
 export function LogoMark({
   size = 32,
@@ -20,39 +20,21 @@ export function LogoMark({
       aria-hidden="true"
       className={className}
     >
-      <defs>
-        <linearGradient id="cf-mark-bg" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stopColor="#0c1322" />
-          <stop offset="100%" stopColor="#1d4ed8" />
-        </linearGradient>
-        <linearGradient id="cf-mark-blade" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stopColor="#ffffff" />
-          <stop offset="100%" stopColor="#fbbf24" />
-        </linearGradient>
-      </defs>
-
-      {/* Outer rounded plate */}
-      <rect
-        width="32"
-        height="32"
-        rx="7"
-        fill="url(#cf-mark-bg)"
-        stroke="rgba(59, 130, 246, 0.4)"
-      />
-
-      {/* Forged play-blade with internal notch */}
+      <rect width="32" height="32" rx="7" fill="#0A0A0A" />
       <path
-        d="M11 8 L23 16 L11 24 L14 16 Z"
-        fill="url(#cf-mark-blade)"
+        d="M 18.5 6
+           L 9 17.5
+           L 14 17.5
+           L 11.5 26
+           L 23.5 14
+           L 17.5 14 Z"
+        fill="#B6FF1A"
       />
-
-      {/* Spark accent */}
-      <circle cx="24" cy="9" r="1.4" fill="#f59e0b" />
     </svg>
   );
 }
 
-/** Full logo with wordmark. */
+/** Full wordmark — used in the site header. Lowercase, geometric, with the lime cut accent. */
 export function Logo({
   className,
   size = 32,
@@ -61,10 +43,10 @@ export function Logo({
   size?: number;
 }) {
   return (
-    <span className={cn("inline-flex items-center gap-2.5 font-semibold", className)}>
+    <span className={cn("inline-flex items-center gap-2 font-semibold", className)}>
       <LogoMark size={size} />
-      <span className="text-base tracking-tight">
-        Creator<span className="text-brand-300">Forge</span>
+      <span className="text-base tracking-tight lowercase">
+        snip<span className="text-[#B6FF1A]">d</span>
       </span>
     </span>
   );

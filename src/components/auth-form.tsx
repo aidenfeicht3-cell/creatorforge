@@ -44,7 +44,7 @@ export function AuthForm({ mode }: { mode: "login" | "signup" }) {
           setVerifySent(true);
           return;
         }
-        toast.success("Welcome to CreatorForge!");
+        toast.success("Welcome to Snipd!");
         router.push(next);
         router.refresh();
       } else {

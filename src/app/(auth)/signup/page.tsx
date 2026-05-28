@@ -51,7 +51,7 @@ export default async function SignupPage({
             We're invite-only right now.
           </h1>
           <p className="mt-2 text-sm text-muted">
-            CreatorForge is in private build. Drop your email on the
+            Snipd is in private build. Drop your email on the
             waitlist — free users get bonus credits, paid intenders get a
             promo code for their first month.
           </p>

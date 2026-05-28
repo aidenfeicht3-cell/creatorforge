@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils";
 const FAQS = [
   {
     q: "Do I need any design or scriptwriting skills?",
-    a: "None at all. You type your video topic, pick a style, and CreatorForge does the heavy lifting — thumbnails concepts, titles, hooks, scripts and SEO are generated in seconds.",
+    a: "None at all. You type your video topic, pick a style, and Snipd does the heavy lifting — thumbnails concepts, titles, hooks, scripts and SEO are generated in seconds.",
   },
   {
     q: "Which AI model powers the tools?",
@@ -23,7 +23,7 @@ const FAQS = [
   },
   {
     q: "Will the thumbnails be ready-to-upload images?",
-    a: "CreatorForge generates detailed thumbnail concepts — composition, overlay text, color psychology and emotional angles — plus a preview brief your editor (or you) can execute fast.",
+    a: "Snipd generates detailed thumbnail concepts — composition, overlay text, color psychology and emotional angles — plus a preview brief your editor (or you) can execute fast.",
   },
   {
     q: "Is there a free plan?",

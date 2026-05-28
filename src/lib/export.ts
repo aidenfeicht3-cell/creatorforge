@@ -171,7 +171,7 @@ export function resultToMarkdown(
 
   if (watermark) {
     lines.push(
-      "\n---\n_Generated with CreatorForge AI · https://creatorforge.ai_",
+      "\n---\n_Generated with Snipd · https://snipd.ai_",
     );
   }
   return lines.join("\n");

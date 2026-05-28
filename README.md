@@ -1,4 +1,4 @@
-# CreatorForge AI
+# Snipd
 
 The all-in-one AI toolkit for YouTubers and content creators. One premium
 dashboard to generate thumbnails, viral titles, hooks, scripts, SEO, Shorts,
@@ -12,7 +12,7 @@ Built with **Next.js 15 · TypeScript · Tailwind v4 · Supabase · Claude (Anth
 ## 1. Folder structure
 
 ```
-creatorforge-ai/
+snipd/
 ├── src/
 │   ├── app/
 │   │   ├── layout.tsx                 Root layout (dark theme, toaster)

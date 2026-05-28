@@ -1,5 +1,5 @@
 -- ════════════════════════════════════════════════════════════════
--- CreatorForge AI — Database schema
+-- Snipd — Database schema
 -- Run this in the Supabase SQL Editor (Dashboard ▸ SQL ▸ New query).
 -- Safe to re-run: uses IF NOT EXISTS / ADD VALUE IF NOT EXISTS throughout.
 -- ════════════════════════════════════════════════════════════════

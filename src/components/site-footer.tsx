@@ -57,7 +57,7 @@ export function SiteFooter() {
           ))}
         </div>
         <div className="mt-12 border-t border-border/60 pt-6 text-sm text-muted">
-          © {new Date().getFullYear()} CreatorForge AI. Built for creators.
+          © {new Date().getFullYear()} Snipd. Built for creators.
         </div>
       </div>
     </footer>

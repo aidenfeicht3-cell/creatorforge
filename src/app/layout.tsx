@@ -27,20 +27,20 @@ const serif = Instrument_Serif({
 export const metadata: Metadata = {
   metadataBase: new URL(SITE),
   title: {
-    default: "CreatorForge AI — the AI that actually reads YouTube",
-    template: "%s · CreatorForge AI",
+    default: "Snipd — the AI that clips your YouTube into 9:16 shorts",
+    template: "%s · Snipd",
   },
   description:
-    "I got sick of generic AI tools for creators so I built one that fetches real YouTube transcripts and reverse-engineers why videos go viral.",
+    "Paste any YouTube URL — Snipd finds the 5 best moments, renders them as 9:16 shorts with burned-in captions, and hands you the MP4s. Built for solo creators who don't want to edit.",
   openGraph: {
-    title: "CreatorForge AI",
+    title: "Snipd",
     description:
-      "The AI tool that actually reads YouTube. Built by a creator, for creators.",
+      "Paste a YouTube link → get 5 TikTok-ready clips with captions in 60 seconds.",
     url: SITE,
-    siteName: "CreatorForge AI",
+    siteName: "Snipd",
     type: "website",
   },
-  twitter: { card: "summary_large_image", title: "CreatorForge AI" },
+  twitter: { card: "summary_large_image", title: "Snipd" },
 };
 
 export default function RootLayout({
