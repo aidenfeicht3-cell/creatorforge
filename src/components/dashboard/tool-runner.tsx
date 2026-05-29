@@ -11,6 +11,8 @@ import {
   Database,
   Lightbulb,
   Check,
+  Lock,
+  Plug,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -18,6 +20,7 @@ import { ResultSkeleton } from "@/components/ui/skeleton";
 import { ToolIcon } from "@/components/ui/icon";
 import { ResultView } from "@/components/dashboard/result-view";
 import { ExportMenu } from "@/components/dashboard/export-menu";
+import { cn } from "@/lib/utils";
 import type { ToolDef } from "@/lib/tools";
 
 type Result = Record<string, unknown>;
@@ -25,6 +28,8 @@ type Result = Record<string, unknown>;
 export interface ToolRunnerProps {
   tool: ToolDef;
   locked: boolean;
+  /** True when the tool needs a paid plan and the user is on free. */
+  paidLocked?: boolean;
   cleanExports: boolean;
   canSaveVideo: boolean;
   /** Pre-fill values from the user's saved channel profile. */
@@ -140,6 +145,29 @@ const DELIVERABLES: Record<string, string[]> = {
     "Voiceover-ready intro line (works with the Voice tool)",
     "5-step publish guide for CapCut",
   ],
+  videogen: [
+    "Watermark-free AI video clip",
+    "Your aspect ratio (9:16 / 16:9 / 1:1)",
+    "Download-ready MP4",
+    "Great for B-roll, intros, and faceless content",
+  ],
+  voiceover: [
+    "Natural studio-quality narration",
+    "The voice + pace you pick",
+    "Download-ready audio file",
+    "Pairs with the Script Writer",
+  ],
+  watermark: [
+    "Clean, watermark-free export",
+    "Works on video and images you own",
+    "Download-ready file",
+  ],
+  captions: [
+    "Word-by-word styled captions",
+    "Add new captions or remove burned-in text",
+    "TikTok / karaoke / minimal styles",
+    "Same caption engine as the Clipper",
+  ],
 };
 
 const TIPS: Record<string, string> = {
@@ -163,11 +191,16 @@ const TIPS: Record<string, string> = {
   nichebend: "Be specific about what YOU bring. Vague inputs = generic pivots.",
   audit: "Use your real handle — we pull live YouTube data to ground the analysis in your actual videos.",
   clipper: "Long-form content with captions works best. Podcasts and interviews clip way harder than vlogs.",
+  videogen: "Describe motion and lighting, not just the subject — 'slow dolly-in, golden hour' beats 'a city.'",
+  voiceover: "Write the way people talk. Short sentences read more naturally than long ones.",
+  watermark: "Only remove watermarks from footage you own or have licensed.",
+  captions: "Add mode works on any clip with clear speech. Remove mode is for burned-in text only.",
 };
 
 export function ToolRunner({
   tool,
   locked,
+  paidLocked = false,
   cleanExports,
   canSaveVideo,
   memoryDefaults = {},
@@ -204,8 +237,10 @@ export function ToolRunner({
     setInputs((prev) => ({ ...prev, [name]: value }));
   }
 
+  const blocked = locked || paidLocked;
+
   async function run() {
-    if (locked) {
+    if (blocked) {
       router.push("/pricing");
       return;
     }
@@ -268,8 +303,13 @@ export function ToolRunner({
   const deliverables = DELIVERABLES[tool.slug] ?? [];
   const tip = TIPS[tool.slug];
 
+  // Show the "what you'll get" + demo panel only before the first run. Once the
+  // user generates (or it's loading), it collapses and results take the stage.
+  const showAside = !loading && !result;
+  const lockLabel = tool.studioOnly ? "Unlock with Studio" : "Upgrade to use this";
+
   return (
-    <div className="mx-auto max-w-3xl space-y-6">
+    <div className="mx-auto max-w-5xl space-y-6">
       {/* ── Header ── */}
       <header className="flex items-start gap-4">
         <div
@@ -297,102 +337,150 @@ export function ToolRunner({
         </div>
       </header>
 
-      {/* ── Form card ── */}
-      <div className="rounded-3xl border border-border bg-surface p-6 shadow-sm sm:p-8">
-        <div className="space-y-5">
-          {tool.fields.map((field) => (
-            <label key={field.name} className="block">
-              <span className="mb-2 block text-sm font-semibold">
-                {field.label}
-                {field.required && <span className="text-rose-500"> *</span>}
+      {/* ── Body: half-and-half until first run, then full width ── */}
+      <div
+        className={cn(
+          "grid items-start gap-6",
+          showAside && "lg:grid-cols-[1.1fr_0.9fr]",
+        )}
+      >
+        {/* Left — input */}
+        <div className="space-y-4">
+          {blocked && (
+            <div className="flex items-start gap-2.5 rounded-2xl border border-amber-300/70 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+              <Lock className="mt-0.5 h-4 w-4 shrink-0" />
+              <span>
+                {tool.studioOnly
+                  ? "This tool is part of the Studio plan. "
+                  : "This tool needs a Creator or Studio plan. "}
+                You can still see exactly what it does on the right.
               </span>
+            </div>
+          )}
 
-              {field.type === "select" ? (
-                <select
-                  value={inputs[field.name]}
-                  onChange={(e) => set(field.name, e.target.value)}
-                  className="h-12 w-full rounded-xl border border-border bg-bg-soft px-3.5 text-[15px] outline-none transition-colors focus:border-brand-500/60 focus:ring-2 focus:ring-brand-500/15"
+          <div className="rounded-3xl border border-border bg-surface p-6 shadow-sm sm:p-8">
+            <div className="space-y-5">
+              {tool.fields.map((field) => (
+                <label key={field.name} className="block">
+                  <span className="mb-2 block text-sm font-semibold">
+                    {field.label}
+                    {field.required && <span className="text-rose-500"> *</span>}
+                  </span>
+
+                  {field.type === "select" ? (
+                    <select
+                      value={inputs[field.name]}
+                      onChange={(e) => set(field.name, e.target.value)}
+                      className="h-12 w-full rounded-xl border border-border bg-bg-soft px-3.5 text-[15px] outline-none transition-colors focus:border-brand-500/60 focus:ring-2 focus:ring-brand-500/15"
+                    >
+                      {field.options?.map((opt) => (
+                        <option key={opt} value={opt}>
+                          {opt}
+                        </option>
+                      ))}
+                    </select>
+                  ) : field.type === "textarea" ? (
+                    <textarea
+                      rows={4}
+                      value={inputs[field.name]}
+                      placeholder={field.placeholder}
+                      onChange={(e) => set(field.name, e.target.value)}
+                      className="w-full rounded-xl border border-border bg-bg-soft px-4 py-3 text-[15px] outline-none placeholder:text-muted/60 transition-colors focus:border-brand-500/60 focus:ring-2 focus:ring-brand-500/15"
+                    />
+                  ) : (
+                    <input
+                      type={field.type === "url" ? "url" : "text"}
+                      value={inputs[field.name]}
+                      placeholder={field.placeholder}
+                      onChange={(e) => set(field.name, e.target.value)}
+                      className="h-12 w-full rounded-xl border border-border bg-bg-soft px-4 text-[15px] outline-none placeholder:text-muted/60 transition-colors focus:border-brand-500/60 focus:ring-2 focus:ring-brand-500/15"
+                    />
+                  )}
+
+                  {field.hint && (
+                    <p className="mt-1.5 text-xs text-muted">{field.hint}</p>
+                  )}
+                </label>
+              ))}
+            </div>
+
+            {tool.mediaTool ? (
+              <div className="mt-7 rounded-2xl border border-amber-300/70 bg-amber-50 p-4">
+                <div className="flex items-center gap-2 text-sm font-semibold text-amber-900">
+                  <Plug className="h-4 w-4" />
+                  Almost live — connect {tool.provider ?? "the provider"}
+                </div>
+                <p className="mt-1.5 text-xs leading-relaxed text-amber-900/80">
+                  {tool.setupNote ? `${tool.setupNote} ` : ""}
+                  Add{" "}
+                  {tool.envVar && (
+                    <code className="rounded bg-amber-100 px-1 py-0.5 font-mono text-[11px]">
+                      {tool.envVar}
+                    </code>
+                  )}{" "}
+                  in Vercel → Settings → Environment Variables, then redeploy.
+                  The form above is wired and ready — it starts generating the
+                  moment the key is set.
+                </p>
+              </div>
+            ) : (
+              <>
+                <Button
+                  onClick={run}
+                  disabled={loading}
+                  size="lg"
+                  className="mt-7 w-full"
                 >
-                  {field.options?.map((opt) => (
-                    <option key={opt} value={opt}>
-                      {opt}
-                    </option>
-                  ))}
-                </select>
-              ) : field.type === "textarea" ? (
-                <textarea
-                  rows={4}
-                  value={inputs[field.name]}
-                  placeholder={field.placeholder}
-                  onChange={(e) => set(field.name, e.target.value)}
-                  className="w-full rounded-xl border border-border bg-bg-soft px-4 py-3 text-[15px] outline-none placeholder:text-muted/60 transition-colors focus:border-brand-500/60 focus:ring-2 focus:ring-brand-500/15"
-                />
-              ) : (
-                <input
-                  type={field.type === "url" ? "url" : "text"}
-                  value={inputs[field.name]}
-                  placeholder={field.placeholder}
-                  onChange={(e) => set(field.name, e.target.value)}
-                  className="h-12 w-full rounded-xl border border-border bg-bg-soft px-4 text-[15px] outline-none placeholder:text-muted/60 transition-colors focus:border-brand-500/60 focus:ring-2 focus:ring-brand-500/15"
-                />
-              )}
-
-              {field.hint && (
-                <p className="mt-1.5 text-xs text-muted">{field.hint}</p>
-              )}
-            </label>
-          ))}
+                  {loading ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : blocked ? (
+                    <Lock className="h-4 w-4" />
+                  ) : (
+                    <Sparkles className="h-4 w-4" />
+                  )}
+                  {blocked ? lockLabel : loading ? "Generating…" : "Generate"}
+                </Button>
+                {result && !loading && (
+                  <Button variant="ghost" onClick={run} className="mt-2 w-full">
+                    <RotateCcw className="h-4 w-4" />
+                    Regenerate
+                  </Button>
+                )}
+              </>
+            )}
+          </div>
         </div>
 
-        <Button
-          onClick={run}
-          disabled={loading}
-          size="lg"
-          className="mt-7 w-full"
-        >
-          {loading ? (
-            <Loader2 className="h-4 w-4 animate-spin" />
-          ) : (
-            <Sparkles className="h-4 w-4" />
-          )}
-          {locked
-            ? "Unlock with Studio"
-            : loading
-              ? "Generating…"
-              : "Generate"}
-        </Button>
-        {result && !loading && (
-          <Button variant="ghost" onClick={run} className="mt-2 w-full">
-            <RotateCcw className="h-4 w-4" />
-            Regenerate
-          </Button>
+        {/* Right — what you'll get + live demo (idle only) */}
+        {showAside && (
+          <aside className="space-y-4">
+            <DemoPreview accent={tool.accent} />
+            {deliverables.length > 0 && (
+              <div className="rounded-3xl border border-border bg-surface p-6 shadow-sm">
+                <div className="font-mono text-[10px] uppercase tracking-wider text-muted">
+                  What you'll get
+                </div>
+                <ul className="mt-4 space-y-3">
+                  {deliverables.map((d) => (
+                    <li key={d} className="flex items-start gap-2.5 text-sm">
+                      <Check className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" />
+                      <span>{d}</span>
+                    </li>
+                  ))}
+                </ul>
+                {tip && (
+                  <div className="mt-5 flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-xs leading-relaxed text-amber-900">
+                    <Lightbulb className="h-4 w-4 shrink-0 text-amber-600" />
+                    <span className="italic">{tip}</span>
+                  </div>
+                )}
+              </div>
+            )}
+          </aside>
         )}
       </div>
 
-      {/* ── Inline preview (only before first generation) ── */}
-      {!loading && !result && deliverables.length > 0 && (
-        <div className="rounded-3xl border border-border bg-surface p-6 shadow-sm">
-          <div className="font-mono text-[10px] uppercase tracking-wider text-muted">
-            What you'll get
-          </div>
-          <ul className="mt-4 grid gap-3 sm:grid-cols-2">
-            {deliverables.map((d) => (
-              <li key={d} className="flex items-start gap-2.5 text-sm">
-                <Check className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" />
-                <span>{d}</span>
-              </li>
-            ))}
-          </ul>
-          {tip && (
-            <div className="mt-5 flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-xs leading-relaxed text-amber-900">
-              <Lightbulb className="h-4 w-4 shrink-0 text-amber-600" />
-              <span className="italic">{tip}</span>
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* ── Result panel ── */}
+      {/* ── Loading ── */}
       {loading && (
         <div className="space-y-4">
           {tool.usesYouTube && (
@@ -408,6 +496,7 @@ export function ToolRunner({
         </div>
       )}
 
+      {/* ── Result ── */}
       {!loading && result && (
         <div className="space-y-4">
           <div className="flex items-center justify-between">
@@ -438,6 +527,79 @@ export function ToolRunner({
           <ResultView tool={tool.slug} data={result} inputs={inputs} />
         </div>
       )}
+    </div>
+  );
+}
+
+/**
+ * Themed, dependency-free demo animation shown beside the form before the
+ * first generation. A faux 9:16 clip being processed — scan line, floating
+ * mark, and "typing" caption bars. Tints to the tool's own accent gradient.
+ */
+function DemoPreview({ accent }: { accent: string }) {
+  return (
+    <div className="rounded-3xl border border-border bg-surface p-6 shadow-sm">
+      <div className="flex items-center justify-between">
+        <div className="font-mono text-[10px] uppercase tracking-wider text-muted">
+          Live preview
+        </div>
+        <span className="inline-flex items-center gap-1 text-[10px] font-medium text-muted">
+          <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-500" />
+          rendering
+        </span>
+      </div>
+
+      <div className="mt-4 flex justify-center">
+        <div className="relative aspect-[9/16] w-full max-w-[180px] overflow-hidden rounded-2xl border border-border shadow-lg">
+          <style>{`
+            @keyframes cf-scan { 0% { transform: translateY(-8%); } 100% { transform: translateY(1180%); } }
+            @keyframes cf-pop { 0%, 100% { opacity: .3; transform: scaleX(.8); } 50% { opacity: .95; transform: scaleX(1); } }
+            @keyframes cf-float { 0%, 100% { transform: translate(-50%, -50%); } 50% { transform: translate(-50%, calc(-50% - 7px)); } }
+          `}</style>
+
+          {/* Accent backdrop */}
+          <div className={cn("absolute inset-0 bg-gradient-to-br opacity-90", accent)} />
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_28%,rgba(255,255,255,0.28),transparent_62%)]" />
+
+          {/* Sweeping scan line */}
+          <div
+            className="absolute inset-x-0 top-0 h-px bg-white/80 shadow-[0_0_12px_2px_rgba(255,255,255,0.6)]"
+            style={{ animation: "cf-scan 2.8s ease-in-out infinite" }}
+          />
+
+          {/* Floating mark */}
+          <div
+            className="absolute left-1/2 top-[38%]"
+            style={{ animation: "cf-float 3.2s ease-in-out infinite" }}
+          >
+            <div className="grid h-12 w-12 place-items-center rounded-2xl bg-white/90 shadow-lg">
+              <Sparkles className="h-6 w-6 text-ink" />
+            </div>
+          </div>
+
+          {/* Processing chip */}
+          <div className="absolute left-3 top-3 inline-flex items-center gap-1 rounded-full bg-black/30 px-2 py-0.5 text-[8px] font-medium text-white backdrop-blur">
+            <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-white" />
+            00:08
+          </div>
+
+          {/* "Typing" caption bars */}
+          <div className="absolute inset-x-3 bottom-4 space-y-1.5">
+            <div
+              className="h-2.5 w-3/4 rounded-full bg-white/90"
+              style={{ animation: "cf-pop 1.8s ease-in-out infinite", transformOrigin: "left" }}
+            />
+            <div
+              className="h-2.5 w-1/2 rounded-full bg-white/70"
+              style={{ animation: "cf-pop 1.8s ease-in-out .3s infinite", transformOrigin: "left" }}
+            />
+            <div
+              className="h-2.5 w-2/3 rounded-full bg-white/55"
+              style={{ animation: "cf-pop 1.8s ease-in-out .6s infinite", transformOrigin: "left" }}
+            />
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

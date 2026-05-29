@@ -6,7 +6,10 @@
       "Bash(npm --version)",
       "WebFetch(domain:raw.githubusercontent.com)",
       "PowerShell(npm run typecheck 2>&1)",
-      "WebSearch"
+      "WebSearch",
+      "Bash(npx tsc *)",
+      "Bash(grep -E \"tools\\\\.ts|tool-runner|icon\\\\.tsx|clipper\\\\\\\\\\\\\\\\page|generate\\\\\\\\\\\\\\\\route|plans\\\\.ts|ai\\\\.ts|page\\\\.tsx|\\\\[slug\\\\]\")",
+      "Bash(grep -E \"tools\\\\.ts|tool-runner|icon\\\\.tsx|clipper|generate|plans\\\\.ts|/ai\\\\.ts|app\\\\\\\\\\\\\\\\page|\\\\[slug\\\\]|2037|missing the following\")"
     ]
   }
 }

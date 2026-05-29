@@ -2034,7 +2034,9 @@ function Clipper({ data }: { data: Any }) {
  */
 type RendererProps = { data: Any; inputs?: Any };
 
-const RENDERERS: Record<ToolSlug, (p: RendererProps) => React.ReactNode> = {
+// Partial: media tools (videogen/voiceover/watermark/captions) produce no
+// JSON result, so they have no renderer — ResultView falls back gracefully.
+const RENDERERS: Partial<Record<ToolSlug, (p: RendererProps) => React.ReactNode>> = {
   thumbnails: ({ data, inputs }) => (
     <Thumbnails data={data} style={inputs?.style as string | undefined} />
   ),

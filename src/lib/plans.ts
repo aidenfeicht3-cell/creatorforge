@@ -78,7 +78,7 @@ export const PLANS: Record<PlanId, Plan> = {
     cleanExports: true,
     features: [
       "1,500 credits / month",
-      "Claude Opus 4.7 (the smart one)",
+      "Claude Opus 4.8 (the smart one)",
       "Viral Clip Studio (1-click full package)",
       "Video Library + project mode",
       "Priority generation queue",

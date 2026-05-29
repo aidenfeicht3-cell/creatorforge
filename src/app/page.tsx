@@ -10,6 +10,10 @@ import {
   Search,
   Lightbulb,
   FileText,
+  Gift,
+  Users,
+  Coins,
+  Copy,
 } from "lucide-react";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
@@ -145,6 +149,91 @@ export default function LandingPage() {
             color="bg-orange-50"
             iconColor="text-orange-600"
           />
+        </div>
+      </section>
+
+      {/* ───────── Affiliate / early access ───────── */}
+      <section id="affiliate" className="mx-auto max-w-6xl px-5 py-20">
+        <div className="overflow-hidden rounded-3xl border border-border bg-surface shadow-sm">
+          <div className="grid gap-0 lg:grid-cols-2">
+            {/* Left — the pitch + how to get your code */}
+            <div className="p-8 sm:p-12">
+              <span className="inline-flex items-center gap-2 rounded-full border border-border bg-bg-soft px-3 py-1 text-xs font-medium text-brand-700">
+                <Gift className="h-3.5 w-3.5" />
+                Affiliate &amp; early access
+              </span>
+              <h2 className="mt-5 text-3xl font-bold tracking-[-0.02em] sm:text-4xl">
+                Share Snipd.
+                <br />
+                Both of you get credits.
+              </h2>
+              <p className="mt-4 max-w-md text-muted">
+                Every creator who joins through your link gets bonus credits —
+                and so do you. When a referral upgrades to a paid plan, you earn
+                account credit on top.
+              </p>
+
+              <ol className="mt-7 space-y-3.5">
+                {[
+                  "Join early access — grab your spot and you're in.",
+                  "Open Dashboard → Affiliate and copy your unique referral code.",
+                  "Share your link. You + every creator you refer get bonus credits instantly.",
+                  "Earn account credit each time a referral upgrades to a paid plan.",
+                ].map((step, i) => (
+                  <li key={i} className="flex gap-3 text-sm">
+                    <span className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-brand-50 text-xs font-semibold text-brand-700">
+                      {i + 1}
+                    </span>
+                    <span className="text-ink">{step}</span>
+                  </li>
+                ))}
+              </ol>
+
+              <div className="mt-8">
+                <Link href="/waitlist" className={buttonClasses("primary", "lg")}>
+                  Get my referral code
+                  <ArrowRight className="h-4 w-4" />
+                </Link>
+              </div>
+            </div>
+
+            {/* Right — visual: the affiliate card */}
+            <div className="relative border-t border-border bg-gradient-to-br from-brand-50 to-surface p-8 sm:p-12 lg:border-l lg:border-t-0">
+              <div className="rounded-2xl border border-border bg-surface p-5 shadow-sm">
+                <div className="text-xs font-medium text-muted">
+                  Your referral link
+                </div>
+                <div className="mt-2 flex items-center gap-2 rounded-xl border border-border bg-bg-soft px-3.5 py-2.5">
+                  <span className="flex-1 truncate font-mono text-sm text-ink">
+                    snipd.ai/?ref=<span className="text-brand-600">AIDEN42</span>
+                  </span>
+                  <Copy className="h-4 w-4 shrink-0 text-muted" />
+                </div>
+              </div>
+
+              <div className="mt-4 grid grid-cols-2 gap-4">
+                <div className="rounded-2xl border border-border bg-surface p-5 shadow-sm">
+                  <Users className="h-5 w-5 text-brand-600" />
+                  <div className="mt-3 text-2xl font-bold">+10</div>
+                  <div className="text-xs text-muted">
+                    bonus credits per signup
+                  </div>
+                </div>
+                <div className="rounded-2xl border border-border bg-surface p-5 shadow-sm">
+                  <Coins className="h-5 w-5 text-amber-500" />
+                  <div className="mt-3 text-2xl font-bold">25–30%</div>
+                  <div className="text-xs text-muted">
+                    credit when they upgrade
+                  </div>
+                </div>
+              </div>
+
+              <p className="mt-5 text-xs leading-relaxed text-muted">
+                Early-access members lock in founder pricing and get first
+                access to new tools as they ship.
+              </p>
+            </div>
+          </div>
         </div>
       </section>
 

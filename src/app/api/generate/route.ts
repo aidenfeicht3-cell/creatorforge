@@ -73,6 +73,21 @@ export async function POST(req: Request) {
       { status: 402 },
     );
   }
+  if (tool.requiresPaid && plan === "free") {
+    return NextResponse.json(
+      { error: `${tool.name} is a paid feature — upgrade to Creator or Studio to use it.` },
+      { status: 402 },
+    );
+  }
+  // Media tools run on external providers and never go through text generation.
+  if (tool.mediaTool) {
+    return NextResponse.json(
+      {
+        error: `${tool.name} runs on ${tool.provider ?? "an external provider"}. ${tool.setupNote ?? "Connect the provider key to enable it."}`,
+      },
+      { status: 501 },
+    );
+  }
   if (!hasCredits(plan, profile.credits_used, tool.creditCost, bonus)) {
     return NextResponse.json(
       {

@@ -56,12 +56,14 @@ export default async function ToolPage({
 
   const account = (await getAccount())!;
   const locked = !!tool.studioOnly && !account.plan.studioUnlocked;
+  const paidLocked = !!tool.requiresPaid && account.plan.id === "free";
   const defaults = memoryDefaults(tool, account.profile);
 
   return (
     <ToolRunner
       tool={tool}
       locked={locked}
+      paidLocked={paidLocked}
       cleanExports={account.plan.cleanExports}
       canSaveVideo={account.plan.videoLibrary}
       memoryDefaults={defaults}

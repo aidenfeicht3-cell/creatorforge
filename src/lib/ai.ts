@@ -24,8 +24,8 @@ const anthropic = HAS_CLAUDE
   ? new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
   : null;
 
-/** Quality each tool genuinely needs. */
-const TOOL_NEEDS: Record<ToolSlug, ModelTier> = {
+/** Quality each tool genuinely needs. Tools not listed default to haiku. */
+const TOOL_NEEDS: Partial<Record<ToolSlug, ModelTier>> = {
   thumbnails: "sonnet",
   titles:     "sonnet",
   hooks:      "sonnet",
@@ -43,16 +43,16 @@ function capTier(a: ModelTier, b: ModelTier): ModelTier {
 }
 
 function tierFor(tool: ToolSlug, plan: PlanId): ModelTier {
-  return capTier(PLANS[plan].modelTier, TOOL_NEEDS[tool]);
+  return capTier(PLANS[plan].modelTier, TOOL_NEEDS[tool] ?? "haiku");
 }
 
 /* ──── Claude ──────────────────────────────────────────── */
 
 function claudeModelFor(tier: ModelTier): string {
-  // Defaults are the 4.6 line for Sonnet/Opus — best creative prose available.
-  // Override via env if you want 4.7 (better for agentic flows, same prose).
+  // Opus defaults to the 4.8 line (smartest available). Sonnet stays on 4.6 for
+  // fast, high-quality prose. Override either via CLAUDE_MODEL_* env vars.
   if (tier === "opus") {
-    return process.env.CLAUDE_MODEL_OPUS || "claude-opus-4-6";
+    return process.env.CLAUDE_MODEL_OPUS || "claude-opus-4-8";
   }
   if (tier === "sonnet") {
     return process.env.CLAUDE_MODEL_SONNET || "claude-sonnet-4-6";

@@ -19,6 +19,9 @@ import {
   TrendingUp,
   Wand2,
   BarChart3,
+  Mic,
+  Eraser,
+  Captions,
   type LucideIcon,
 } from "lucide-react";
 
@@ -43,6 +46,9 @@ const ICONS: Record<string, LucideIcon> = {
   TrendingUp,
   Wand2,
   BarChart3,
+  Mic,
+  Eraser,
+  Captions,
 };
 
 export function ToolIcon({

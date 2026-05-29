@@ -23,7 +23,11 @@ export type ToolSlug =
   | "shotlist"
   | "nichebend"
   | "audit"
-  | "clipper";
+  | "clipper"
+  | "videogen"
+  | "voiceover"
+  | "watermark"
+  | "captions";
 
 export type FieldType = "text" | "textarea" | "select" | "url";
 
@@ -48,6 +52,17 @@ export interface ToolDef {
   fields: ToolField[];
   creditCost: number;
   studioOnly?: boolean;
+  /** Requires any paid plan (Creator or Studio). Free users see an upgrade gate. */
+  requiresPaid?: boolean;
+  /**
+   * Media tool (video/audio/image processing) that runs on an external paid
+   * provider. Renders a polished "connect your key" shell until the env var is
+   * set — the full UI is live, generation flips on the moment the key exists.
+   */
+  mediaTool?: boolean;
+  provider?: string;
+  envVar?: string;
+  setupNote?: string;
   usesYouTube?: boolean;
   /** Tool generates an image as part of its output. */
   generatesImage?: boolean;
@@ -277,7 +292,8 @@ export const TOOLS: Record<ToolSlug, ToolDef> = {
     accent: "from-fuchsia-500 via-purple-600 to-indigo-600",
     creditCost: 4,
     usesYouTube: true,
-    badge: "REAL DATA",
+    requiresPaid: true,
+    badge: "CREATOR+",
     category: "production",
     fields: [
       {
@@ -445,6 +461,102 @@ export const TOOLS: Record<ToolSlug, ToolDef> = {
     fields: [
       { name: "topic", label: "Video topic", type: "text", placeholder: "My morning routine that actually works", required: true },
       { name: "duration", label: "Final video length", type: "select", options: ["Under 60s (Shorts)", "1-3 min", "5-10 min", "10+ min"], default: "5-10 min" },
+    ],
+  },
+
+  // ──────── AI Media Studio (external-provider tools) ─────────
+  videogen: {
+    slug: "videogen",
+    name: "AI Video Generator",
+    icon: "Video",
+    tagline: "Text → cinematic AI video, no watermark",
+    description:
+      "Describe a shot and get back a clean, watermark-free AI-generated video clip — Sora-class quality. Perfect for B-roll, intros, and faceless content.",
+    accent: "from-blue-500 to-indigo-600",
+    creditCost: 12,
+    requiresPaid: true,
+    mediaTool: true,
+    provider: "OpenAI Sora / Replicate",
+    envVar: "VIDEO_API_KEY",
+    setupNote: "Add an OpenAI Sora or Replicate video key to go live.",
+    badge: "NEW",
+    category: "production",
+    fields: [
+      {
+        name: "prompt",
+        label: "Describe your video",
+        type: "textarea",
+        placeholder:
+          "Cinematic slow push-in on a steaming coffee cup by a rainy window, golden morning light",
+        required: true,
+        hint: "Be specific about subject, motion, and lighting.",
+      },
+      { name: "aspect", label: "Aspect ratio", type: "select", options: ["9:16 (Shorts/TikTok)", "16:9 (YouTube)", "1:1 (Square)"], default: "9:16 (Shorts/TikTok)" },
+      { name: "duration", label: "Clip length", type: "select", options: ["4 seconds", "8 seconds", "12 seconds"], default: "8 seconds" },
+    ],
+  },
+  voiceover: {
+    slug: "voiceover",
+    name: "AI Voiceover",
+    icon: "Mic",
+    tagline: "Script → natural studio-quality narration",
+    description:
+      "Turn any script into natural-sounding voiceover audio for your videos. Pick a voice, paste your script, download the narration.",
+    accent: "from-emerald-500 to-teal-600",
+    creditCost: 4,
+    requiresPaid: true,
+    mediaTool: true,
+    provider: "ElevenLabs",
+    envVar: "ELEVENLABS_API_KEY",
+    setupNote: "Add your ElevenLabs API key to go live.",
+    badge: "NEW",
+    category: "production",
+    fields: [
+      { name: "script", label: "Script", type: "textarea", placeholder: "Paste the script you want narrated…", required: true, hint: "Write the way people talk — short sentences read more naturally." },
+      { name: "voice", label: "Voice", type: "select", options: ["Deep & cinematic (male)", "Warm & friendly (female)", "Energetic creator (male)", "Calm narrator (female)"], default: "Energetic creator (male)" },
+      { name: "pace", label: "Pace", type: "select", options: ["Slow", "Natural", "Fast"], default: "Natural" },
+    ],
+  },
+  watermark: {
+    slug: "watermark",
+    name: "Watermark Remover",
+    icon: "Eraser",
+    tagline: "Clean watermarks off clips you own",
+    description:
+      "Paste a clip and AI removes the watermark — clean up your own footage, exported AI clips, or licensed stock. Only remove marks you have the rights to.",
+    accent: "from-fuchsia-500 to-purple-600",
+    creditCost: 8,
+    requiresPaid: true,
+    mediaTool: true,
+    provider: "Replicate",
+    envVar: "REPLICATE_API_TOKEN",
+    setupNote: "Add your Replicate token to go live.",
+    badge: "NEW",
+    category: "production",
+    fields: [
+      { name: "videoUrl", label: "Video / image URL", type: "url", placeholder: "https://…/your-clip.mp4", required: true, hint: "Direct link to a file you own or have licensed." },
+    ],
+  },
+  captions: {
+    slug: "captions",
+    name: "Caption Studio",
+    icon: "Captions",
+    tagline: "Add or strip burned-in captions",
+    description:
+      "Auto-caption any video with styled, word-by-word subtitles — or remove existing burned-in captions. Same caption engine the clipper uses.",
+    accent: "from-sky-400 to-blue-500",
+    creditCost: 5,
+    requiresPaid: true,
+    mediaTool: true,
+    provider: "Deepgram + Replicate",
+    envVar: "DEEPGRAM_API_KEY",
+    setupNote: "Add Deepgram (to add captions) and Replicate (to remove) keys to go live.",
+    badge: "NEW",
+    category: "production",
+    fields: [
+      { name: "videoUrl", label: "Video URL", type: "url", placeholder: "https://…/your-clip.mp4", required: true },
+      { name: "mode", label: "Mode", type: "select", options: ["Add captions", "Remove captions"], default: "Add captions" },
+      { name: "style", label: "Caption style", type: "select", options: ["Bold center (TikTok)", "Karaoke highlight", "Minimal bottom"], default: "Bold center (TikTok)" },
     ],
   },
 };
