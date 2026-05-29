@@ -1,18 +1,16 @@
 import { cn } from "@/lib/utils";
 
 /**
- * Snipd brand mark — the official cut-wedge.
+ * Snipd mark — a sharp lightning-cut wedge.
  *
- * Near-black rounded plate (#0A0A0A) + electric-lime cut (#B6FF1A). Reads as
- * both "play / next" and "snip / cut motion." Self-contained tile so it sits
- * cleanly on any background (light header, dark sidebar, social avatar).
+ * Reads as both "play / next" and "snip / cut motion." Two shapes only.
  *
- * Geometry is identical to /public/logo.svg and the /brand download assets,
- * so the favicon, header, and exported brand kit all match exactly.
+ * Colors use the Tailwind brand-* tokens (via inline styles since SVG fill
+ * can't read CSS vars directly in a way that respects light/dark themes
+ * here without extra config) — calibrated to a violet that matches the
+ * existing UI accent. The PFP / social variants in `brand-marks.tsx` use
+ * the bolder electric-lime version for distinctive on-feed identity.
  */
-const PLATE = "#0A0A0A";
-const LIME = "#B6FF1A";
-
 export function LogoMark({
   size = 32,
   className,
@@ -22,27 +20,29 @@ export function LogoMark({
 }) {
   return (
     <svg
-      viewBox="0 0 512 512"
+      viewBox="0 0 32 32"
       width={size}
       height={size}
       aria-hidden="true"
-      className={className}
+      // No background — just the bare wedge. Color tracks the Tailwind
+      // brand-500 token via currentColor, so the mark matches the credit
+      // bar / accents wherever it's rendered.
+      className={cn("text-brand-500", className)}
     >
-      <rect width="512" height="512" rx="112" fill={PLATE} />
       <path
-        d="M 300 96
-           L 144 280
-           L 232 280
-           L 184 416
-           L 376 224
-           L 280 224 Z"
-        fill={LIME}
+        d="M 18.5 6
+           L 9 17.5
+           L 14 17.5
+           L 11.5 26
+           L 23.5 14
+           L 17.5 14 Z"
+        fill="currentColor"
       />
     </svg>
   );
 }
 
-/** Full wordmark — used in the header, footer, auth pages. Lowercase, geometric. */
+/** Full wordmark — used in the site header. Lowercase, geometric. */
 export function Logo({
   className,
   size = 32,
@@ -51,11 +51,11 @@ export function Logo({
   size?: number;
 }) {
   return (
-    <span
-      className={cn("inline-flex items-center gap-2.5 font-semibold", className)}
-    >
+    <span className={cn("inline-flex items-center gap-2 font-semibold", className)}>
       <LogoMark size={size} />
-      <span className="text-base tracking-tight lowercase text-ink">snipd</span>
+      <span className="text-base tracking-tight lowercase">
+        snip<span className="text-brand-500">d</span>
+      </span>
     </span>
   );
 }
