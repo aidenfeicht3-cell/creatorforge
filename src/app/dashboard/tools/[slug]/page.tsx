@@ -58,12 +58,20 @@ export default async function ToolPage({
   const locked = !!tool.studioOnly && !account.plan.studioUnlocked;
   const paidLocked = !!tool.requiresPaid && account.plan.id === "free";
   const defaults = memoryDefaults(tool, account.profile);
+  // A media tool is "live" once its provider key exists in the environment.
+  // Until then the runner shows a polished "connect your key" panel.
+  const mediaReady = !!(
+    tool.mediaTool &&
+    tool.envVar &&
+    process.env[tool.envVar]
+  );
 
   return (
     <ToolRunner
       tool={tool}
       locked={locked}
       paidLocked={paidLocked}
+      mediaReady={mediaReady}
       cleanExports={account.plan.cleanExports}
       canSaveVideo={account.plan.videoLibrary}
       memoryDefaults={defaults}

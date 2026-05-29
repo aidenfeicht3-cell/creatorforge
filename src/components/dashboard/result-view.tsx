@@ -2027,6 +2027,129 @@ function Clipper({ data }: { data: Any }) {
   );
 }
 
+/* ── AI Voiceover (ElevenLabs) ───────────────────────────── */
+function VoiceoverResult({ data }: { data: Any }) {
+  const audio = data.audio ? String(data.audio) : "";
+  const voice = String(data.voice ?? "Default");
+  const pace = String(data.pace ?? "Natural");
+  const words = Number(data.words ?? 0);
+  const estSeconds = Number(data.estSeconds ?? 0);
+  const script = String(data.script ?? "");
+
+  return (
+    <div className="space-y-4">
+      <Card>
+        <div className="flex flex-wrap items-center gap-2">
+          <Label>Voiceover ready</Label>
+          <Badge>{voice}</Badge>
+          <span className="text-xs text-muted">{pace} pace</span>
+          <span className="text-xs text-muted">
+            ~{estSeconds}s · {words} words
+          </span>
+        </div>
+        {audio ? (
+          <div className="mt-4 space-y-3">
+            <audio controls src={audio} className="w-full" />
+            <a
+              href={audio}
+              download="voiceover.mp3"
+              className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-surface px-3 py-2 text-sm font-medium hover:bg-bg-soft"
+            >
+              <Download className="h-4 w-4" />
+              Download MP3
+            </a>
+          </div>
+        ) : (
+          <p className="mt-3 text-sm text-muted">
+            Audio isn&apos;t stored after the session — hit Regenerate to play it
+            again.
+          </p>
+        )}
+      </Card>
+      {script && (
+        <Card
+          header={
+            <>
+              <Label>Script</Label>
+              <CopyButton text={script} />
+            </>
+          }
+        >
+          <p className="whitespace-pre-wrap text-sm leading-relaxed">{script}</p>
+        </Card>
+      )}
+    </div>
+  );
+}
+
+/* ── Caption Studio (Deepgram) ───────────────────────────── */
+function CaptionsResult({ data }: { data: Any }) {
+  const transcript = String(data.transcript ?? "");
+  const srt = String(data.srt ?? "");
+  const style = String(data.style ?? "");
+  const wordCount = Number(data.wordCount ?? 0);
+  const durationSec = Number(data.durationSec ?? 0);
+  const srtHref = srt
+    ? `data:text/plain;charset=utf-8,${encodeURIComponent(srt)}`
+    : "";
+
+  return (
+    <div className="space-y-4">
+      <Card>
+        <div className="flex flex-wrap items-center gap-2">
+          <Label>Captions generated</Label>
+          <Badge>{style}</Badge>
+          <span className="text-xs text-muted">
+            {wordCount} words · {durationSec}s
+          </span>
+          {srtHref && (
+            <a
+              href={srtHref}
+              download="captions.srt"
+              className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-surface px-3 py-1.5 text-sm font-medium hover:bg-bg-soft"
+            >
+              <Download className="h-4 w-4" />
+              Download .srt
+            </a>
+          )}
+        </div>
+        <p className="mt-3 text-xs text-muted">
+          Drop the .srt into CapCut, Premiere, or YouTube to burn in styled
+          subtitles.
+        </p>
+      </Card>
+      {srt && (
+        <Card
+          header={
+            <>
+              <Label>SRT</Label>
+              <CopyButton text={srt} />
+            </>
+          }
+        >
+          <pre className="max-h-72 overflow-auto whitespace-pre-wrap text-xs leading-relaxed">
+            {srt}
+          </pre>
+        </Card>
+      )}
+      {transcript && (
+        <Card
+          header={
+            <>
+              <Label>Full transcript</Label>
+              <CopyButton text={transcript} />
+            </>
+          }
+        >
+          <p className="whitespace-pre-wrap text-sm leading-relaxed">
+            {transcript}
+          </p>
+        </Card>
+      )}
+    </div>
+  );
+}
+
 /**
  * Renderers can optionally consume the original `inputs` so they can echo
  * user-selected metadata (e.g. style) back into follow-up calls like
@@ -2059,6 +2182,8 @@ const RENDERERS: Partial<Record<ToolSlug, (p: RendererProps) => React.ReactNode>
   nichebend: NicheBend,
   audit: Audit,
   clipper: Clipper,
+  voiceover: VoiceoverResult,
+  captions: CaptionsResult,
 };
 
 export function ResultView({

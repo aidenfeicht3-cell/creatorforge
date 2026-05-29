@@ -13,6 +13,7 @@ import { rateLimit } from "@/lib/rate-limit";
 import { hasCredits, PLANS, type PlanId } from "@/lib/plans";
 import { fetchVideoContext } from "@/lib/youtube";
 import { fetchAuditSnapshot } from "@/lib/youtube-data";
+import { runMediaTool } from "@/lib/media";
 
 export const runtime = "nodejs";
 export const maxDuration = 90;
@@ -79,15 +80,6 @@ export async function POST(req: Request) {
       { status: 402 },
     );
   }
-  // Media tools run on external providers and never go through text generation.
-  if (tool.mediaTool) {
-    return NextResponse.json(
-      {
-        error: `${tool.name} runs on ${tool.provider ?? "an external provider"}. ${tool.setupNote ?? "Connect the provider key to enable it."}`,
-      },
-      { status: 501 },
-    );
-  }
   if (!hasCredits(plan, profile.credits_used, tool.creditCost, bonus)) {
     return NextResponse.json(
       {
@@ -95,6 +87,37 @@ export async function POST(req: Request) {
       },
       { status: 402 },
     );
+  }
+
+  // Media tools run on external providers (ElevenLabs, Deepgram, …) and never
+  // go through text generation. They handle their own provider calls and
+  // return early. Heavy blobs (audio) are stripped before saving to the DB.
+  if (tool.mediaTool) {
+    const media = await runMediaTool(tool, inputs);
+    if ("error" in media) {
+      return NextResponse.json({ error: media.error }, { status: media.status });
+    }
+    await supabase
+      .from("profiles")
+      .update({ credits_used: profile.credits_used + tool.creditCost })
+      .eq("id", user.id);
+
+    // Don't persist the base64 audio — keep the saved row lean.
+    const dbResult: Record<string, unknown> = { ...media.result };
+    delete dbResult.audio;
+    const { data: savedMedia } = await supabase
+      .from("generations")
+      .insert({ user_id: user.id, tool: tool.slug, inputs, result: dbResult })
+      .select("id")
+      .single();
+
+    return NextResponse.json({
+      id: savedMedia?.id ?? null,
+      tool: tool.slug,
+      result: media.result,
+      creditsCharged: tool.creditCost,
+      creditsUsed: profile.credits_used + tool.creditCost,
+    });
   }
 
   // For the Channel Audit tool — fetch real YouTube data and embed it

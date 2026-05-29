@@ -30,6 +30,8 @@ export interface ToolRunnerProps {
   locked: boolean;
   /** True when the tool needs a paid plan and the user is on free. */
   paidLocked?: boolean;
+  /** True when a media tool's provider key is set — flips it from shell to live. */
+  mediaReady?: boolean;
   cleanExports: boolean;
   canSaveVideo: boolean;
   /** Pre-fill values from the user's saved channel profile. */
@@ -201,6 +203,7 @@ export function ToolRunner({
   tool,
   locked,
   paidLocked = false,
+  mediaReady = false,
   cleanExports,
   canSaveVideo,
   memoryDefaults = {},
@@ -404,7 +407,7 @@ export function ToolRunner({
               ))}
             </div>
 
-            {tool.mediaTool ? (
+            {tool.mediaTool && !mediaReady ? (
               <div className="mt-7 rounded-2xl border border-amber-300/70 bg-amber-50 p-4">
                 <div className="flex items-center gap-2 text-sm font-semibold text-amber-900">
                   <Plug className="h-4 w-4" />
@@ -540,10 +543,11 @@ function DemoPreview({ accent }: { accent: string }) {
   return (
     <div className="rounded-3xl border border-border bg-surface p-6 shadow-sm">
       <div className="flex items-center justify-between">
-        <div className="font-mono text-[10px] uppercase tracking-wider text-muted">
+        <div className="inline-flex items-center gap-1.5 font-mono text-[10px] font-semibold uppercase tracking-[0.18em] text-muted">
+          <span className="inline-block h-1.5 w-1.5 rounded-full bg-brand-500/70" />
           Live preview
         </div>
-        <span className="inline-flex items-center gap-1 text-[10px] font-medium text-muted">
+        <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-bg-soft px-2 py-0.5 text-[10px] font-medium text-muted">
           <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-500" />
           rendering
         </span>
