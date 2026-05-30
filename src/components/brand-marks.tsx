@@ -1,11 +1,13 @@
 /**
  * Snipd brand-mark SVGs. Used on the /brand download page.
- * Visual system: near-black plate (#0A0A0A) + electric-lime cut (#B6FF1A).
- * Lowercase wordmark in the spirit of `linear` / `vercel` / `stripe`.
+ * Visual system: clean white field + electric-blue cut (#2563eb) — matches the
+ * clear site logo. Lowercase wordmark in the spirit of `linear` / `vercel`.
  */
 
-const BG = "#0A0A0A";
-const LIME = "#B6FF1A";
+const BG = "#FFFFFF";
+const LIME = "#2563eb"; // electric-blue cut (kept the name to avoid churn below)
+const INK = "#0a0f1f";
+const SUB = "rgba(10,15,31,0.55)";
 
 /** Shared cut-wedge path, scaled into a 1024×1024 viewport from a 512 center. */
 function CutWedge({ scale = 1, cx = 512, cy = 512 }: { scale?: number; cx?: number; cy?: number }) {
@@ -69,7 +71,7 @@ export function MarkSquareSvg() {
         fontSize="180"
         letterSpacing="-6"
         textAnchor="middle"
-        fill="#FFFFFF"
+        fill={INK}
       >
         snip<tspan fill={LIME}>d</tspan>
       </text>
@@ -81,7 +83,7 @@ export function MarkSquareSvg() {
         fontSize="34"
         letterSpacing="8"
         textAnchor="middle"
-        fill="rgba(255,255,255,0.55)"
+        fill={SUB}
       >
         AI · CLIPS · IN · ONE · CLICK
       </text>
@@ -112,7 +114,7 @@ export function WordmarkWideSvg() {
         fontWeight="900"
         fontSize="220"
         letterSpacing="-10"
-        fill="#FFFFFF"
+        fill={INK}
       >
         snip<tspan fill={LIME}>d</tspan>
       </text>
@@ -123,7 +125,7 @@ export function WordmarkWideSvg() {
         fontWeight="500"
         fontSize="38"
         letterSpacing="8"
-        fill="rgba(255,255,255,0.55)"
+        fill={SUB}
       >
         THE AI THAT CLIPS YOUR YOUTUBE
       </text>

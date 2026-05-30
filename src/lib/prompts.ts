@@ -375,6 +375,71 @@ Return JSON: {
 }`,
       };
 
+    case "autovideo": {
+      const format = inputs.format || "Both";
+      const style = inputs.style || "Faceless / voiceover";
+      const shortsCount = Math.max(
+        1,
+        Math.min(5, parseInt(inputs.shortsCount || "3", 10) || 3),
+      );
+      const wantLong = /long|both/i.test(format);
+      const wantShorts = /short|both/i.test(format);
+      return {
+        system: `${BASE_SYSTEM} You are also a video director and producer. You turn a single topic into a fully producible video plan — scene by scene, with exact on-screen visuals, narration, and the image prompt needed to render each scene. Every scene must be specific enough that an editor (or an AI video model) could build it without asking a single question. ${JSON_RULE}`,
+        user: `Build an auto-generated video plan for the topic: "${inputs.topic}".
+Style: ${style}.
+Deliver: ${format}.
+
+Rules:
+- This is a PRODUCTION plan, not advice. Write what literally goes on screen and what is literally said.
+- "imagePrompt" for each scene must be a vivid, standalone visual description (subject, setting, lighting, motion, mood) suitable for an AI image/video generator. No on-screen text in the imagePrompt — captions are added separately.
+- "narration" is the exact words spoken over the scene. Keep sentences short and punchy.
+- "onScreen" is the short caption/overlay text (max 6 words).
+- Pace for retention: the first scene is the hook and must earn the next 3 seconds.
+
+Return JSON: {
+  "topic":"${inputs.topic}",
+  "format":"${format}",
+  "style":"${style}",
+${
+  wantLong
+    ? `  "longform":{
+    "title":"working title for the long-form video",
+    "hook":"the first 10-15 seconds, spoken verbatim",
+    "scenes":[{
+      "sceneNumber":1,
+      "durationSec":number — seconds this scene is on screen,
+      "narration":"exact spoken words for this scene",
+      "onScreen":"short caption/overlay, max 6 words",
+      "broll":"the b-roll or footage to show",
+      "imagePrompt":"vivid standalone visual prompt to render this scene (no text in image)"
+    }],
+    "cta":"the closing call to action, spoken verbatim",
+    "estimatedLengthSec":number — total estimated runtime
+  },`
+    : `  "longform":null,`
+}
+${
+  wantShorts
+    ? `  "shorts":[{
+    "title":"short title / topic angle",
+    "hook":"the first 3-5 spoken words",
+    "narration":"the full spoken script for this short (under 120 words)",
+    "caption":"on-screen overlay text, max 8 words",
+    "durationSec":number — 15-60,
+    "imagePrompt":"vivid standalone visual prompt to render this short (no text in image)"
+  }] — generate exactly ${shortsCount} shorts,`
+    : `  "shorts":null,`
+}
+  "voiceoverScript":"the complete narration for the whole deliverable, ready to paste into a voiceover tool",
+  "musicVibe":"the music / sound direction in one line",
+  "assemblySteps":["step-by-step: how to assemble this into a finished video (editor or CapCut friendly)","..."],
+  "watchOutFor":["the most common way this kind of auto-video flops","another"],
+  "nextStep":"recommended next tool — usually Voiceover then the render"
+}`,
+      };
+    }
+
     case "storyboard": {
       const frames = inputs.frames || "6";
       return {

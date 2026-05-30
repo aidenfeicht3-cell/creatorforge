@@ -13,6 +13,7 @@ import {
   Check,
   Lock,
   Plug,
+  Play,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -21,7 +22,7 @@ import { ToolIcon } from "@/components/ui/icon";
 import { ResultView } from "@/components/dashboard/result-view";
 import { ExportMenu } from "@/components/dashboard/export-menu";
 import { cn } from "@/lib/utils";
-import type { ToolDef } from "@/lib/tools";
+import type { ToolDef, ToolSlug } from "@/lib/tools";
 
 type Result = Record<string, unknown>;
 
@@ -147,6 +148,13 @@ const DELIVERABLES: Record<string, string[]> = {
     "Voiceover-ready intro line (works with the Voice tool)",
     "5-step publish guide for CapCut",
   ],
+  autovideo: [
+    "Full scene-by-scene plan (long-form, shorts, or both)",
+    "An AI-rendered frame for every scene",
+    "Voiceover-ready script + music vibe",
+    "Step-by-step assembly guide",
+    "Connect a video key → scenes auto-render into real clips",
+  ],
   videogen: [
     "Watermark-free AI video clip",
     "Your aspect ratio (9:16 / 16:9 / 1:1)",
@@ -193,6 +201,7 @@ const TIPS: Record<string, string> = {
   nichebend: "Be specific about what YOU bring. Vague inputs = generic pivots.",
   audit: "Use your real handle — we pull live YouTube data to ground the analysis in your actual videos.",
   clipper: "Long-form content with captions works best. Podcasts and interviews clip way harder than vlogs.",
+  autovideo: "Pick 'Both' to get a long-form plan plus a batch of shorts from one idea. Specific topics render sharper frames.",
   videogen: "Describe motion and lighting, not just the subject — 'slow dolly-in, golden hour' beats 'a city.'",
   voiceover: "Write the way people talk. Short sentences read more naturally than long ones.",
   watermark: "Only remove watermarks from footage you own or have licensed.",
@@ -331,12 +340,12 @@ export function ToolRunner({
                 {tool.badge}
               </span>
             )}
+            <span className="inline-flex items-center gap-1 rounded-md border border-border bg-bg-soft px-2 py-0.5 font-mono text-[10px] text-muted">
+              <Zap className="h-2.5 w-2.5 text-brand-600" />
+              {tool.creditCost} credits
+            </span>
           </div>
-          <p className="mt-1 text-muted">{tool.description}</p>
-          <div className="mt-3 inline-flex items-center gap-1.5 rounded-md border border-border bg-bg-soft px-2.5 py-1 font-mono text-[11px] text-muted">
-            <Zap className="h-3 w-3 text-brand-600" />
-            {tool.creditCost} credits per run
-          </div>
+          <p className="mt-1.5 text-[15px] text-muted">{tool.description}</p>
         </div>
       </header>
 
@@ -344,7 +353,7 @@ export function ToolRunner({
       <div
         className={cn(
           "grid items-start gap-6",
-          showAside && "lg:grid-cols-[1.1fr_0.9fr]",
+          showAside && "lg:grid-cols-2",
         )}
       >
         {/* Left — input */}
@@ -454,31 +463,10 @@ export function ToolRunner({
           </div>
         </div>
 
-        {/* Right — what you'll get + live demo (idle only) */}
+        {/* Right — one panel: live demo + what you'll get (idle only) */}
         {showAside && (
-          <aside className="space-y-4">
-            <DemoPreview accent={tool.accent} />
-            {deliverables.length > 0 && (
-              <div className="rounded-3xl border border-border bg-surface p-6 shadow-sm">
-                <div className="font-mono text-[10px] uppercase tracking-wider text-muted">
-                  What you'll get
-                </div>
-                <ul className="mt-4 space-y-3">
-                  {deliverables.map((d) => (
-                    <li key={d} className="flex items-start gap-2.5 text-sm">
-                      <Check className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" />
-                      <span>{d}</span>
-                    </li>
-                  ))}
-                </ul>
-                {tip && (
-                  <div className="mt-5 flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-xs leading-relaxed text-amber-900">
-                    <Lightbulb className="h-4 w-4 shrink-0 text-amber-600" />
-                    <span className="italic">{tip}</span>
-                  </div>
-                )}
-              </div>
-            )}
+          <aside>
+            <DemoPreview tool={tool} deliverables={deliverables} tip={tip} />
           </aside>
         )}
       </div>
@@ -535,74 +523,315 @@ export function ToolRunner({
 }
 
 /**
- * Themed, dependency-free demo animation shown beside the form before the
- * first generation. A faux 9:16 clip being processed — scan line, floating
- * mark, and "typing" caption bars. Tints to the tool's own accent gradient.
+ * Static "example output" preview shown beside the form before the first run.
+ * No animation — each tool shows a faithful, hand-written sample of what it
+ * actually returns, so the preview reads as a real result instead of a
+ * decorative loop. Every tool's sample is unique to that tool.
  */
-function DemoPreview({ accent }: { accent: string }) {
+type SampleRow = { label: string; score?: string; tag?: string };
+type Sample = {
+  /** Media/image tools draw a visual frame; text tools render the row list. */
+  visual?: "thumb" | "avatar" | "wave" | "frame";
+  /** Big text on the visual (supports \n for line breaks). */
+  overlay?: string;
+  /** Mono caption under the preview. */
+  sub?: string;
+  rows: SampleRow[];
+};
+
+/** A faithful sample of each tool's real output. */
+const SAMPLES: Record<ToolSlug, Sample> = {
+  titles: {
+    rows: [
+      { score: "94", label: "I Tried Every Productivity Hack for 30 Days", tag: "Curiosity" },
+      { score: "88", label: "Why Your Morning Routine Is Failing You", tag: "Contrarian" },
+      { score: "82", label: "The 5AM Club Is a Lie — Here's the Data", tag: "Bold claim" },
+    ],
+  },
+  hooks: {
+    rows: [
+      { score: "96", label: "Everyone said this was impossible. It wasn't.", tag: "Cliffhanger" },
+      { score: "90", label: "I lost $10,000 so you don't have to.", tag: "Stake" },
+      { score: "84", label: "Stop scrolling — this changes everything.", tag: "Pattern break" },
+    ],
+  },
+  ideas: {
+    rows: [
+      { score: "92", label: "I lived on $5 a day for a week", tag: "Challenge" },
+      { score: "87", label: "Ranking every budgeting app, worst to best", tag: "Series" },
+      { score: "80", label: "The uncomfortable truth about side hustles", tag: "Authority" },
+    ],
+  },
+  niche: {
+    rows: [
+      { score: "91", label: "Speedrunning indie horror games", tag: "Underserved" },
+      { score: "86", label: "Retro console restoration", tag: "Low comp" },
+      { score: "79", label: "Indie game dev post-mortems", tag: "Growing" },
+    ],
+  },
+  channelname: {
+    rows: [
+      { score: "95", label: "PixelForge", tag: "@pixelforge ✓" },
+      { score: "89", label: "The Build Lab", tag: "@thebuildlab ✓" },
+      { score: "83", label: "Indie Arcade", tag: "handle taken" },
+    ],
+  },
+  bio: {
+    rows: [
+      { score: "TT", label: "AI tools that build themselves 🤖 link ↓", tag: "78/80" },
+      { score: "IG", label: "I build AI apps in public — tutorials + tools", tag: "112/150" },
+      { score: "X", label: "shipping AI for creators. follow the build →", tag: "139/160" },
+    ],
+  },
+  scripts: {
+    rows: [
+      { tag: "HOOK", label: "Cold open — show the result, then the journey" },
+      { tag: "0:45", label: "Section 1: the problem everyone ignores" },
+      { tag: "CTA", label: "Subscribe line + tease the next video" },
+    ],
+  },
+  seo: {
+    rows: [
+      { tag: "DESC", label: "Keyword-rich description with timestamps" },
+      { tag: "TAGS", label: "budget camera · vlogging setup · 2026 review" },
+      { tag: "RANK", label: "3 concrete ways to climb in search" },
+    ],
+  },
+  reverse: {
+    rows: [
+      { tag: "HOOK", label: "Cold open lands an open loop in 4 seconds" },
+      { tag: "HOLD", label: "Re-hooks every 30s with a fresh stake" },
+      { tag: "REMIX", label: "Your-niche outline you can film today" },
+    ],
+  },
+  studio: {
+    rows: [
+      { score: "✓", label: "Thumbnail concept + scored title", tag: "1–2/6" },
+      { score: "✓", label: "15-second hook + script outline", tag: "3–4/6" },
+      { score: "✓", label: "SEO pack + shareable clip brief", tag: "5–6/6" },
+    ],
+  },
+  audit: {
+    rows: [
+      { score: "63", label: "Channel health — solid but inconsistent", tag: "score" },
+      { tag: "WIN", label: "Tutorials beat your channel avg by 2.4×" },
+      { tag: "FIX", label: "Thumbnails: faces + 3-word overlays" },
+    ],
+  },
+  nichebend: {
+    visual: "avatar",
+    overlay: "RF",
+    sub: "RetroForge — strongest of 3 pivots",
+    rows: [
+      { tag: "NAME", label: "RetroForge · @retroforge ✓" },
+      { tag: "PLAN", label: "30-day plan · 8 specific video ideas" },
+    ],
+  },
+  shotlist: {
+    rows: [
+      { tag: "01", label: "Wide establishing — slow dolly-in, 35mm" },
+      { tag: "02", label: "Close-up on hands — handheld, shallow DOF" },
+      { tag: "03", label: "Over-shoulder — locked tripod, 50mm" },
+    ],
+  },
+  shorts: {
+    rows: [
+      { score: "94", label: "“…and that's when everything changed”", tag: "02:14" },
+      { score: "88", label: "“nobody talks about this part”", tag: "07:31" },
+      { score: "81", label: "“here's the mistake I made”", tag: "11:08" },
+    ],
+  },
+  clipper: {
+    rows: [
+      { score: "94", label: "Hook overlay + body caption ready", tag: "TikTok" },
+      { score: "89", label: "Hashtags + sound-effect cue attached", tag: "Reels" },
+      { score: "85", label: "Voiceover-ready intro line included", tag: "Shorts" },
+    ],
+  },
+
+  // ── Image tools — show the rendered frame ──
+  thumbnails: { visual: "thumb", overlay: "100 DAYS\nALONE", sub: "MrBeast style · CTR 92", rows: [] },
+  pfp: { visual: "avatar", overlay: "AB", sub: "Bold & energetic · 4 concepts", rows: [] },
+  banner: { visual: "thumb", overlay: "AidenBuildsTech", sub: "AI tools built in public", rows: [] },
+  storyboard: { visual: "thumb", overlay: "FRAME 1", sub: "Wide shot · slow push-in", rows: [] },
+  broll: { visual: "thumb", overlay: "B-ROLL 03", sub: "Hands on keyboard · macro", rows: [] },
+
+  // ── Media tools — show the player / frame ──
+  autovideo: { visual: "frame", overlay: "SCENE 1 / 6", sub: "Long-form + 3 shorts · frames rendered", rows: [] },
+  voiceover: { visual: "wave", sub: "Energetic creator · MP3 · 0:30", rows: [] },
+  videogen: { visual: "frame", overlay: "9:16 · 8s", sub: "Watermark-free AI clip", rows: [] },
+  captions: { visual: "frame", overlay: "word-by-word", sub: "TikTok style · auto-synced", rows: [] },
+  watermark: { visual: "frame", overlay: "before → after", sub: "Clean export, no logo", rows: [] },
+};
+
+function DemoPreview({
+  tool,
+  deliverables,
+  tip,
+}: {
+  tool: ToolDef;
+  deliverables: string[];
+  tip?: string;
+}) {
+  const sample = SAMPLES[tool.slug];
+
   return (
     <div className="rounded-3xl border border-border bg-surface p-6 shadow-sm">
-      <div className="flex items-center justify-between">
-        <div className="inline-flex items-center gap-1.5 font-mono text-[10px] font-semibold uppercase tracking-[0.18em] text-muted">
-          <span className="inline-block h-1.5 w-1.5 rounded-full bg-brand-500/70" />
-          Live preview
-        </div>
-        <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-bg-soft px-2 py-0.5 text-[10px] font-medium text-muted">
-          <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-500" />
-          rendering
-        </span>
+      <div className="inline-flex items-center gap-1.5 font-mono text-[10px] font-semibold uppercase tracking-[0.18em] text-muted">
+        <span className="inline-block h-1.5 w-1.5 rounded-full bg-brand-500/70" />
+        Example output
       </div>
 
-      <div className="mt-4 flex justify-center">
-        <div className="relative aspect-[9/16] w-full max-w-[180px] overflow-hidden rounded-2xl border border-border shadow-lg">
-          <style>{`
-            @keyframes cf-scan { 0% { transform: translateY(-8%); } 100% { transform: translateY(1180%); } }
-            @keyframes cf-pop { 0%, 100% { opacity: .3; transform: scaleX(.8); } 50% { opacity: .95; transform: scaleX(1); } }
-            @keyframes cf-float { 0%, 100% { transform: translate(-50%, -50%); } 50% { transform: translate(-50%, calc(-50% - 7px)); } }
-          `}</style>
+      <div className="mt-4">
+        {sample.visual ? (
+          <SampleVisual sample={sample} accent={tool.accent} />
+        ) : (
+          <SampleRows rows={sample.rows} accent={tool.accent} />
+        )}
+        {sample.sub && (
+          <p className="mt-2.5 text-center font-mono text-[11px] text-muted">
+            {sample.sub}
+          </p>
+        )}
+      </div>
 
-          {/* Accent backdrop */}
-          <div className={cn("absolute inset-0 bg-gradient-to-br opacity-90", accent)} />
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_28%,rgba(255,255,255,0.28),transparent_62%)]" />
+      {deliverables.length > 0 && (
+        <div className="mt-6 border-t border-border pt-5">
+          <ul className="space-y-2.5">
+            {deliverables.slice(0, 4).map((d) => (
+              <li key={d} className="flex items-start gap-2.5 text-[13px] leading-snug">
+                <Check className="mt-0.5 h-3.5 w-3.5 shrink-0 text-emerald-600" />
+                <span>{d}</span>
+              </li>
+            ))}
+          </ul>
+          {tip && (
+            <p className="mt-4 flex items-start gap-2 text-xs italic leading-relaxed text-muted">
+              <Lightbulb className="mt-0.5 h-3.5 w-3.5 shrink-0 text-amber-500" />
+              {tip}
+            </p>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
 
-          {/* Sweeping scan line */}
+/* Scored / labeled rows — the real shape of a text tool's result. */
+function SampleRows({ rows, accent }: { rows: SampleRow[]; accent: string }) {
+  return (
+    <div className="space-y-2 rounded-2xl border border-border bg-bg-soft p-3">
+      {rows.map((r, i) => {
+        const badge = r.score ?? r.tag;
+        const showTag = r.score && r.tag;
+        return (
           <div
-            className="absolute inset-x-0 top-0 h-px bg-white/80 shadow-[0_0_12px_2px_rgba(255,255,255,0.6)]"
-            style={{ animation: "cf-scan 2.8s ease-in-out infinite" }}
-          />
-
-          {/* Floating mark */}
-          <div
-            className="absolute left-1/2 top-[38%]"
-            style={{ animation: "cf-float 3.2s ease-in-out infinite" }}
+            key={i}
+            className="flex items-center gap-2.5 rounded-xl bg-surface px-2.5 py-2 shadow-sm"
           >
-            <div className="grid h-12 w-12 place-items-center rounded-2xl bg-white/90 shadow-lg">
-              <Sparkles className="h-6 w-6 text-ink" />
-            </div>
+            {badge && (
+              <span
+                className={cn(
+                  "grid h-6 min-w-[1.75rem] shrink-0 place-items-center rounded-md bg-gradient-to-br px-1 text-[10px] font-bold text-white",
+                  accent,
+                )}
+              >
+                {badge}
+              </span>
+            )}
+            <span className="min-w-0 flex-1 truncate text-[13px] font-medium">
+              {r.label}
+            </span>
+            {showTag && (
+              <span className="shrink-0 rounded-md border border-border px-1.5 py-0.5 text-[10px] text-muted">
+                {r.tag}
+              </span>
+            )}
           </div>
+        );
+      })}
+    </div>
+  );
+}
 
-          {/* Processing chip */}
-          <div className="absolute left-3 top-3 inline-flex items-center gap-1 rounded-full bg-black/30 px-2 py-0.5 text-[8px] font-medium text-white backdrop-blur">
-            <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-white" />
-            00:08
+/* Visual frame for image / media tools — a faithful, static mock. */
+function SampleVisual({ sample, accent }: { sample: Sample; accent: string }) {
+  const { visual, overlay } = sample;
+
+  if (visual === "avatar") {
+    return (
+      <div className="flex justify-center py-2">
+        <div className="relative">
+          <div
+            className={cn(
+              "grid h-28 w-28 place-items-center rounded-full bg-gradient-to-br text-3xl font-black text-white shadow-lg",
+              accent,
+            )}
+          >
+            {overlay}
           </div>
+          <div className="pointer-events-none absolute inset-0 rounded-full ring-4 ring-white/40" />
+        </div>
+      </div>
+    );
+  }
 
-          {/* "Typing" caption bars */}
-          <div className="absolute inset-x-3 bottom-4 space-y-1.5">
-            <div
-              className="h-2.5 w-3/4 rounded-full bg-white/90"
-              style={{ animation: "cf-pop 1.8s ease-in-out infinite", transformOrigin: "left" }}
-            />
-            <div
-              className="h-2.5 w-1/2 rounded-full bg-white/70"
-              style={{ animation: "cf-pop 1.8s ease-in-out .3s infinite", transformOrigin: "left" }}
-            />
-            <div
-              className="h-2.5 w-2/3 rounded-full bg-white/55"
-              style={{ animation: "cf-pop 1.8s ease-in-out .6s infinite", transformOrigin: "left" }}
-            />
+  if (visual === "wave") {
+    // Fixed bar heights — a still snapshot of a waveform, not an animation.
+    const bars = [3, 6, 4, 9, 7, 12, 8, 5, 10, 6, 11, 7, 4, 8, 5, 9, 6, 3, 7, 10, 5, 8, 4, 6];
+    return (
+      <div className="relative overflow-hidden rounded-2xl border border-border p-4">
+        <div className={cn("absolute inset-0 bg-gradient-to-br opacity-10", accent)} />
+        <div className="relative flex items-center gap-3">
+          <div
+            className={cn(
+              "grid h-10 w-10 shrink-0 place-items-center rounded-full bg-gradient-to-br text-white shadow-md",
+              accent,
+            )}
+          >
+            <Play className="h-4 w-4 translate-x-[1px]" fill="currentColor" />
+          </div>
+          <div className="flex h-10 flex-1 items-center gap-[3px]">
+            {bars.map((h, i) => (
+              <span
+                key={i}
+                className={cn("flex-1 rounded-full bg-gradient-to-t", accent)}
+                style={{ height: `${(h / 12) * 100}%` }}
+              />
+            ))}
           </div>
         </div>
+      </div>
+    );
+  }
+
+  if (visual === "frame") {
+    return (
+      <div className="relative aspect-video w-full overflow-hidden rounded-2xl border border-border shadow-lg">
+        <div className={cn("absolute inset-0 bg-gradient-to-br", accent)} />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_35%,rgba(255,255,255,0.22),transparent_60%)]" />
+        <div className="absolute left-1/2 top-1/2 grid h-12 w-12 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full bg-white/90 shadow-lg">
+          <Play className="h-5 w-5 translate-x-[1px] text-ink" fill="currentColor" />
+        </div>
+        {overlay && (
+          <span className="absolute bottom-3 left-3 rounded-md bg-black/40 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-white backdrop-blur">
+            {overlay}
+          </span>
+        )}
+      </div>
+    );
+  }
+
+  // thumb (default) — a rendered thumbnail / banner with bold overlay text.
+  return (
+    <div className="relative aspect-video w-full overflow-hidden rounded-2xl border border-border shadow-lg">
+      <div className={cn("absolute inset-0 bg-gradient-to-br", accent)} />
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_72%_28%,rgba(255,255,255,0.30),transparent_55%)]" />
+      <div className="absolute right-3 top-3 h-9 w-9 rounded-full border-2 border-white/80 bg-white/25 backdrop-blur" />
+      <div className="absolute inset-x-0 bottom-0 p-3">
+        <span className="whitespace-pre-line text-lg font-black uppercase leading-[1.05] text-white drop-shadow-[0_2px_6px_rgba(0,0,0,0.55)]">
+          {overlay}
+        </span>
       </div>
     </div>
   );

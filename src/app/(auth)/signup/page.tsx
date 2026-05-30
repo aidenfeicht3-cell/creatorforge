@@ -3,6 +3,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { Lock } from "lucide-react";
 import { AuthForm } from "@/components/auth-form";
+import { AuthShell } from "@/components/auth-shell";
 import { Logo } from "@/components/logo";
 import { buttonClasses } from "@/components/ui/button";
 
@@ -27,23 +28,23 @@ export default async function SignupPage({
 
   if (unlocked) {
     return (
-      <main className="grid min-h-screen place-items-center px-5 py-16">
+      <AuthShell>
         <Suspense>
           <AuthForm mode="signup" />
         </Suspense>
-      </main>
+      </AuthShell>
     );
   }
 
   // Public view — gentle redirect to the waitlist.
   return (
-    <main className="grid min-h-screen place-items-center px-5 py-16">
+    <AuthShell>
       <div className="w-full max-w-md">
-        <Link href="/" className="flex justify-center">
+        <Link href="/" className="flex justify-center lg:hidden">
           <Logo size={36} />
         </Link>
 
-        <div className="mt-10 rounded-3xl border border-border bg-surface p-8 shadow-sm">
+        <div className="mt-10 rounded-3xl border border-border bg-surface p-8 shadow-sm lg:mt-0">
           <div className="grid h-12 w-12 place-items-center rounded-2xl bg-brand-500/10 text-brand-600">
             <Lock className="h-6 w-6" />
           </div>
@@ -66,6 +67,6 @@ export default async function SignupPage({
           </div>
         </div>
       </div>
-    </main>
+    </AuthShell>
   );
 }

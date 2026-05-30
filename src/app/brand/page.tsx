@@ -23,7 +23,7 @@ const LOGOS: LogoBlock[] = [
   {
     id: "tiktok-pfp",
     title: "TikTok profile picture",
-    subtitle: "1024 × 1024 · dark navy · glowing blade",
+    subtitle: "1024 × 1024 · clean white · electric-blue blade",
     use: "Set as your TikTok profile picture. Renders clearly even at small avatar sizes.",
     width: 1024,
     height: 1024,

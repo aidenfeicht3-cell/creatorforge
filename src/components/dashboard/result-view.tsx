@@ -8,7 +8,12 @@ import {
   Download,
   RotateCw,
   Loader2,
+  Plug,
+  Sparkles,
+  Film,
+  Wand2,
 } from "lucide-react";
+import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
@@ -838,6 +843,25 @@ function Shorts({ data }: { data: Any }) {
 
   return (
     <div className="space-y-4">
+      {/* Cross-sell: turn these moments into finished videos automatically. */}
+      <Link
+        href="/dashboard/tools/autovideo?format=Shorts+%289%3A16%29"
+        className="flex items-center gap-3 rounded-2xl border border-brand-500/30 bg-gradient-to-br from-brand-50 to-surface p-4 transition-all hover:border-brand-500/50"
+      >
+        <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-brand-500 to-brand-400 text-white">
+          <Wand2 className="h-5 w-5" />
+        </span>
+        <span className="min-w-0 flex-1">
+          <span className="block text-sm font-semibold">
+            Make the videos for me →
+          </span>
+          <span className="block text-xs text-muted">
+            Don&apos;t want to edit? Auto Video Studio builds finished shorts from
+            a topic — script, scenes, AI frames, and clips.
+          </span>
+        </span>
+      </Link>
+
       {sourceUrl && (
         <div className="flex flex-wrap items-center justify-between gap-3">
           <Label>Analyzed from real transcript</Label>
@@ -2150,6 +2174,271 @@ function CaptionsResult({ data }: { data: Any }) {
   );
 }
 
+/* ── Auto Video Studio ───────────────────────────────────── */
+
+/** A rendered scene/short visual: real clip if present, else the AI frame. */
+function MediaFrame({
+  video,
+  image,
+  aspect,
+  renderEnabled,
+  downloadName,
+}: {
+  video?: string;
+  image?: string;
+  aspect: "video" | "vertical";
+  renderEnabled: boolean;
+  downloadName: string;
+}) {
+  const aspectClass = aspect === "vertical" ? "aspect-[9/16]" : "aspect-video";
+  if (video) {
+    return (
+      <div className="space-y-2">
+        <video
+          src={video}
+          controls
+          playsInline
+          className={`mx-auto block ${aspectClass} w-full ${aspect === "vertical" ? "max-w-[200px]" : ""} rounded-xl bg-black`}
+        />
+        <a
+          href={video}
+          download={`${downloadName}.mp4`}
+          className="inline-flex items-center gap-1.5 rounded-full bg-brand-500 px-3 py-1.5 text-xs font-semibold text-white hover:bg-brand-600"
+        >
+          <Download className="h-3 w-3" />
+          Download MP4
+        </a>
+      </div>
+    );
+  }
+  return (
+    <div className="relative overflow-hidden rounded-xl border border-border bg-bg-soft">
+      {image ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={image}
+          alt="Scene frame"
+          className={`${aspectClass} w-full object-cover`}
+        />
+      ) : (
+        <div className={`grid ${aspectClass} w-full place-items-center text-muted`}>
+          <Film className="h-7 w-7" />
+        </div>
+      )}
+      {!renderEnabled && (
+        <span className="absolute bottom-2 left-2 inline-flex items-center gap-1 rounded-md bg-ink/70 px-2 py-0.5 text-[10px] font-medium text-white backdrop-blur">
+          <Plug className="h-2.5 w-2.5" /> frame · connect a video key to render
+        </span>
+      )}
+    </div>
+  );
+}
+
+function AutoVideo({ data }: { data: Any }) {
+  const format = String(data.format || "Both");
+  const renderEnabled = Boolean(data.videoRenderingEnabled);
+  const longform = (data.longform as Any) || null;
+  const scenes = longform ? ((longform.scenes as Any[]) || []) : [];
+  const shorts = (data.shorts as Any[]) || [];
+  const assembly = (data.assemblySteps as string[]) || [];
+  const voiceover = data.voiceoverScript ? String(data.voiceoverScript) : "";
+
+  return (
+    <div className="space-y-5">
+      {/* Status banner */}
+      <div
+        className={`flex items-start gap-3 rounded-2xl border p-4 ${
+          renderEnabled
+            ? "border-emerald-200 bg-emerald-50"
+            : "border-brand-500/30 bg-gradient-to-br from-brand-50 to-surface"
+        }`}
+      >
+        <span
+          className={`grid h-9 w-9 shrink-0 place-items-center rounded-xl text-white ${
+            renderEnabled
+              ? "bg-emerald-600"
+              : "bg-gradient-to-br from-brand-500 to-brand-400"
+          }`}
+        >
+          {renderEnabled ? <Sparkles className="h-5 w-5" /> : <Plug className="h-5 w-5" />}
+        </span>
+        <div className="text-sm">
+          <div className="font-semibold">
+            {renderEnabled
+              ? "Auto-rendering is live — clips render right into the plan."
+              : "Full video plan + AI scene frames ready."}
+          </div>
+          <p className="mt-0.5 text-muted">
+            {renderEnabled
+              ? "Each scene below renders into a real clip. Download them or drop them straight into your editor."
+              : "Connect a video key (VIDEO_API_KEY) and every scene below auto-renders into a real clip — same plan, no rebuild. Until then you get the script, the shot-by-shot plan, and a rendered frame per scene."}
+          </p>
+        </div>
+      </div>
+
+      <div className="flex items-center gap-2">
+        <Label>Format</Label>
+        <Badge>{format}</Badge>
+      </div>
+
+      {/* Long-form */}
+      {longform && (
+        <Card
+          header={
+            <>
+              <span className="font-semibold">{String(longform.title || "Long-form video")}</span>
+              {longform.estimatedLengthSec && (
+                <span className="font-mono text-xs text-muted">
+                  ~{Math.round(Number(longform.estimatedLengthSec) / 60)} min
+                </span>
+              )}
+            </>
+          }
+        >
+          {longform.hook && (
+            <div className="mb-4 rounded-xl border-l-2 border-brand-500 bg-bg-soft px-3 py-2">
+              <Label>Hook (first 15s)</Label>
+              <p className="mt-0.5 text-[15px]">{String(longform.hook)}</p>
+            </div>
+          )}
+          <div className="space-y-4">
+            {scenes.map((s, i) => (
+              <div
+                key={i}
+                className="grid gap-3 rounded-xl border border-border bg-bg-soft p-3 sm:grid-cols-[200px_1fr]"
+              >
+                <MediaFrame
+                  video={s.video ? String(s.video) : undefined}
+                  image={s.image ? String(s.image) : undefined}
+                  aspect="video"
+                  renderEnabled={renderEnabled}
+                  downloadName={`scene-${i + 1}`}
+                />
+                <div className="space-y-2 text-sm">
+                  <div className="flex items-center justify-between">
+                    <span className="font-semibold">
+                      Scene {String(s.sceneNumber || i + 1)}
+                    </span>
+                    {s.durationSec && (
+                      <span className="font-mono text-xs text-muted">
+                        {String(s.durationSec)}s
+                      </span>
+                    )}
+                  </div>
+                  {s.onScreen && (
+                    <div className="rounded-lg bg-surface px-2.5 py-1.5">
+                      <Label>On screen</Label>
+                      <div className="mt-0.5 font-semibold">{String(s.onScreen)}</div>
+                    </div>
+                  )}
+                  {s.narration && (
+                    <p className="italic text-muted">"{String(s.narration)}"</p>
+                  )}
+                  {s.broll && (
+                    <p className="text-xs text-muted">
+                      <span className="font-medium text-brand-600">B-roll:</span>{" "}
+                      {String(s.broll)}
+                    </p>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+          {longform.cta && (
+            <div className="mt-4 rounded-xl bg-bg-soft px-3 py-2">
+              <Label>Closing CTA</Label>
+              <p className="mt-0.5 text-sm">{String(longform.cta)}</p>
+            </div>
+          )}
+        </Card>
+      )}
+
+      {/* Shorts */}
+      {shorts.length > 0 && (
+        <div>
+          <h3 className="mb-2 text-sm font-semibold text-brand-600">
+            {shorts.length} short{shorts.length > 1 ? "s" : ""}
+          </h3>
+          <div className="grid gap-4 sm:grid-cols-2">
+            {shorts.map((s, i) => (
+              <Card
+                key={i}
+                header={
+                  <>
+                    <span className="font-semibold">
+                      Short #{i + 1}
+                    </span>
+                    {s.durationSec && (
+                      <span className="font-mono text-xs text-muted">
+                        {String(s.durationSec)}s
+                      </span>
+                    )}
+                  </>
+                }
+              >
+                <div className="space-y-3 text-sm">
+                  <MediaFrame
+                    video={s.video ? String(s.video) : undefined}
+                    image={s.image ? String(s.image) : undefined}
+                    aspect="vertical"
+                    renderEnabled={renderEnabled}
+                    downloadName={`short-${i + 1}`}
+                  />
+                  {s.title && <div className="font-semibold">{String(s.title)}</div>}
+                  {s.hook && <p>“{String(s.hook)}”</p>}
+                  {s.caption && (
+                    <div className="rounded-lg bg-surface px-2.5 py-1.5">
+                      <Label>Caption</Label>
+                      <div className="mt-0.5 font-semibold">{String(s.caption)}</div>
+                    </div>
+                  )}
+                  {s.narration && (
+                    <p className="italic text-muted">"{String(s.narration)}"</p>
+                  )}
+                </div>
+              </Card>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Voiceover script */}
+      {voiceover && (
+        <Card
+          header={
+            <>
+              <Label>Voiceover script</Label>
+              <CopyButton text={voiceover} />
+            </>
+          }
+        >
+          <p className="whitespace-pre-line text-sm leading-relaxed">{voiceover}</p>
+          <Link
+            href="/dashboard/tools/voiceover"
+            className="mt-3 inline-flex items-center gap-1.5 text-xs font-medium text-brand-600 hover:underline"
+          >
+            <Sparkles className="h-3 w-3" /> Turn this into AI narration →
+          </Link>
+        </Card>
+      )}
+
+      {/* Music + assembly */}
+      {data.musicVibe && (
+        <Card header={<Label>Music / sound</Label>}>
+          <p className="text-sm">🎵 {String(data.musicVibe)}</p>
+        </Card>
+      )}
+      {assembly.length > 0 && (
+        <Card header={<Label>How to assemble it</Label>}>
+          <ol className="list-decimal space-y-1.5 pl-5 text-sm">
+            {assembly.map((a, i) => <li key={i}>{a}</li>)}
+          </ol>
+        </Card>
+      )}
+    </div>
+  );
+}
+
 /**
  * Renderers can optionally consume the original `inputs` so they can echo
  * user-selected metadata (e.g. style) back into follow-up calls like
@@ -2184,6 +2473,7 @@ const RENDERERS: Partial<Record<ToolSlug, (p: RendererProps) => React.ReactNode>
   clipper: Clipper,
   voiceover: VoiceoverResult,
   captions: CaptionsResult,
+  autovideo: AutoVideo,
 };
 
 export function ResultView({

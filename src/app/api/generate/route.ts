@@ -9,6 +9,7 @@ import {
   pfpPromptFor,
   bannerPromptFor,
 } from "@/lib/ai-image";
+import { generateVideos, videoRenderingEnabled } from "@/lib/ai-video";
 import { rateLimit } from "@/lib/rate-limit";
 import { hasCredits, PLANS, type PlanId } from "@/lib/plans";
 import { fetchVideoContext } from "@/lib/youtube";
@@ -287,6 +288,53 @@ export async function POST(req: Request) {
       }
     } catch (err) {
       console.error("[generate] nichebend pfp gen failed:", err);
+    }
+  }
+
+  // Auto Video Studio — render a frame for every scene/short, then (only if a
+  // video key is connected) render the same scenes into real clips.
+  if (tool.slug === "autovideo") {
+    try {
+      const longform = (result.longform as Record<string, unknown>) ?? null;
+      const scenes = longform
+        ? ((longform.scenes as Array<Record<string, unknown>>) ?? [])
+        : [];
+      const shorts = (result.shorts as Array<Record<string, unknown>>) ?? [];
+
+      // 1) Frames for every scene + short (free path — always runs).
+      const scenePrompts = scenes.map((s) => String(s.imagePrompt || ""));
+      const shortPrompts = shorts.map((s) => String(s.imagePrompt || ""));
+      const [sceneImages, shortImages] = await Promise.all([
+        generateImages(scenePrompts),
+        generateImages(shortPrompts),
+      ]);
+      const newScenes = scenes.map((s, i) => ({ ...s, image: sceneImages[i] }));
+      const newShorts = shorts.map((s, i) => ({ ...s, image: shortImages[i] }));
+
+      // 2) Real clips — only when a key is set. Capped to keep the request
+      //    inside the serverless time budget; the rest stay frame + plan.
+      const renderEnabled = videoRenderingEnabled();
+      if (renderEnabled) {
+        const CAP = 4;
+        const [sceneVideos, shortVideos] = await Promise.all([
+          generateVideos(scenePrompts.slice(0, CAP)),
+          generateVideos(shortPrompts.slice(0, CAP)),
+        ]);
+        sceneVideos.forEach((v, i) => {
+          if (v) newScenes[i].video = v;
+        });
+        shortVideos.forEach((v, i) => {
+          if (v) newShorts[i].video = v;
+        });
+      }
+
+      if (longform) {
+        result.longform = { ...longform, scenes: newScenes };
+      }
+      if (shorts.length) result.shorts = newShorts;
+      result.videoRenderingEnabled = renderEnabled;
+    } catch (err) {
+      console.error("[generate] autovideo media gen failed:", err);
     }
   }
 

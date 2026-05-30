@@ -82,7 +82,7 @@ export function AuthForm({ mode }: { mode: "login" | "signup" }) {
     return (
       <div className="w-full max-w-md">
         <HeaderLogo />
-        <div className="mt-8 rounded-3xl border border-border bg-surface p-8 shadow-sm text-center">
+        <div className="mt-8 rounded-3xl border border-border bg-surface p-8 text-center shadow-[0_24px_60px_-24px_rgba(15,23,42,0.2)] lg:mt-0">
           <div className="mx-auto grid h-14 w-14 place-items-center rounded-2xl bg-brand-50 text-brand-600">
             <MailCheck className="h-7 w-7" />
           </div>
@@ -113,14 +113,17 @@ export function AuthForm({ mode }: { mode: "login" | "signup" }) {
   return (
     <div className="w-full max-w-md">
       <HeaderLogo />
-      <div className="mt-8 rounded-3xl border border-border bg-surface p-8 shadow-sm">
-        <h1 className="text-2xl font-bold tracking-tight">
-          {isSignup ? "Create your account" : "Welcome back"}
+      <div className="mt-8 rounded-3xl border border-border bg-surface p-8 shadow-[0_24px_60px_-24px_rgba(15,23,42,0.2)] lg:mt-0">
+        <p className="font-mono text-[11px] uppercase tracking-wider text-brand-600">
+          {isSignup ? "Get started" : "Welcome back"}
+        </p>
+        <h1 className="mt-1 text-2xl font-bold tracking-tight">
+          {isSignup ? "Create your account" : "Log in to Snipd"}
         </h1>
         <p className="mt-1.5 text-sm text-muted">
           {isSignup
             ? "30 free credits a month. No credit card."
-            : "Log in to your dashboard."}
+            : "Pick up right where you left off."}
         </p>
 
         <form onSubmit={onSubmit} className="mt-6 space-y-4">
@@ -170,7 +173,7 @@ export function AuthForm({ mode }: { mode: "login" | "signup" }) {
 
 function HeaderLogo() {
   return (
-    <Link href="/" className="flex justify-center">
+    <Link href="/" className="flex justify-center lg:hidden">
       <Logo size={32} />
     </Link>
   );

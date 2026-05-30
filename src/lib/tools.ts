@@ -24,6 +24,7 @@ export type ToolSlug =
   | "nichebend"
   | "audit"
   | "clipper"
+  | "autovideo"
   | "videogen"
   | "voiceover"
   | "watermark"
@@ -416,6 +417,57 @@ export const TOOLS: Record<ToolSlug, ToolDef> = {
   },
 
   // ──────── Production tools (Higgsfield-style cinematic) ─────────
+  autovideo: {
+    slug: "autovideo",
+    name: "Auto Video Studio",
+    icon: "Clapperboard",
+    tagline: "One topic → a whole video, built for you",
+    description:
+      "Tubegen-style auto videos. Give us a topic and pick Shorts, Long-form, or both — we write the full scene-by-scene plan, render an AI frame for every scene, and hand you a voiceover-ready script. Connect a video key and the same scenes auto-render into real clips.",
+    accent: "from-brand-500 via-indigo-600 to-fuchsia-500",
+    creditCost: 8,
+    generatesImage: true,
+    badge: "FLAGSHIP",
+    category: "production",
+    fields: [
+      {
+        name: "topic",
+        label: "What's the video about?",
+        type: "text",
+        placeholder: "5 AI tools that feel illegal to know",
+        required: true,
+      },
+      {
+        name: "format",
+        label: "What do you want made?",
+        type: "select",
+        options: ["Shorts (9:16)", "Long-form (16:9)", "Both"],
+        default: "Both",
+        hint: "Both gives you a long-form plan AND a batch of shorts from the same idea.",
+      },
+      {
+        name: "style",
+        label: "Style",
+        type: "select",
+        options: [
+          "Faceless / voiceover",
+          "MrBeast hype",
+          "Calm cinematic",
+          "Documentary",
+          "Talking-head + B-roll",
+        ],
+        default: "Faceless / voiceover",
+      },
+      {
+        name: "shortsCount",
+        label: "How many shorts?",
+        type: "select",
+        options: ["1", "3", "5"],
+        default: "3",
+        hint: "Only used when Shorts or Both is selected.",
+      },
+    ],
+  },
   storyboard: {
     slug: "storyboard",
     name: "Storyboard",

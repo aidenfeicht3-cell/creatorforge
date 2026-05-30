@@ -6,6 +6,10 @@ import {
   Zap,
   ArrowRight,
   Flame,
+  Rocket,
+  Compass,
+  Hash,
+  Clapperboard,
 } from "lucide-react";
 import { ToolIcon } from "@/components/ui/icon";
 import { buttonClasses } from "@/components/ui/button";
@@ -75,15 +79,60 @@ export default async function DashboardPage() {
         </div>
 
         <div className="flex flex-wrap gap-3">
-          <Link href="/dashboard/tools/studio" className={buttonClasses("primary", "md")}>
-            <Sparkles className="h-4 w-4" />
-            New Studio package
+          <Link href="/dashboard/launch" className={buttonClasses("primary", "md")}>
+            <Rocket className="h-4 w-4" />
+            Open Launch Pad
           </Link>
           <Link href="/dashboard/library" className={buttonClasses("secondary", "md")}>
             View library
           </Link>
         </div>
       </header>
+
+      {/* ─── Flagship hero: Launch Pad ─── */}
+      <Link
+        href="/dashboard/launch"
+        className="group relative block overflow-hidden rounded-3xl border border-brand-500/20 bg-gradient-to-br from-brand-50 via-surface to-surface p-7 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md sm:p-9"
+      >
+        <div className="pointer-events-none absolute -right-16 -top-16 h-56 w-56 rounded-full bg-gradient-to-br from-brand-500 to-brand-400 opacity-20 blur-3xl transition-opacity group-hover:opacity-30" />
+        <div className="relative flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+          <div className="max-w-xl">
+            <div className="inline-flex items-center gap-1.5 rounded-full border border-brand-500/20 bg-surface px-3 py-1 font-mono text-[10px] font-semibold uppercase tracking-wider text-brand-700">
+              <Sparkles className="h-3 w-3" /> Start here
+            </div>
+            <h2 className="mt-4 flex items-center gap-2.5 text-2xl font-bold tracking-tight sm:text-3xl">
+              <span className="grid h-10 w-10 place-items-center rounded-2xl bg-gradient-to-br from-brand-500 to-brand-400 text-white shadow-[0_8px_24px_-8px_rgba(37,99,235,0.5)]">
+                <Rocket className="h-5 w-5" />
+              </span>
+              Launch Pad
+            </h2>
+            <p className="mt-3 text-muted">
+              The guided flow that takes you from a blank page to your first
+              video — niche, channel name, profile picture, bio, and a complete
+              film-ready package. Follow along; we do the heavy lifting.
+            </p>
+            <div className="mt-5 inline-flex items-center gap-1.5 text-sm font-semibold text-brand-600">
+              Build my channel
+              <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+            </div>
+          </div>
+          <div className="flex shrink-0 gap-2.5">
+            {[
+              { icon: Compass, t: "Niche" },
+              { icon: Hash, t: "Brand" },
+              { icon: Clapperboard, t: "Video" },
+            ].map((s) => (
+              <div
+                key={s.t}
+                className="flex w-20 flex-col items-center gap-2 rounded-2xl border border-border bg-surface/70 p-3 backdrop-blur"
+              >
+                <s.icon className="h-5 w-5 text-brand-600" />
+                <span className="text-[11px] font-medium text-muted">{s.t}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </Link>
 
       {/* ─── Stat row ─── */}
       <div className="grid gap-4 sm:grid-cols-3">

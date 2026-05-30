@@ -28,21 +28,22 @@ export default function LandingPage() {
       <section className="mx-auto max-w-5xl px-5 pt-20 pb-16 text-center lg:pt-28">
         <span className="inline-flex items-center gap-2 rounded-full border border-border bg-surface px-4 py-1.5 text-sm shadow-sm">
           <span className="font-semibold text-brand-600">NEW:</span>
-          <span className="text-ink">Reverse Engineer is live</span>
+          <span className="text-ink">Launch Pad — your channel, start to finish</span>
           <Link href="/waitlist" className="inline-flex items-center gap-0.5 font-medium text-brand-600 hover:underline">
             try it <ArrowRight className="h-3.5 w-3.5" />
           </Link>
         </span>
 
         <h1 className="mx-auto mt-8 max-w-4xl text-5xl font-bold leading-[1.05] tracking-[-0.03em] text-ink sm:text-6xl lg:text-7xl">
-          The Easiest Way to Make
+          From Blank Page to Your
           <br />
-          Viral YouTube Videos
+          First Viral Video
         </h1>
 
         <p className="mx-auto mt-7 max-w-xl text-lg leading-relaxed text-muted">
-          The AI tool suite for YouTubers — thumbnails, viral titles, scripts,
-          SEO, Shorts, and the only AI that actually reads YouTube transcripts.
+          Launch Pad walks you through it all — find your niche, name and brand
+          your channel, then plan a complete, film-ready video. Plus 20+ AI tools
+          for everything after you hit record.
         </p>
 
         <div className="mt-10 flex justify-center">
@@ -73,13 +74,13 @@ export default function LandingPage() {
       >
         <div className="mx-auto max-w-2xl text-center">
           <h2 className="text-4xl font-bold tracking-[-0.02em] sm:text-5xl">
-            Nine tools.
+            A full toolkit.
             <br />
             One creator workflow.
           </h2>
           <p className="mt-5 text-muted">
-            Everything you do before hitting upload — built into one
-            dashboard.
+            After Launch Pad gets you started, these handle everything you do
+            before hitting upload — all in one dashboard.
           </p>
         </div>
 
@@ -239,7 +240,7 @@ export default function LandingPage() {
 
       {/* ───────── CTA band ───────── */}
       <section className="mx-auto max-w-5xl px-5 py-20">
-        <div className="rounded-3xl border border-border bg-gradient-to-br from-brand-50 to-white p-12 text-center shadow-sm">
+        <div className="rounded-3xl border border-border bg-gradient-to-br from-brand-50 to-surface p-12 text-center shadow-sm">
           <h2 className="text-3xl font-bold tracking-[-0.02em] sm:text-4xl">
             Start with 30 free credits.
           </h2>

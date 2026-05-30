@@ -18,6 +18,7 @@ import {
   X,
   Hammer,
   Scissors,
+  Rocket,
 } from "lucide-react";
 import { toast } from "sonner";
 import { ToolIcon } from "@/components/ui/icon";
@@ -180,8 +181,40 @@ export function Sidebar({
           </div>
         )}
 
+        {/* Flagship: Launch Pad */}
+        {collapsed ? (
+          <Link
+            href="/dashboard/launch"
+            onClick={onMobileClose}
+            title="Launch Pad"
+            className={cn(
+              "mt-5 flex items-center justify-center rounded-lg px-3 py-2 transition-colors",
+              isActive("/dashboard/launch")
+                ? "bg-brand-50 text-brand-700"
+                : "text-brand-600 hover:bg-bg-soft hover:text-brand-700",
+            )}
+          >
+            <Rocket className="h-4 w-4" />
+          </Link>
+        ) : (
+          <Link
+            href="/dashboard/launch"
+            onClick={onMobileClose}
+            className={cn(
+              "mt-5 flex items-center gap-2.5 rounded-xl bg-gradient-to-r from-brand-500 to-brand-400 px-3 py-2.5 text-sm font-semibold text-white shadow-[0_8px_24px_-8px_rgba(37,99,235,0.6)] transition-all hover:brightness-105",
+              isActive("/dashboard/launch") && "ring-2 ring-brand-500/40",
+            )}
+          >
+            <Rocket className="h-4 w-4" />
+            <span className="flex-1">Launch Pad</span>
+            <span className="rounded-full bg-white/20 px-1.5 py-0.5 font-mono text-[9px] uppercase tracking-wider">
+              Start
+            </span>
+          </Link>
+        )}
+
         {/* Main nav */}
-        <nav className="mt-5 space-y-0.5">
+        <nav className="mt-3 space-y-0.5">
           {MAIN.map((item) => (
             <NavLink
               key={item.href}
