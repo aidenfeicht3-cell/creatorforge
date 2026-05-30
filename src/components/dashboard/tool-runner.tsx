@@ -14,6 +14,7 @@ import {
   Lock,
   Plug,
   Play,
+  ChevronDown,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -325,7 +326,7 @@ export function ToolRunner({
       {/* ── Header ── */}
       <header className="flex items-start gap-4">
         <div
-          className={`grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-gradient-to-br ${tool.accent} shadow-lg`}
+          className={`grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-gradient-to-br ${tool.accent} shadow-lg ring-1 ring-inset ring-white/20`}
         >
           <ToolIcon name={tool.icon} className="h-6 w-6 text-white" />
         </div>
@@ -370,7 +371,7 @@ export function ToolRunner({
             </div>
           )}
 
-          <div className="rounded-3xl border border-border bg-surface p-6 shadow-sm sm:p-8">
+          <div className="glass rounded-3xl p-6 sm:p-8">
             <div className="space-y-5">
               {tool.fields.map((field) => (
                 <label key={field.name} className="block">
@@ -380,24 +381,27 @@ export function ToolRunner({
                   </span>
 
                   {field.type === "select" ? (
-                    <select
-                      value={inputs[field.name]}
-                      onChange={(e) => set(field.name, e.target.value)}
-                      className="h-12 w-full rounded-xl border border-border bg-bg-soft px-3.5 text-[15px] outline-none transition-colors focus:border-brand-500/60 focus:ring-2 focus:ring-brand-500/15"
-                    >
-                      {field.options?.map((opt) => (
-                        <option key={opt} value={opt}>
-                          {opt}
-                        </option>
-                      ))}
-                    </select>
+                    <div className="relative">
+                      <select
+                        value={inputs[field.name]}
+                        onChange={(e) => set(field.name, e.target.value)}
+                        className="h-12 w-full appearance-none rounded-xl border border-border bg-bg-soft px-4 pr-11 text-[15px] outline-none transition-colors hover:border-brand-500/40 focus:border-brand-500/60 focus:ring-2 focus:ring-brand-500/15"
+                      >
+                        {field.options?.map((opt) => (
+                          <option key={opt} value={opt}>
+                            {opt}
+                          </option>
+                        ))}
+                      </select>
+                      <ChevronDown className="pointer-events-none absolute right-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted" />
+                    </div>
                   ) : field.type === "textarea" ? (
                     <textarea
                       rows={4}
                       value={inputs[field.name]}
                       placeholder={field.placeholder}
                       onChange={(e) => set(field.name, e.target.value)}
-                      className="w-full rounded-xl border border-border bg-bg-soft px-4 py-3 text-[15px] outline-none placeholder:text-muted/60 transition-colors focus:border-brand-500/60 focus:ring-2 focus:ring-brand-500/15"
+                      className="w-full rounded-xl border border-border bg-bg-soft px-4 py-3 text-[15px] outline-none placeholder:text-muted/60 transition-colors hover:border-brand-500/40 focus:border-brand-500/60 focus:ring-2 focus:ring-brand-500/15"
                     />
                   ) : (
                     <input
@@ -405,7 +409,7 @@ export function ToolRunner({
                       value={inputs[field.name]}
                       placeholder={field.placeholder}
                       onChange={(e) => set(field.name, e.target.value)}
-                      className="h-12 w-full rounded-xl border border-border bg-bg-soft px-4 text-[15px] outline-none placeholder:text-muted/60 transition-colors focus:border-brand-500/60 focus:ring-2 focus:ring-brand-500/15"
+                      className="h-12 w-full rounded-xl border border-border bg-bg-soft px-4 text-[15px] outline-none placeholder:text-muted/60 transition-colors hover:border-brand-500/40 focus:border-brand-500/60 focus:ring-2 focus:ring-brand-500/15"
                     />
                   )}
 
@@ -441,7 +445,7 @@ export function ToolRunner({
                   onClick={run}
                   disabled={loading}
                   size="lg"
-                  className="mt-7 w-full"
+                  className={cn("mt-7 w-full", !blocked && "glow-brand")}
                 >
                   {loading ? (
                     <Loader2 className="h-4 w-4 animate-spin" />
@@ -676,7 +680,7 @@ function DemoPreview({
   const sample = SAMPLES[tool.slug];
 
   return (
-    <div className="rounded-3xl border border-border bg-surface p-6 shadow-sm">
+    <div className="glass rounded-3xl p-6">
       <div className="inline-flex items-center gap-1.5 font-mono text-[10px] font-semibold uppercase tracking-[0.18em] text-muted">
         <span className="inline-block h-1.5 w-1.5 rounded-full bg-brand-500/70" />
         Example output
