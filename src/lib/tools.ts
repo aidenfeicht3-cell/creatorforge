@@ -23,6 +23,7 @@ export type ToolSlug =
   | "shotlist"
   | "nichebend"
   | "audit"
+  | "trends"
   | "clipper"
   | "autovideo"
   | "videogen"
@@ -413,6 +414,42 @@ export const TOOLS: Record<ToolSlug, ToolDef> = {
       { name: "interests", label: "Your interests / skills", type: "textarea", placeholder: "AI, coding, content creation, gaming, finance", required: true },
       { name: "audience", label: "Who would you want to help?", type: "text", placeholder: "Beginner indie devs", required: true },
       { name: "constraints", label: "Constraints (optional)", type: "text", placeholder: "I don't want to show my face" },
+    ],
+  },
+  trends: {
+    slug: "trends",
+    name: "TikTok Trend Radar",
+    icon: "TrendingUp",
+    tagline: "What's working on short-form right now — and how to ride it",
+    description:
+      "Tell us your niche. Get a strategist's read on the formats, hooks, sounds, and hashtags winning on TikTok and Reels right now — each tied to a specific video you can film today, plus a 7-day posting plan. Comes with a live-verify checklist so you confirm before you post.",
+    accent: "from-pink-500 via-rose-500 to-orange-500",
+    creditCost: 2,
+    badge: "NEW",
+    category: "growth",
+    fields: [
+      {
+        name: "niche",
+        label: "Your niche / topic",
+        type: "text",
+        placeholder: "Faceless finance tips for Gen Z",
+        required: true,
+        hint: "The more specific, the sharper the trends we map to you.",
+      },
+      {
+        name: "platform",
+        label: "Platform",
+        type: "select",
+        options: ["TikTok", "YouTube Shorts", "Instagram Reels", "All short-form"],
+        default: "TikTok",
+      },
+      {
+        name: "goal",
+        label: "Main goal",
+        type: "select",
+        options: ["Go viral fast", "Grow followers", "Drive sales / links", "Build authority"],
+        default: "Go viral fast",
+      },
     ],
   },
 

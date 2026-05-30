@@ -35,6 +35,7 @@ const TOOL_NEEDS: Partial<Record<ToolSlug, ModelTier>> = {
   shorts:     "opus",
   reverse:    "opus",
   studio:     "opus",
+  trends:     "sonnet",
 };
 
 const TIER_ORDER: ModelTier[] = ["haiku", "sonnet", "opus"];

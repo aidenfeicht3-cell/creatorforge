@@ -141,6 +141,14 @@ const DELIVERABLES: Record<string, string[]> = {
     "The ONE change that would move the needle",
     "A 4-week action plan",
   ],
+  trends: [
+    "Trending formats & angles mapped to your niche",
+    "Each tagged Emerging / Peaking / Fading",
+    "A specific video idea + opening hook per trend",
+    "Sound, hashtag, and posting-time playbook",
+    "A 7-day posting plan",
+    "A live-verify checklist to confirm before you post",
+  ],
   clipper: [
     "5 viral moments with exact timestamps",
     "Hook overlay + body caption per clip",
@@ -201,6 +209,7 @@ const TIPS: Record<string, string> = {
   shotlist: "Pick the actual duration — long-form gets more cinematic shots.",
   nichebend: "Be specific about what YOU bring. Vague inputs = generic pivots.",
   audit: "Use your real handle — we pull live YouTube data to ground the analysis in your actual videos.",
+  trends: "Get specific with your niche — 'faceless finance for Gen Z' maps to sharper trends than just 'finance.' This is a strategist read, so use the verify-live checklist before you post.",
   clipper: "Long-form content with captions works best. Podcasts and interviews clip way harder than vlogs.",
   autovideo: "Pick 'Both' to get a long-form plan plus a batch of shorts from one idea. Specific topics render sharper frames.",
   videogen: "Describe motion and lighting, not just the subject — 'slow dolly-in, golden hour' beats 'a city.'",
@@ -650,6 +659,13 @@ const SAMPLES: Record<ToolSlug, Sample> = {
       { score: "94", label: "Hook overlay + body caption ready", tag: "TikTok" },
       { score: "89", label: "Hashtags + sound-effect cue attached", tag: "Reels" },
       { score: "85", label: "Voiceover-ready intro line included", tag: "Shorts" },
+    ],
+  },
+  trends: {
+    rows: [
+      { tag: "PEAKING", label: "Text-story POV — “I quit my 9–5” cold open" },
+      { tag: "EMERGING", label: "Green-screen react to a chart or headline" },
+      { tag: "7-DAY", label: "Posting plan + hashtags + verify checklist" },
     ],
   },
 

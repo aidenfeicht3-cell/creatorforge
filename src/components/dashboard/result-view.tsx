@@ -12,6 +12,11 @@ import {
   Sparkles,
   Film,
   Wand2,
+  TrendingUp,
+  Music,
+  Hash,
+  CalendarDays,
+  ShieldCheck,
 } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
@@ -2439,6 +2444,225 @@ function AutoVideo({ data }: { data: Any }) {
   );
 }
 
+/* ── TikTok Trend Radar ──────────────────────────────────── */
+
+/** Colour a lifecycle pill: Emerging = go, Peaking = hot, Fading = cooling. */
+function lifecycleStyle(lc: string): string {
+  const v = lc.toLowerCase();
+  if (v.includes("emerg")) return "border-emerald-200 bg-emerald-50 text-emerald-700";
+  if (v.includes("peak")) return "border-amber-200 bg-amber-50 text-amber-700";
+  if (v.includes("fad")) return "border-border bg-bg-soft text-muted";
+  return "border-border bg-bg-soft text-muted";
+}
+
+function TrendRadar({ data }: { data: Any }) {
+  const trends = (data.trends as Any[]) || [];
+  const sounds = (data.sounds as Any[]) || [];
+  const hashtags = (data.hashtags as Any) || {};
+  const broad = (hashtags.broad as string[]) || [];
+  const nicheTags = (hashtags.niche as string[]) || [];
+  const playbook = (data.postingPlaybook as Any) || {};
+  const plan = (data.sevenDayPlan as Any[]) || [];
+  const verify = (data.verifyLive as string[]) || [];
+  const note = data.strategistNote ? String(data.strategistNote) : null;
+  const allTags = [...broad, ...nicheTags].map((h) =>
+    h.startsWith("#") ? h : `#${h}`,
+  );
+
+  return (
+    <div className="space-y-4">
+      {note && (
+        <div className="flex items-start gap-2.5 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+          <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0" />
+          <span>{note}</span>
+        </div>
+      )}
+
+      <div className="space-y-3">
+        {trends.map((t, i) => (
+          <Card
+            key={i}
+            header={
+              <>
+                <span className="inline-flex items-center gap-2 font-semibold">
+                  <TrendingUp className="h-4 w-4 text-rose-500" />
+                  {String(t.name)}
+                </span>
+                {t.lifecycle && (
+                  <span
+                    className={`rounded-full border px-2.5 py-0.5 text-xs font-medium ${lifecycleStyle(
+                      String(t.lifecycle),
+                    )}`}
+                  >
+                    {String(t.lifecycle)}
+                  </span>
+                )}
+              </>
+            }
+          >
+            <div className="space-y-3 text-sm">
+              {t.format && <p className="text-muted">{String(t.format)}</p>}
+              {t.whyWorking && (
+                <div>
+                  <Label>Why it&apos;s working</Label>
+                  <p className="mt-0.5">{String(t.whyWorking)}</p>
+                </div>
+              )}
+              {t.exampleConcept && (
+                <div className="rounded-lg border-l-2 border-brand-500 bg-bg-soft px-3 py-2">
+                  <Label>Make this</Label>
+                  <p className="mt-0.5 font-medium">{String(t.exampleConcept)}</p>
+                </div>
+              )}
+              {t.hook && (
+                <div>
+                  <Label>Open with</Label>
+                  <p className="mt-0.5 italic">“{String(t.hook)}”</p>
+                </div>
+              )}
+              <div className="flex flex-wrap gap-2 text-xs text-muted">
+                {t.effort && (
+                  <span className="rounded-md bg-bg-soft px-2 py-1">
+                    Effort: {String(t.effort)}
+                  </span>
+                )}
+                {t.saturationRisk && (
+                  <span className="rounded-md bg-bg-soft px-2 py-1">
+                    {String(t.saturationRisk)}
+                  </span>
+                )}
+              </div>
+            </div>
+          </Card>
+        ))}
+      </div>
+
+      {sounds.length > 0 && (
+        <Card
+          header={
+            <span className="inline-flex items-center gap-2 font-semibold">
+              <Music className="h-4 w-4 text-brand-600" />
+              Sound / audio to ride
+            </span>
+          }
+        >
+          <ul className="space-y-3 text-sm">
+            {sounds.map((s, i) => (
+              <li key={i}>
+                <span className="font-medium">{String(s.type)}</span>
+                <span className="text-muted"> — {String(s.useFor)}</span>
+                {s.howToFind && (
+                  <p className="mt-0.5 text-xs text-muted">
+                    Find it: {String(s.howToFind)}
+                  </p>
+                )}
+              </li>
+            ))}
+          </ul>
+        </Card>
+      )}
+
+      {allTags.length > 0 && (
+        <Card
+          header={
+            <>
+              <span className="inline-flex items-center gap-2 font-semibold">
+                <Hash className="h-4 w-4 text-brand-600" />
+                Hashtags
+              </span>
+              <CopyButton text={allTags.join(" ")} />
+            </>
+          }
+        >
+          <div className="flex flex-wrap gap-1.5">
+            {allTags.map((h) => (
+              <span
+                key={h}
+                className="rounded-md bg-bg-soft px-2 py-0.5 font-mono text-xs text-brand-600"
+              >
+                {h}
+              </span>
+            ))}
+          </div>
+          {hashtags.strategy && (
+            <p className="mt-3 text-xs text-muted">{String(hashtags.strategy)}</p>
+          )}
+        </Card>
+      )}
+
+      {(playbook.frequency || playbook.bestTimes || playbook.firstHourTactic) && (
+        <Card header={<Label>Posting playbook</Label>}>
+          <div className="grid gap-2 text-sm sm:grid-cols-3">
+            <div>
+              <Label>Frequency</Label>
+              <div className="mt-0.5 font-medium">{String(playbook.frequency)}</div>
+            </div>
+            <div>
+              <Label>Best times</Label>
+              <div className="mt-0.5 font-medium">{String(playbook.bestTimes)}</div>
+            </div>
+            <div>
+              <Label>First hour</Label>
+              <div className="mt-0.5 font-medium">
+                {String(playbook.firstHourTactic)}
+              </div>
+            </div>
+          </div>
+        </Card>
+      )}
+
+      {plan.length > 0 && (
+        <Card
+          header={
+            <span className="inline-flex items-center gap-2 font-semibold">
+              <CalendarDays className="h-4 w-4 text-brand-600" />
+              7-day posting plan
+            </span>
+          }
+        >
+          <ol className="space-y-2">
+            {plan.map((d, i) => (
+              <li
+                key={i}
+                className="flex gap-3 rounded-xl border border-border bg-bg-soft p-3 text-sm"
+              >
+                <span className="shrink-0 font-mono text-xs font-semibold text-brand-600">
+                  Day {String(d.day || i + 1)}
+                </span>
+                <div>
+                  <div className="font-medium">{String(d.idea)}</div>
+                  {d.trend && (
+                    <p className="mt-0.5 text-xs text-muted">
+                      Format: {String(d.trend)}
+                    </p>
+                  )}
+                </div>
+              </li>
+            ))}
+          </ol>
+        </Card>
+      )}
+
+      {verify.length > 0 && (
+        <Card
+          header={
+            <span className="inline-flex items-center gap-2 font-semibold">
+              <ShieldCheck className="h-4 w-4 text-emerald-600" />
+              Verify it&apos;s hot before you post
+            </span>
+          }
+        >
+          <ul className="list-disc space-y-1.5 pl-5 text-sm">
+            {verify.map((v, i) => (
+              <li key={i}>{v}</li>
+            ))}
+          </ul>
+        </Card>
+      )}
+    </div>
+  );
+}
+
 /**
  * Renderers can optionally consume the original `inputs` so they can echo
  * user-selected metadata (e.g. style) back into follow-up calls like
@@ -2471,6 +2695,7 @@ const RENDERERS: Partial<Record<ToolSlug, (p: RendererProps) => React.ReactNode>
   nichebend: NicheBend,
   audit: Audit,
   clipper: Clipper,
+  trends: TrendRadar,
   voiceover: VoiceoverResult,
   captions: CaptionsResult,
   autovideo: AutoVideo,

@@ -37,7 +37,7 @@ export default function LandingPage() {
         <h1 className="mx-auto mt-8 max-w-4xl text-5xl font-bold leading-[1.05] tracking-[-0.03em] text-ink sm:text-6xl lg:text-7xl">
           From Blank Page to Your
           <br />
-          First Viral Video
+          <span className="text-gradient">First Viral Video</span>
         </h1>
 
         <p className="mx-auto mt-7 max-w-xl text-lg leading-relaxed text-muted">
@@ -56,6 +56,14 @@ export default function LandingPage() {
         <p className="mt-5 text-sm text-muted">
           Free 30 credits a month. No credit card.
         </p>
+
+        <div className="mt-10 flex flex-wrap items-center justify-center gap-x-3 gap-y-2 text-sm text-muted">
+          <span className="font-medium text-ink">20+ AI creator tools</span>
+          <span className="text-border">•</span>
+          <span className="font-medium text-ink">5 captioned shorts per video</span>
+          <span className="text-border">•</span>
+          <span className="font-medium text-ink">30 free credits monthly</span>
+        </div>
       </section>
 
       {/* ───────── Feature preview row ───────── */}
@@ -155,7 +163,7 @@ export default function LandingPage() {
 
       {/* ───────── Affiliate / early access ───────── */}
       <section id="affiliate" className="mx-auto max-w-6xl px-5 py-20">
-        <div className="overflow-hidden rounded-3xl border border-border bg-surface shadow-sm">
+        <div className="glass-strong overflow-hidden rounded-3xl">
           <div className="grid gap-0 lg:grid-cols-2">
             {/* Left — the pitch + how to get your code */}
             <div className="p-8 sm:p-12">
@@ -200,7 +208,7 @@ export default function LandingPage() {
 
             {/* Right — visual: the affiliate card */}
             <div className="relative border-t border-border bg-gradient-to-br from-brand-50 to-surface p-8 sm:p-12 lg:border-l lg:border-t-0">
-              <div className="rounded-2xl border border-border bg-surface p-5 shadow-sm">
+              <div className="glass rounded-2xl p-5">
                 <div className="text-xs font-medium text-muted">
                   Your referral link
                 </div>
@@ -213,14 +221,14 @@ export default function LandingPage() {
               </div>
 
               <div className="mt-4 grid grid-cols-2 gap-4">
-                <div className="rounded-2xl border border-border bg-surface p-5 shadow-sm">
+                <div className="glass rounded-2xl p-5">
                   <Users className="h-5 w-5 text-brand-600" />
                   <div className="mt-3 text-2xl font-bold">+10</div>
                   <div className="text-xs text-muted">
                     bonus credits per signup
                   </div>
                 </div>
-                <div className="rounded-2xl border border-border bg-surface p-5 shadow-sm">
+                <div className="glass rounded-2xl p-5">
                   <Coins className="h-5 w-5 text-amber-500" />
                   <div className="mt-3 text-2xl font-bold">25–30%</div>
                   <div className="text-xs text-muted">
@@ -280,7 +288,10 @@ function ToolCard({
   iconColor: string;
 }) {
   return (
-    <div className="group flex flex-col rounded-2xl border border-border bg-surface p-6 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md">
+    <Link
+      href="/waitlist"
+      className="group glass flex flex-col rounded-2xl p-6 transition-all hover:-translate-y-0.5 hover:border-brand-500/40"
+    >
       <div className="flex items-start justify-between">
         <div className={`grid h-11 w-11 place-items-center rounded-xl ${color}`}>
           <Icon className={`h-5 w-5 ${iconColor}`} />
@@ -292,16 +303,12 @@ function ToolCard({
         )}
       </div>
       <h3 className="mt-5 text-lg font-semibold">{title}</h3>
-      <p className="mt-2 text-sm leading-relaxed text-muted">{desc}</p>
-      <div className="mt-6">
-        <Link
-          href="/waitlist"
-          className="inline-flex w-full items-center justify-center gap-1 rounded-full bg-brand-500 px-4 py-2.5 text-sm font-medium text-white shadow-[0_6px_18px_-6px_rgba(37,99,235,0.45)] transition-all hover:bg-brand-600"
-        >
-          Try Now <ArrowRight className="h-3.5 w-3.5" />
-        </Link>
+      <p className="mt-2 flex-1 text-sm leading-relaxed text-muted">{desc}</p>
+      <div className="mt-5 inline-flex items-center gap-1 text-sm font-semibold text-brand-600">
+        Try now
+        <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
       </div>
-    </div>
+    </Link>
   );
 }
 
@@ -309,7 +316,7 @@ function ToolCard({
 function PreviewCard({ variant }: { variant: "reverse" | "shorts" | "studio" }) {
   if (variant === "reverse") {
     return (
-      <div className="overflow-hidden rounded-2xl border border-border bg-surface p-5 shadow-sm">
+      <div className="glass overflow-hidden rounded-2xl p-5">
         <div className="flex items-center gap-2 border-b border-border pb-3">
           <Crosshair className="h-4 w-4 text-rose-600" />
           <span className="text-sm font-semibold">Reverse Engineer</span>
@@ -332,7 +339,7 @@ function PreviewCard({ variant }: { variant: "reverse" | "shorts" | "studio" }) 
   }
   if (variant === "shorts") {
     return (
-      <div className="overflow-hidden rounded-2xl border border-border bg-surface p-5 shadow-sm">
+      <div className="glass overflow-hidden rounded-2xl p-5">
         <div className="flex items-center gap-2 border-b border-border pb-3">
           <Scissors className="h-4 w-4 text-sky-600" />
           <span className="text-sm font-semibold">Shorts Repurposer</span>

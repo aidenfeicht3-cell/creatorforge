@@ -638,6 +638,50 @@ Return JSON: {
 }`,
       };
 
+    case "trends": {
+      const platform = inputs.platform || "TikTok";
+      const goal = inputs.goal || "Go viral fast";
+      return {
+        system: `${BASE_SYSTEM} You are also a short-form strategist who lives on TikTok, Reels, and Shorts. You know the format archetypes that recur on the For You page (talking-head + bold captions, green-screen react, POV skit, "day in the life", text-story, satisfying process, listicle countdown, hot-take rant, before/after, duet/stitch bait). You DO NOT have a live feed, so you NEVER invent a specific song title, view count, or a named creator as if it's confirmed live data. Instead you map the durable, repeatable patterns that keep winning in a niche and tell the creator exactly how to verify they're hot right now. Be specific to THEIR niche, not generic. ${JSON_RULE}`,
+        user: `Map what's working in short-form for this creator and turn it into a plan they can act on today.
+
+Niche: "${inputs.niche}"
+Platform focus: ${platform}
+Main goal: ${goal}
+
+Rules:
+- Each trend must be a REPEATABLE FORMAT or angle, named plainly, with a concrete example video idea IN THEIR NICHE (specific enough to film this week).
+- Be honest about lifecycle: "Emerging" (early, low competition), "Peaking" (hot now, crowded), or "Fading" (still works but saturated).
+- For sounds/audio, describe the TYPE of sound that fits (e.g. "tense build-up beat", "upbeat lo-fi", "trending dialogue clip") and how to find current ones — do NOT name a specific song as if confirmed.
+- Hashtags: give a mix of broad-reach and specific-niche tags, and how to stack them.
+- The 7-day plan must use the trends above — each day references which trend/format it uses.
+- "verifyLive" tells them exactly how to confirm these are trending right now before they post.
+
+Return JSON: {
+  "niche":"${inputs.niche}",
+  "platform":"${platform}",
+  "strategistNote":"one honest sentence: this is a pattern-based read, not a live scrape — verify the picks below before posting",
+  "trends":[{
+    "name":"the format / angle name",
+    "format":"what the video actually is on screen",
+    "lifecycle":"Emerging | Peaking | Fading",
+    "whyWorking":"the psychological + algorithmic reason this performs now",
+    "exampleConcept":"a specific video idea in THIS niche using this format",
+    "hook":"the first spoken line or on-screen text to open with",
+    "effort":"Low | Medium | High to produce",
+    "saturationRisk":"honest note on how crowded this is and how to stand out"
+  }],
+  "sounds":[{"type":"the kind of audio that fits","useFor":"what kind of clip","howToFind":"how to find a current one on ${platform}"}],
+  "hashtags":{"broad":["#..."],"niche":["#..."],"strategy":"how to stack broad + niche tags"},
+  "postingPlaybook":{"frequency":"how often to post for ${goal}","bestTimes":"general best posting windows","firstHourTactic":"what to do in the first 60 minutes after posting"},
+  "sevenDayPlan":[{"day":1,"idea":"specific video to post","trend":"which trend above it uses"}],
+  "verifyLive":["concrete step to confirm these are hot right now (e.g. search the hashtag on ${platform} and check post dates)","another"],
+  "watchOutFor":["the most common way creators botch trend-chasing in this niche","another"],
+  "nextStep":"recommended next tool — usually Hook Generator or Auto Video Studio to actually make the clips"
+}`,
+      };
+    }
+
     default:
       throw new Error(`Unknown tool: ${tool}`);
   }
