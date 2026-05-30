@@ -1140,7 +1140,7 @@ function PackageStep({ plan, patch, runTool, onNext, onBack }: StepProps) {
       icon={Clapperboard}
       eyebrow="Step 6 · First video"
       title="Build the full package"
-      blurb={`One click turns "${plan.videoTopic}" into a title, a thumbnail, and a complete script — the whole video, ready to film.`}
+      blurb="One click turns your idea into a scored title, a thumbnail, and a complete, film-ready script."
       footer={
         <Footer
           onBack={onBack}
@@ -1151,6 +1151,17 @@ function PackageStep({ plan, patch, runTool, onNext, onBack }: StepProps) {
       }
     >
       <div className="space-y-5">
+        {plan.videoTopic && (
+          <div className="rounded-xl border border-border bg-bg-soft px-4 py-3">
+            <div className="font-mono text-[10px] uppercase tracking-wider text-brand-600">
+              Your video idea
+            </div>
+            <p className="mt-1 line-clamp-2 text-sm font-medium">
+              {plan.videoTopic}
+            </p>
+          </div>
+        )}
+
         {!built && (
           <RunButton
             label="Build my video package"
@@ -1176,21 +1187,32 @@ function PackageStep({ plan, patch, runTool, onNext, onBack }: StepProps) {
               <SectionLabel icon={Clapperboard} text="Thumbnail" />
               <div className="relative mt-2 aspect-video overflow-hidden rounded-2xl border border-border bg-bg-soft">
                 {plan.thumbnailImage ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    src={plan.thumbnailImage}
-                    alt="Thumbnail"
-                    className="h-full w-full object-cover"
-                  />
+                  <>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={plan.thumbnailImage}
+                      alt="Thumbnail"
+                      className="h-full w-full object-cover"
+                    />
+                    {plan.thumbnailOverlay && (
+                      <span className="absolute bottom-3 left-3 rounded-lg bg-ink/70 px-2.5 py-1 text-sm font-bold text-white backdrop-blur">
+                        {plan.thumbnailOverlay}
+                      </span>
+                    )}
+                  </>
                 ) : (
-                  <div className="grid h-full w-full place-items-center text-muted">
-                    <Clapperboard className="h-8 w-8" />
+                  // Designed fallback — reads as an intentional thumbnail mock,
+                  // never an empty/broken box, even when image gen returns nothing.
+                  <div className="relative grid h-full w-full place-items-center bg-gradient-to-br from-brand-600 via-brand-500 to-indigo-500 p-6 text-center">
+                    <div>
+                      <p className="font-mono text-[10px] uppercase tracking-widest text-white/70">
+                        Thumbnail preview
+                      </p>
+                      <p className="mt-1.5 text-2xl font-extrabold leading-tight text-white drop-shadow sm:text-3xl">
+                        {plan.thumbnailOverlay || plan.title || "Your thumbnail"}
+                      </p>
+                    </div>
                   </div>
-                )}
-                {plan.thumbnailOverlay && (
-                  <span className="absolute bottom-3 left-3 rounded-lg bg-ink/70 px-2.5 py-1 text-sm font-bold text-white backdrop-blur">
-                    {plan.thumbnailOverlay}
-                  </span>
                 )}
               </div>
             </div>
