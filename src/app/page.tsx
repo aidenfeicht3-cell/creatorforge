@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
+import { PricingCards } from "@/components/pricing-cards";
 import { buttonClasses } from "@/components/ui/button";
 
 export default function LandingPage() {
@@ -29,7 +30,7 @@ export default function LandingPage() {
         <span className="inline-flex items-center gap-2 rounded-full border border-border bg-surface px-4 py-1.5 text-sm shadow-sm">
           <span className="font-semibold text-brand-600">NEW:</span>
           <span className="text-ink">Launch Pad — your channel, start to finish</span>
-          <Link href="/waitlist" className="inline-flex items-center gap-0.5 font-medium text-brand-600 hover:underline">
+          <Link href="/signup" className="inline-flex items-center gap-0.5 font-medium text-brand-600 hover:underline">
             try it <ArrowRight className="h-3.5 w-3.5" />
           </Link>
         </span>
@@ -47,14 +48,14 @@ export default function LandingPage() {
         </p>
 
         <div className="mt-10 flex justify-center">
-          <Link href="/waitlist" className={buttonClasses("primary", "lg")}>
-            Get Early Access
+          <Link href="/signup" className={buttonClasses("primary", "lg")}>
+            Start for Free
             <ArrowRight className="h-4 w-4" />
           </Link>
         </div>
 
         <p className="mt-5 text-sm text-muted">
-          Free 30 credits a month. No credit card.
+          Free forever. No credit card. Upgrade only when you want pro-grade models.
         </p>
 
         <div className="mt-10 flex flex-wrap items-center justify-center gap-x-3 gap-y-2 text-sm text-muted">
@@ -62,7 +63,7 @@ export default function LandingPage() {
           <span className="text-border">•</span>
           <span className="font-medium text-ink">5 captioned shorts per video</span>
           <span className="text-border">•</span>
-          <span className="font-medium text-ink">30 free credits monthly</span>
+          <span className="font-medium text-ink">Free forever plan</span>
         </div>
       </section>
 
@@ -161,6 +162,35 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* ───────── Pricing ───────── */}
+      <section id="pricing" className="mx-auto max-w-6xl px-5 py-20">
+        <div className="mx-auto max-w-2xl text-center">
+          <span className="inline-flex items-center gap-2 rounded-full border border-border bg-bg-soft px-3 py-1 text-xs font-medium text-brand-700">
+            Genuinely free to start
+          </span>
+          <h2 className="mt-5 text-4xl font-bold tracking-[-0.02em] sm:text-5xl">
+            Free to create.
+            <br />
+            Pay only for more power.
+          </h2>
+          <p className="mt-5 text-muted">
+            Use the full toolkit free, forever — no card required. When you&apos;re
+            posting seriously, upgrade for our smartest models, watermark-free
+            exports, and the 1-click Viral Clip Studio.
+          </p>
+        </div>
+
+        <div className="mt-14">
+          <PricingCards />
+        </div>
+
+        <p className="mx-auto mt-8 max-w-xl text-center text-xs leading-relaxed text-muted">
+          Out of credits on a paid plan? You don&apos;t get cut off — you simply
+          drop back to the free models until your next monthly reset. Cancel any
+          time.
+        </p>
+      </section>
+
       {/* ───────── Affiliate / early access ───────── */}
       <section id="affiliate" className="mx-auto max-w-6xl px-5 py-20">
         <div className="glass-strong overflow-hidden rounded-3xl">
@@ -184,7 +214,7 @@ export default function LandingPage() {
 
               <ol className="mt-7 space-y-3.5">
                 {[
-                  "Join early access — grab your spot and you're in.",
+                  "Create your free account — you're in instantly.",
                   "Open Dashboard → Affiliate and copy your unique referral code.",
                   "Share your link. You + every creator you refer get bonus credits instantly.",
                   "Earn account credit each time a referral upgrades to a paid plan.",
@@ -199,7 +229,7 @@ export default function LandingPage() {
               </ol>
 
               <div className="mt-8">
-                <Link href="/waitlist" className={buttonClasses("primary", "lg")}>
+                <Link href="/signup" className={buttonClasses("primary", "lg")}>
                   Get my referral code
                   <ArrowRight className="h-4 w-4" />
                 </Link>
@@ -250,15 +280,15 @@ export default function LandingPage() {
       <section className="mx-auto max-w-5xl px-5 py-20">
         <div className="rounded-3xl border border-border bg-gradient-to-br from-brand-50 to-surface p-12 text-center shadow-sm">
           <h2 className="text-3xl font-bold tracking-[-0.02em] sm:text-4xl">
-            Start with 30 free credits.
+            Start free. Upgrade when you&apos;re ready.
           </h2>
           <p className="mx-auto mt-4 max-w-md text-muted">
-            Join the early access list. Free users get bonus credits. Paid
-            intenders get 25–30% off their first month.
+            Create your free account — unlimited core tools, no card required.
+            Upgrade for pro-grade models any time.
           </p>
           <div className="mt-8 flex justify-center">
-            <Link href="/waitlist" className={buttonClasses("primary", "lg")}>
-              Get Early Access
+            <Link href="/signup" className={buttonClasses("primary", "lg")}>
+              Start for Free
               <ArrowRight className="h-4 w-4" />
             </Link>
           </div>
@@ -289,7 +319,7 @@ function ToolCard({
 }) {
   return (
     <Link
-      href="/waitlist"
+      href="/signup"
       className="group glass flex flex-col rounded-2xl p-6 transition-all hover:-translate-y-0.5 hover:border-brand-500/40"
     >
       <div className="flex items-start justify-between">
@@ -361,7 +391,7 @@ function PreviewCard({ variant }: { variant: "reverse" | "shorts" | "studio" }) 
     );
   }
   return (
-    <div className="overflow-hidden rounded-2xl border border-border bg-surface p-5 shadow-sm">
+    <div className="glass overflow-hidden rounded-2xl p-5">
       <div className="flex items-center gap-2 border-b border-border pb-3">
         <Clapperboard className="h-4 w-4 text-brand-600" />
         <span className="text-sm font-semibold">Viral Clip Studio</span>

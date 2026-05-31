@@ -13,6 +13,8 @@ export interface Plan {
   id: PlanId;
   name: string;
   price: number; // USD / month
+  /** Per-month price when billed annually (×12 = yearly total). */
+  priceAnnual: number;
   /** Monthly credit budget. null = effectively unlimited (very high cap). */
   monthlyCredits: number;
   modelTier: ModelTier;
@@ -32,16 +34,17 @@ export const PLANS: Record<PlanId, Plan> = {
     id: "free",
     name: "Starter",
     price: 0,
+    priceAnnual: 0,
     monthlyCredits: 30,
     modelTier: "haiku",
-    tagline: "Test-drive every tool. No card.",
+    tagline: "Everything you need to start — free forever.",
     studioUnlocked: false,
     videoLibrary: false,
     cleanExports: false,
     features: [
-      "30 credits / month",
-      "All 7 core tools",
-      "Claude Haiku model",
+      "Unlimited core AI tools",
+      "Captioned shorts from any video",
+      "Fast standard model",
       "Watermarked exports",
       "Community gallery",
     ],
@@ -50,26 +53,28 @@ export const PLANS: Record<PlanId, Plan> = {
     id: "pro",
     name: "Creator",
     price: 15,
+    priceAnnual: 10,
     monthlyCredits: 500,
     modelTier: "sonnet",
-    tagline: "For creators on a posting schedule.",
+    tagline: "For creators posting every week.",
     studioUnlocked: false,
     videoLibrary: true,
     cleanExports: true,
     highlighted: true,
     features: [
-      "500 credits / month",
-      "Claude Sonnet model",
+      "Everything in Starter",
+      "Claude Sonnet — sharper scripts, titles & thumbnails",
       "Watermark-free exports",
+      "500 premium credits / month",
+      "Video Library + unlimited saved projects",
       "Full export system (JSON, MD, share)",
-      "Video Library",
-      "Save unlimited projects",
     ],
   },
   studio: {
     id: "studio",
     name: "Studio",
     price: 39,
+    priceAnnual: 26,
     monthlyCredits: 1500,
     modelTier: "opus",
     tagline: "Maximum firepower for serious channels.",
@@ -77,12 +82,11 @@ export const PLANS: Record<PlanId, Plan> = {
     videoLibrary: true,
     cleanExports: true,
     features: [
-      "1,500 credits / month",
-      "Claude Opus 4.8 (the smart one)",
+      "Everything in Creator",
+      "Claude Opus 4.8 — our smartest model",
       "Viral Clip Studio (1-click full package)",
-      "Video Library + project mode",
+      "1,500 premium credits / month",
       "Priority generation queue",
-      "Watermark-free exports",
       "Founder support",
     ],
   },

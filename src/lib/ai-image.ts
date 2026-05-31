@@ -2,13 +2,11 @@
  * Image generation with multi-provider fallback.
  *
  * Priority:
- *   1. REPLICATE_API_TOKEN → Nano Banana via Replicate (best quality, ~4¢/image)
- *   2. GEMINI_API_KEY → Nano Banana direct (free if accessible)
- *   3. Pollinations.ai → no key, free, always works (Flux model)
+ *   1. REPLICATE_API_TOKEN → Flux 1.1 Pro Ultra (best quality, ~4¢/image) —
+ *      paid runs only (premium flag), so free users never cost money.
+ *   2. Pollinations.ai → no key, free, always works (Flux model) — the free tier.
  */
-import { GoogleGenerativeAI } from "@google/generative-ai";
 
-const NB_MODEL = process.env.GEMINI_IMAGE_MODEL || "gemini-2.5-flash-image";
 // Default: Flux 1.1 Pro Ultra — best photo realism + composition control.
 // Use ideogram-v3 if you ever want legible AI-rendered text in the image
 // (we don't, because we overlay text client-side via canvas for sharpness).
@@ -58,32 +56,6 @@ async function withReplicate(prompt: string): Promise<string | null> {
     return null;
   } catch (err) {
     console.error("[ai-image] Replicate failed:", err);
-    return null;
-  }
-}
-
-/** Try Gemini's Nano Banana first; return null on any failure. */
-async function withGemini(prompt: string): Promise<string | null> {
-  const key = process.env.GEMINI_API_KEY;
-  if (!key) return null;
-  try {
-    const genai = new GoogleGenerativeAI(key);
-    const model = genai.getGenerativeModel({ model: NB_MODEL });
-    const res = await model.generateContent({
-      contents: [{ role: "user", parts: [{ text: prompt }] }],
-    });
-    const parts = res.response.candidates?.[0]?.content?.parts ?? [];
-    for (const part of parts) {
-      const inline = (
-        part as { inlineData?: { data: string; mimeType: string } }
-      ).inlineData;
-      if (inline?.data) {
-        return `data:${inline.mimeType};base64,${inline.data}`;
-      }
-    }
-    return null;
-  } catch (err) {
-    console.error("[ai-image] Gemini failed:", err);
     return null;
   }
 }
@@ -139,27 +111,30 @@ async function withPollinations(prompt: string): Promise<string | null> {
  * before falling through. Returns null only if every provider failed — callers
  * should treat null as "skip this concept" not "throw."
  */
-export async function generateImage(prompt: string): Promise<string | null> {
-  // Replicate (paid, best quality) — already retries internally via poll loop.
-  const replicate = await withReplicate(prompt);
-  if (replicate) return replicate;
+export async function generateImage(
+  prompt: string,
+  premium = false,
+): Promise<string | null> {
+  // Replicate (paid, best quality) — only on premium (paid + in-credit) runs so
+  // free / fallback generations never cost money. Retries internally via poll.
+  if (premium) {
+    const replicate = await withReplicate(prompt);
+    if (replicate) return replicate;
+  }
 
-  // Gemini (free, region-restricted) — single attempt.
-  const gemini = await withGemini(prompt);
-  if (gemini) return gemini;
-
-  // Pollinations free fallback with 3 attempts.
+  // Pollinations free fallback (3 attempts) — this is the free tier's engine.
   const pol = await withPollinations(prompt);
   if (pol) return pol;
 
   return null;
 }
 
-/** Generate N images in parallel. */
+/** Generate N images in parallel. `premium` unlocks the paid Replicate tier. */
 export async function generateImages(
   prompts: string[],
+  premium = false,
 ): Promise<(string | null)[]> {
-  return Promise.all(prompts.map(generateImage));
+  return Promise.all(prompts.map((p) => generateImage(p, premium)));
 }
 
 /** Build a PFP image prompt. */

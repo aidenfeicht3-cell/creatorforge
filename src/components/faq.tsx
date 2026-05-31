@@ -11,7 +11,7 @@ const FAQS = [
   },
   {
     q: "Which AI model powers the tools?",
-    a: "Every generation runs on Anthropic's Claude. Starter uses fast Haiku, Creator uses Sonnet, and Studio unlocks Opus 4.7 — the sharpest model — for the heaviest tools.",
+    a: "Every generation runs on Anthropic's Claude. Starter uses fast Haiku, Creator uses Sonnet, and Studio unlocks Opus 4.8 — the sharpest model — for the heaviest tools.",
   },
   {
     q: "How do credits work?",

@@ -9,7 +9,6 @@ import {
   pfpPromptFor,
   bannerPromptFor,
 } from "@/lib/ai-image";
-import { generateVideos, videoRenderingEnabled } from "@/lib/ai-video";
 import { rateLimit } from "@/lib/rate-limit";
 import { hasCredits, PLANS, type PlanId } from "@/lib/plans";
 import { fetchVideoContext } from "@/lib/youtube";
@@ -81,7 +80,18 @@ export async function POST(req: Request) {
       { status: 402 },
     );
   }
-  if (!hasCredits(plan, profile.credits_used, tool.creditCost, bonus)) {
+  // ── Credits & graceful free-fallback ───────────────────────────────────
+  // Most tools run on the free model + image stack at ~$0. So:
+  //   • Free plan → always runs free, never charged, never blocked.
+  //   • Paid plan with credits → premium models, charged tool.creditCost.
+  //   • Paid plan OUT of credits → silently drops to the free model stack
+  //     (no charge, no block) for the rest of the cycle.
+  // Media tools (voice, transcription) hit paid external APIs per call, so they
+  // still genuinely require credits and are blocked when the wallet is empty.
+  const canAfford = hasCredits(plan, profile.credits_used, tool.creditCost, bonus);
+  const metered = tool.mediaTool === true;
+
+  if (metered && !canAfford) {
     return NextResponse.json(
       {
         error: `Not enough credits — this tool costs ${tool.creditCost}. Upgrade or wait for the monthly reset.`,
@@ -89,6 +99,12 @@ export async function POST(req: Request) {
       { status: 402 },
     );
   }
+
+  // Which plan's MODEL TIER + image quality this run actually uses.
+  const runPlan: PlanId = plan === "free" ? "free" : canAfford ? plan : "free";
+  const premiumImages = runPlan !== "free";
+  // Only charge credits when running on a paid tier (or a metered real-cost tool).
+  const charge = metered || premiumImages ? tool.creditCost : 0;
 
   // Media tools run on external providers (ElevenLabs, Deepgram, …) and never
   // go through text generation. They handle their own provider calls and
@@ -98,10 +114,12 @@ export async function POST(req: Request) {
     if ("error" in media) {
       return NextResponse.json({ error: media.error }, { status: media.status });
     }
-    await supabase
-      .from("profiles")
-      .update({ credits_used: profile.credits_used + tool.creditCost })
-      .eq("id", user.id);
+    if (charge > 0) {
+      await supabase
+        .from("profiles")
+        .update({ credits_used: profile.credits_used + charge })
+        .eq("id", user.id);
+    }
 
     // Don't persist the base64 audio — keep the saved row lean.
     const dbResult: Record<string, unknown> = { ...media.result };
@@ -116,8 +134,8 @@ export async function POST(req: Request) {
       id: savedMedia?.id ?? null,
       tool: tool.slug,
       result: media.result,
-      creditsCharged: tool.creditCost,
-      creditsUsed: profile.credits_used + tool.creditCost,
+      creditsCharged: charge,
+      creditsUsed: profile.credits_used + charge,
     });
   }
 
@@ -195,7 +213,7 @@ export async function POST(req: Request) {
     result = await generate(
       buildPrompt(tool.slug, inputs, videoContext),
       tool.slug,
-      plan,
+      runPlan,
     );
   } catch (err) {
     console.error("[generate] AI error:", err);
@@ -222,7 +240,7 @@ export async function POST(req: Request) {
           index: i,
         }),
       );
-      const images = await generateImages(prompts);
+      const images = await generateImages(prompts, premiumImages);
       result.concepts = concepts.map((c, i) => ({ ...c, image: images[i] }));
     } catch (err) {
       console.error("[generate] thumbnail image gen failed:", err);
@@ -239,7 +257,7 @@ export async function POST(req: Request) {
           vibe: inputs.vibe,
         }),
       );
-      const images = await generateImages(prompts);
+      const images = await generateImages(prompts, premiumImages);
       result.concepts = concepts.map((c, i) => ({ ...c, image: images[i] }));
     } catch (err) {
       console.error("[generate] pfp image gen failed:", err);
@@ -250,7 +268,7 @@ export async function POST(req: Request) {
     try {
       const frames = (result.frames as Array<Record<string, string>>) ?? [];
       const prompts = frames.map((f) => String(f.imagePrompt || ""));
-      const images = await generateImages(prompts);
+      const images = await generateImages(prompts, premiumImages);
       result.frames = frames.map((f, i) => ({ ...f, image: images[i] }));
     } catch (err) {
       console.error("[generate] storyboard image gen failed:", err);
@@ -261,7 +279,7 @@ export async function POST(req: Request) {
     try {
       const shots = (result.shots as Array<Record<string, string>>) ?? [];
       const prompts = shots.map((s) => String(s.imagePrompt || ""));
-      const images = await generateImages(prompts);
+      const images = await generateImages(prompts, premiumImages);
       result.shots = shots.map((s, i) => ({ ...s, image: images[i] }));
     } catch (err) {
       console.error("[generate] broll image gen failed:", err);
@@ -274,12 +292,15 @@ export async function POST(req: Request) {
       const pfp = (rec.profilePicture as Record<string, string>) ?? {};
       const prompt = String(pfp.imagePrompt || pfp.concept || "");
       if (prompt) {
-        const [image] = await generateImages([
-          pfpPromptFor({
-            description: prompt,
-            colors: String(pfp.colors || ""),
-          }),
-        ]);
+        const [image] = await generateImages(
+          [
+            pfpPromptFor({
+              description: prompt,
+              colors: String(pfp.colors || ""),
+            }),
+          ],
+          premiumImages,
+        );
         (rec.profilePicture as Record<string, unknown>) = {
           ...pfp,
           image,
@@ -301,38 +322,23 @@ export async function POST(req: Request) {
         : [];
       const shorts = (result.shorts as Array<Record<string, unknown>>) ?? [];
 
-      // 1) Frames for every scene + short (free path — always runs).
+      // Storyboard frames for every scene + short (free path). Real AI video
+      // clip generation was removed — the per-clip cost wasn't worth it, so this
+      // tool now delivers a frame + voiceover-ready script for each scene.
       const scenePrompts = scenes.map((s) => String(s.imagePrompt || ""));
       const shortPrompts = shorts.map((s) => String(s.imagePrompt || ""));
       const [sceneImages, shortImages] = await Promise.all([
-        generateImages(scenePrompts),
-        generateImages(shortPrompts),
+        generateImages(scenePrompts, premiumImages),
+        generateImages(shortPrompts, premiumImages),
       ]);
       const newScenes = scenes.map((s, i) => ({ ...s, image: sceneImages[i] }));
       const newShorts = shorts.map((s, i) => ({ ...s, image: shortImages[i] }));
-
-      // 2) Real clips — only when a key is set. Capped to keep the request
-      //    inside the serverless time budget; the rest stay frame + plan.
-      const renderEnabled = videoRenderingEnabled();
-      if (renderEnabled) {
-        const CAP = 4;
-        const [sceneVideos, shortVideos] = await Promise.all([
-          generateVideos(scenePrompts.slice(0, CAP)),
-          generateVideos(shortPrompts.slice(0, CAP)),
-        ]);
-        sceneVideos.forEach((v, i) => {
-          if (v) newScenes[i].video = v;
-        });
-        shortVideos.forEach((v, i) => {
-          if (v) newShorts[i].video = v;
-        });
-      }
 
       if (longform) {
         result.longform = { ...longform, scenes: newScenes };
       }
       if (shorts.length) result.shorts = newShorts;
-      result.videoRenderingEnabled = renderEnabled;
+      result.videoRenderingEnabled = false;
     } catch (err) {
       console.error("[generate] autovideo media gen failed:", err);
     }
@@ -342,20 +348,23 @@ export async function POST(req: Request) {
     try {
       const concept = (result.concept as Record<string, string>) ?? {};
       const posterPrompt = String(result.posterPrompt || concept.composition || "");
-      const image = await generateImages([
-        bannerPromptFor({ posterPrompt, platform: inputs.platform }),
-      ]);
+      const image = await generateImages(
+        [bannerPromptFor({ posterPrompt, platform: inputs.platform })],
+        premiumImages,
+      );
       result.image = image[0];
     } catch (err) {
       console.error("[generate] banner image gen failed:", err);
     }
   }
 
-  // Deduct credits + save
-  await supabase
-    .from("profiles")
-    .update({ credits_used: profile.credits_used + tool.creditCost })
-    .eq("id", user.id);
+  // Deduct credits (free / fallback runs cost 0) + save
+  if (charge > 0) {
+    await supabase
+      .from("profiles")
+      .update({ credits_used: profile.credits_used + charge })
+      .eq("id", user.id);
+  }
 
   const { data: saved } = await supabase
     .from("generations")
@@ -372,7 +381,7 @@ export async function POST(req: Request) {
     id: saved?.id ?? null,
     tool: tool.slug,
     result,
-    creditsCharged: tool.creditCost,
-    creditsUsed: profile.credits_used + tool.creditCost,
+    creditsCharged: charge,
+    creditsUsed: profile.credits_used + charge,
   });
 }

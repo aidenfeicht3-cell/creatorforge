@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import { PricingCards } from "@/components/pricing-cards";
+import { PlanComparison } from "@/components/plan-comparison";
 import { CreditSlider } from "@/components/credit-slider";
 import { Faq } from "@/components/faq";
 import { createClient } from "@/lib/supabase/server";
@@ -25,8 +26,8 @@ export default async function PricingPage() {
           Pricing built for <span className="text-gradient">creators</span>
         </h1>
         <p className="mx-auto mt-4 max-w-xl text-muted">
-          Start free with 25 generations a month. Upgrade to Creator Pro for
-          unlimited generations and the Viral Clip Studio.
+          Use the full toolkit free, forever — no card required. Upgrade for
+          pro-grade models, watermark-free exports, and the Viral Clip Studio.
         </p>
       </section>
 
@@ -35,6 +36,10 @@ export default async function PricingPage() {
         <p className="mt-8 text-center text-sm text-muted">
           Prices in USD. Cancel anytime — no contracts, no lock-in.
         </p>
+      </section>
+
+      <section className="mx-auto max-w-7xl px-5 py-12">
+        <PlanComparison />
       </section>
 
       <section className="mx-auto max-w-3xl px-5 pb-20">

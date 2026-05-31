@@ -164,12 +164,6 @@ const DELIVERABLES: Record<string, string[]> = {
     "Step-by-step assembly guide",
     "Connect a video key → scenes auto-render into real clips",
   ],
-  videogen: [
-    "Watermark-free AI video clip",
-    "Your aspect ratio (9:16 / 16:9 / 1:1)",
-    "Download-ready MP4",
-    "Great for B-roll, intros, and faceless content",
-  ],
   voiceover: [
     "Natural studio-quality narration",
     "The voice + pace you pick",
@@ -212,7 +206,6 @@ const TIPS: Record<string, string> = {
   trends: "Get specific with your niche — 'faceless finance for Gen Z' maps to sharper trends than just 'finance.' This is a strategist read, so use the verify-live checklist before you post.",
   clipper: "Long-form content with captions works best. Podcasts and interviews clip way harder than vlogs.",
   autovideo: "Pick 'Both' to get a long-form plan plus a batch of shorts from one idea. Specific topics render sharper frames.",
-  videogen: "Describe motion and lighting, not just the subject — 'slow dolly-in, golden hour' beats 'a city.'",
   voiceover: "Write the way people talk. Short sentences read more naturally than long ones.",
   watermark: "Only remove watermarks from footage you own or have licensed.",
   captions: "Add mode works on any clip with clear speech. Remove mode is for burned-in text only.",
@@ -284,7 +277,11 @@ export function ToolRunner({
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Generation failed");
       setResult(data.result as Result);
-      toast.success(`+${data.creditsCharged} credits used · result ready`);
+      toast.success(
+        data.creditsCharged > 0
+          ? `${data.creditsCharged} credits used · result ready`
+          : "Result ready",
+      );
       router.refresh();
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Something went wrong");
@@ -529,6 +526,29 @@ export function ToolRunner({
             </div>
           </div>
           <ResultView tool={tool.slug} data={result} inputs={inputs} />
+
+          {/* Moment-of-value upgrade nudge — only on free (watermarked) plans. */}
+          {!cleanExports && (
+            <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-brand-500/20 bg-gradient-to-br from-brand-50 to-surface p-4">
+              <div className="flex items-start gap-2.5">
+                <Sparkles className="mt-0.5 h-4 w-4 shrink-0 text-brand-600" />
+                <p className="text-sm text-ink">
+                  <span className="font-semibold">Made on the free model.</span>{" "}
+                  <span className="text-muted">
+                    Upgrade to Creator for sharper Claude Sonnet results and
+                    watermark-free exports.
+                  </span>
+                </p>
+              </div>
+              <Button
+                variant="primary"
+                size="sm"
+                onClick={() => router.push("/pricing")}
+              >
+                Upgrade
+              </Button>
+            </div>
+          )}
         </div>
       )}
     </div>
@@ -679,7 +699,6 @@ const SAMPLES: Record<ToolSlug, Sample> = {
   // ── Media tools — show the player / frame ──
   autovideo: { visual: "frame", overlay: "SCENE 1 / 6", sub: "Long-form + 3 shorts · frames rendered", rows: [] },
   voiceover: { visual: "wave", sub: "Energetic creator · MP3 · 0:30", rows: [] },
-  videogen: { visual: "frame", overlay: "9:16 · 8s", sub: "Watermark-free AI clip", rows: [] },
   captions: { visual: "frame", overlay: "word-by-word", sub: "TikTok style · auto-synced", rows: [] },
   watermark: { visual: "frame", overlay: "before → after", sub: "Clean export, no logo", rows: [] },
 };

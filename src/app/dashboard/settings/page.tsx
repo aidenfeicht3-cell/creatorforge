@@ -55,8 +55,8 @@ export default async function SettingsPage() {
         <div className="mt-6 grid gap-3 sm:grid-cols-3">
           <Mini
             icon={Zap}
-            label="Credits left"
-            value={`${creditsLeft} / ${creditsCap}`}
+            label={plan.id === "free" ? "Tier" : "Credits left"}
+            value={plan.id === "free" ? "Free · unlimited" : `${creditsLeft} / ${creditsCap}`}
           />
           <Mini
             icon={Sparkles}

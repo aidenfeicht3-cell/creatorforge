@@ -1,16 +1,16 @@
 /**
- * AI provider layer with multi-provider fallback.
+ * AI provider layer with PLAN-AWARE routing + fallback.
  *
- * Priority (whichever has a key, in this order):
- *   1. ANTHROPIC_API_KEY → Claude (best quality)
- *   2. GROQ_API_KEY → Llama 3.3 70B via Groq (free, fast)
- *   3. GEMINI_API_KEY → Gemini (free, region-limited)
+ * Provider order depends on the plan — this is the margin guardrail that keeps
+ * the "unlimited free" tier genuinely ~$0 to serve:
+ *   • Free plan  → Groq (Llama 3.3 70B) FIRST. Free to serve, so free users
+ *                  never cost us money. Claude is used only if Groq is missing.
+ *   • Paid plans → Claude FIRST (Sonnet for Creator, Opus 4.8 for Studio) — the
+ *                  quality people pay for. Groq is the fallback if Claude fails.
  *
- * Per-tool model routing — heavy tools use the most capable model available;
- * structured/cheap tools use the fast model. Plan tier caps how high we go.
+ * Per-tool model routing still caps quality by the plan's tier.
  */
 import Anthropic from "@anthropic-ai/sdk";
-import { GoogleGenerativeAI } from "@google/generative-ai";
 import { PLANS, type PlanId, type ModelTier } from "./plans";
 import type { ToolSlug } from "./tools";
 import type { PromptSpec } from "./prompts";
@@ -18,7 +18,6 @@ import { safeJson } from "./utils";
 
 const HAS_CLAUDE = !!process.env.ANTHROPIC_API_KEY;
 const HAS_GROQ = !!process.env.GROQ_API_KEY;
-const HAS_GEMINI = !!process.env.GEMINI_API_KEY;
 
 const anthropic = HAS_CLAUDE
   ? new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
@@ -78,11 +77,9 @@ async function withClaude(
 
 /* ──── Groq (Llama) ─────────────────────────────────────── */
 
-function groqModelFor(tier: ModelTier): string {
-  if (tier === "haiku") {
-    return process.env.GROQ_FAST_MODEL || "llama-3.1-8b-instant";
-  }
-  // sonnet/opus → use the strongest available
+function groqModelFor(_tier: ModelTier): string {
+  // Always use the strong 70B model — it's free on Groq's tier, so there's no
+  // cost reason to serve free users the weaker 8B. Best first impression wins.
   return process.env.GROQ_BIG_MODEL || "llama-3.3-70b-versatile";
 }
 
@@ -119,33 +116,6 @@ async function withGroq(
   return data.choices?.[0]?.message?.content || "";
 }
 
-/* ──── Gemini ──────────────────────────────────────────── */
-
-function geminiModelFor(tier: ModelTier): string {
-  if (tier === "opus") {
-    return process.env.GEMINI_PRO_MODEL || "gemini-2.5-pro";
-  }
-  return process.env.GEMINI_MODEL || "gemini-2.0-flash";
-}
-
-async function withGemini(
-  spec: PromptSpec,
-  tier: ModelTier,
-): Promise<string> {
-  const key = process.env.GEMINI_API_KEY;
-  if (!key) throw new Error("Gemini not configured");
-  const genai = new GoogleGenerativeAI(key);
-  const model = genai.getGenerativeModel({
-    model: geminiModelFor(tier),
-    systemInstruction: spec.system,
-    generationConfig: {
-      responseMimeType: "application/json",
-    },
-  });
-  const res = await model.generateContent(spec.user);
-  return res.response.text();
-}
-
 /* ──── JSON extraction ──────────────────────────────────── */
 
 function extractJson(raw: string): string {
@@ -159,16 +129,22 @@ function extractJson(raw: string): string {
 
 /* ──── Public API ──────────────────────────────────────── */
 
-/** Pick the primary provider in priority order. */
-function primaryProvider(): "claude" | "groq" | "gemini" | null {
-  if (HAS_CLAUDE) return "claude";
-  if (HAS_GROQ) return "groq";
-  if (HAS_GEMINI) return "gemini";
-  return null;
+type Provider = "claude" | "groq";
+
+/**
+ * Provider order for a plan. Free → Groq first (free to serve); paid → Claude
+ * first (the quality they pay for). Only providers with a key are returned.
+ */
+function providerOrder(plan: PlanId): Provider[] {
+  const order: Provider[] =
+    plan === "free" ? ["groq", "claude"] : ["claude", "groq"];
+  return order.filter(
+    (p) => (p === "claude" && HAS_CLAUDE) || (p === "groq" && HAS_GROQ),
+  );
 }
 
 async function callProvider(
-  provider: "claude" | "groq" | "gemini",
+  provider: Provider,
   spec: PromptSpec,
   tier: ModelTier,
 ): Promise<string> {
@@ -177,43 +153,39 @@ async function callProvider(
       return withClaude(spec, tier);
     case "groq":
       return withGroq(spec, tier);
-    case "gemini":
-      return withGemini(spec, tier);
   }
 }
 
-/** Generate a structured result with automatic provider routing + fallback. */
+/** Generate a structured result with plan-aware provider routing + fallback. */
 export async function generate(
   spec: PromptSpec,
   tool: ToolSlug,
   plan: PlanId,
 ): Promise<Record<string, unknown>> {
-  const primary = primaryProvider();
-  if (!primary) {
+  const order = providerOrder(plan);
+  if (order.length === 0) {
     throw new Error(
-      "No AI provider configured. Set ANTHROPIC_API_KEY, GROQ_API_KEY, or GEMINI_API_KEY.",
+      "No AI provider configured. Set GROQ_API_KEY (free tier) and/or ANTHROPIC_API_KEY (paid tiers).",
     );
   }
 
   const tier = tierFor(tool, plan);
 
-  let raw: string;
-  try {
-    raw = await callProvider(primary, spec, tier);
-  } catch (err) {
-    console.error(`[ai] ${primary} failed, trying fallback:`, err);
-    // Try any other configured provider as a fallback.
-    const fallbacks = (
-      ["claude", "groq", "gemini"] as const
-    ).filter(
-      (p) =>
-        p !== primary &&
-        ((p === "claude" && HAS_CLAUDE) ||
-          (p === "groq" && HAS_GROQ) ||
-          (p === "gemini" && HAS_GEMINI)),
-    );
-    if (fallbacks.length === 0) throw err;
-    raw = await callProvider(fallbacks[0], spec, tier);
+  let raw: string | null = null;
+  let lastErr: unknown;
+  for (const provider of order) {
+    try {
+      raw = await callProvider(provider, spec, tier);
+      break;
+    } catch (err) {
+      lastErr = err;
+      console.error(`[ai] ${provider} failed, trying next:`, err);
+    }
+  }
+  if (raw == null) {
+    throw lastErr instanceof Error
+      ? lastErr
+      : new Error("All AI providers failed. Please retry.");
   }
 
   const parsed = safeJson<Record<string, unknown> | null>(

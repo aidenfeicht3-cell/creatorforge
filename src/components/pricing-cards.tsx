@@ -8,9 +8,12 @@ import { Button } from "@/components/ui/button";
 import { PLANS, type PlanId } from "@/lib/plans";
 import { cn } from "@/lib/utils";
 
-/** 3-tier pricing cards with live Stripe checkout. */
+type Billing = "monthly" | "annual";
+
+/** 3-tier pricing cards with a Monthly/Annual toggle + live Stripe checkout. */
 export function PricingCards({ authed = false }: { authed?: boolean }) {
   const router = useRouter();
+  const [billing, setBilling] = useState<Billing>("monthly");
   const [loadingPlan, setLoadingPlan] = useState<PlanId | null>(null);
 
   async function upgrade(plan: PlanId) {
@@ -23,7 +26,7 @@ export function PricingCards({ authed = false }: { authed?: boolean }) {
       const res = await fetch("/api/stripe/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ plan }),
+        body: JSON.stringify({ plan, billing }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Checkout failed");
@@ -35,76 +38,126 @@ export function PricingCards({ authed = false }: { authed?: boolean }) {
   }
 
   return (
-    <div className="mx-auto grid max-w-6xl gap-6 lg:grid-cols-3">
-      {Object.values(PLANS).map((plan) => {
-        const isFree = plan.id === "free";
-        return (
-          <div
-            key={plan.id}
+    <div>
+      {/* Billing toggle */}
+      <div className="mb-10 flex justify-center">
+        <div className="inline-flex items-center gap-1 rounded-full border border-border bg-surface p-1 text-sm">
+          <button
+            type="button"
+            onClick={() => setBilling("monthly")}
             className={cn(
-              "relative rounded-3xl p-8",
-              plan.highlighted ? "glass-strong glow-brand" : "glass",
-              plan.id === "studio" &&
-                "border border-brand-500/20",
+              "rounded-full px-4 py-1.5 font-medium transition-colors",
+              billing === "monthly"
+                ? "bg-bg text-ink shadow-sm"
+                : "text-muted hover:text-ink",
             )}
           >
-            {plan.highlighted && (
-              <span className="absolute -top-3 left-8 rounded-full bg-gradient-to-r from-brand-500 to-accent px-3 py-1 text-xs font-semibold text-white">
-                Most popular
-              </span>
+            Monthly
+          </button>
+          <button
+            type="button"
+            onClick={() => setBilling("annual")}
+            className={cn(
+              "inline-flex items-center gap-2 rounded-full px-4 py-1.5 font-medium transition-colors",
+              billing === "annual"
+                ? "bg-bg text-ink shadow-sm"
+                : "text-muted hover:text-ink",
             )}
-            {plan.id === "studio" && (
-              <span className="absolute -top-3 right-8 inline-flex items-center gap-1 rounded-full border border-brand-400/40 bg-bg px-3 py-1 text-xs font-semibold text-brand-600">
-                <Sparkles className="h-3 w-3" />
-                Opus 4.7
-              </span>
-            )}
+          >
+            Annual
+            <span className="rounded-full bg-brand-500/15 px-2 py-0.5 text-xs font-semibold text-brand-600">
+              Save 33%
+            </span>
+          </button>
+        </div>
+      </div>
 
-            <h3 className="text-lg font-semibold">{plan.name}</h3>
-            <p className="mt-1 text-sm text-muted">{plan.tagline}</p>
-
-            <div className="mt-5 flex items-baseline gap-1">
-              <span className="text-5xl font-semibold tracking-tight">
-                ${plan.price}
-              </span>
-              <span className="text-muted">/month</span>
-            </div>
-
-            <ul className="mt-6 space-y-3">
-              {plan.features.map((f) => (
-                <li key={f} className="flex items-start gap-2.5 text-sm">
-                  <Check className="mt-0.5 h-4 w-4 shrink-0 text-brand-400" />
-                  <span>{f}</span>
-                </li>
-              ))}
-            </ul>
-
-            <div className="mt-8">
-              {isFree ? (
-                <Button
-                  variant="secondary"
-                  className="w-full"
-                  onClick={() => router.push("/signup")}
-                >
-                  Get started free
-                </Button>
-              ) : (
-                <Button
-                  variant={plan.highlighted ? "primary" : "secondary"}
-                  className="w-full"
-                  onClick={() => upgrade(plan.id)}
-                  disabled={loadingPlan !== null}
-                >
-                  {loadingPlan === plan.id && (
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                  )}
-                  Upgrade to {plan.name}
-                </Button>
+      <div className="mx-auto grid max-w-6xl gap-6 lg:grid-cols-3">
+        {Object.values(PLANS).map((plan) => {
+          const isFree = plan.id === "free";
+          const monthly = billing === "annual" ? plan.priceAnnual : plan.price;
+          return (
+            <div
+              key={plan.id}
+              className={cn(
+                "relative rounded-3xl p-8",
+                plan.highlighted ? "glass-strong glow-brand" : "glass",
+                plan.id === "studio" && "border border-brand-500/20",
               )}
+            >
+              {plan.highlighted && (
+                <span className="absolute -top-3 left-8 rounded-full bg-gradient-to-r from-brand-500 to-accent px-3 py-1 text-xs font-semibold text-white">
+                  Most popular
+                </span>
+              )}
+              {plan.id === "studio" && (
+                <span className="absolute -top-3 right-8 inline-flex items-center gap-1 rounded-full border border-brand-400/40 bg-bg px-3 py-1 text-xs font-semibold text-brand-600">
+                  <Sparkles className="h-3 w-3" />
+                  Opus 4.8
+                </span>
+              )}
+
+              <h3 className="text-lg font-semibold">{plan.name}</h3>
+              <p className="mt-1 text-sm text-muted">{plan.tagline}</p>
+
+              <div className="mt-5 flex items-baseline gap-1">
+                {isFree ? (
+                  <span className="text-5xl font-semibold tracking-tight">
+                    Free
+                  </span>
+                ) : (
+                  <>
+                    <span className="text-5xl font-semibold tracking-tight">
+                      ${monthly}
+                    </span>
+                    <span className="text-muted">/month</span>
+                  </>
+                )}
+              </div>
+              <p className="mt-1 h-4 text-xs text-muted">
+                {isFree
+                  ? ""
+                  : billing === "annual"
+                    ? `billed $${monthly * 12}/year`
+                    : "billed monthly"}
+              </p>
+
+              <ul className="mt-6 space-y-3">
+                {plan.features.map((f) => (
+                  <li key={f} className="flex items-start gap-2.5 text-sm">
+                    <Check className="mt-0.5 h-4 w-4 shrink-0 text-brand-400" />
+                    <span>{f}</span>
+                  </li>
+                ))}
+              </ul>
+
+              <div className="mt-8">
+                {isFree ? (
+                  <Button
+                    variant="secondary"
+                    className="w-full"
+                    onClick={() => router.push("/signup")}
+                  >
+                    Get started free
+                  </Button>
+                ) : (
+                  <Button
+                    variant={plan.highlighted ? "primary" : "secondary"}
+                    className="w-full"
+                    onClick={() => upgrade(plan.id)}
+                    disabled={loadingPlan !== null}
+                  >
+                    {loadingPlan === plan.id && (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    )}
+                    Upgrade to {plan.name}
+                  </Button>
+                )}
+              </div>
             </div>
-          </div>
-        );
-      })}
+          );
+        })}
+      </div>
     </div>
   );
 }

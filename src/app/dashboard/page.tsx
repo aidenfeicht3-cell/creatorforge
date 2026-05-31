@@ -138,9 +138,10 @@ export default async function DashboardPage() {
       <div className="grid gap-4 sm:grid-cols-3">
         <Stat
           icon={Zap}
-          label="Credits this cycle"
-          value={`${creditsLeft} / ${creditsCap}`}
-          progress={pct}
+          label={plan.id === "free" ? "Your tier" : "Credits this cycle"}
+          value={plan.id === "free" ? "Free tier" : `${creditsLeft} / ${creditsCap}`}
+          sublabel={plan.id === "free" ? "Unlimited free tools" : undefined}
+          progress={plan.id === "free" ? undefined : pct}
           accent="text-brand-600"
         />
         <Stat
@@ -158,12 +159,14 @@ export default async function DashboardPage() {
         />
       </div>
 
-      {creditsLeft === 0 && (
+      {plan.id !== "free" && creditsLeft === 0 && (
         <div className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-brand-500/30 bg-brand-50 p-5">
           <div>
-            <div className="font-semibold">Out of credits this cycle.</div>
+            <div className="font-semibold">
+              Out of credits — you&apos;re on free models until reset.
+            </div>
             <div className="text-sm text-muted">
-              Top up with a custom credit pack or upgrade your plan.
+              Keep creating for free, or top up to get your premium model back now.
             </div>
           </div>
           <Link href="/pricing" className={buttonClasses("primary", "sm")}>

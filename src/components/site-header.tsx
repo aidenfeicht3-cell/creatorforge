@@ -70,8 +70,8 @@ export function SiteHeader() {
           <Link href="/login" className="text-sm text-muted transition-colors hover:text-ink">
             Sign in
           </Link>
-          <Link href="/waitlist" className={buttonClasses("primary", "sm")}>
-            Get early access →
+          <Link href="/signup" className={buttonClasses("primary", "sm")}>
+            Start for free →
           </Link>
         </div>
 
@@ -107,8 +107,8 @@ export function SiteHeader() {
           >
             Sign in
           </Link>
-          <Link href="/waitlist" className={buttonClasses("primary", "md")}>
-            Get early access
+          <Link href="/signup" className={buttonClasses("primary", "md")}>
+            Start for free
           </Link>
         </div>
       </div>

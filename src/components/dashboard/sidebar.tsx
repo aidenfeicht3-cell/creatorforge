@@ -161,25 +161,40 @@ export function Sidebar({
           </div>
         </div>
 
-        {/* Credits HUD */}
-        {!collapsed && (
-          <div className="mt-5 rounded-2xl border border-border bg-bg-soft p-3.5">
-            <div className="flex items-center justify-between text-xs">
-              <span className="inline-flex items-center gap-1 font-mono uppercase tracking-wider text-muted">
-                <Zap className="h-3 w-3 text-brand-600" /> Credits
+        {/* Credits HUD — free plan has no meter, just a "Free tier" badge. */}
+        {!collapsed &&
+          (plan === "free" ? (
+            <div className="mt-5 flex items-center justify-between rounded-2xl border border-border bg-bg-soft p-3.5">
+              <span className="inline-flex items-center gap-1.5 text-sm font-semibold text-ink">
+                <Zap className="h-3.5 w-3.5 text-brand-600" /> Free tier
               </span>
-              <span className="font-mono text-xs font-semibold text-ink">
-                {creditsLeft}/{creditsCap}
+              <span className="font-mono text-[10px] uppercase tracking-wider text-muted">
+                Unlimited
               </span>
             </div>
-            <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-surface">
-              <div
-                className="h-full rounded-full bg-gradient-to-r from-brand-500 to-brand-400"
-                style={{ width: `${pct}%` }}
-              />
+          ) : (
+            <div className="mt-5 rounded-2xl border border-border bg-bg-soft p-3.5">
+              <div className="flex items-center justify-between text-xs">
+                <span className="inline-flex items-center gap-1 font-mono uppercase tracking-wider text-muted">
+                  <Zap className="h-3 w-3 text-brand-600" /> Credits
+                </span>
+                <span className="font-mono text-xs font-semibold text-ink">
+                  {creditsLeft}/{creditsCap}
+                </span>
+              </div>
+              <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-surface">
+                <div
+                  className="h-full rounded-full bg-gradient-to-r from-brand-500 to-brand-400"
+                  style={{ width: `${pct}%` }}
+                />
+              </div>
+              {creditsLeft === 0 && (
+                <p className="mt-2 text-[10px] leading-tight text-muted">
+                  Out of credits — now running on free models until reset.
+                </p>
+              )}
             </div>
-          </div>
-        )}
+          ))}
 
         {/* Flagship: Launch Pad */}
         {collapsed ? (

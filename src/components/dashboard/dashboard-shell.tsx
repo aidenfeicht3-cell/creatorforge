@@ -82,7 +82,9 @@ export function DashboardShell({
           </Link>
           <div className="flex items-center gap-1 rounded-full border border-border bg-bg-soft px-2.5 py-1 font-mono text-xs">
             <Zap className="h-3 w-3 text-brand-600" />
-            <span className="font-semibold">{creditsLeft}</span>
+            <span className="font-semibold">
+              {plan === "free" ? "Free" : creditsLeft}
+            </span>
           </div>
         </header>
 

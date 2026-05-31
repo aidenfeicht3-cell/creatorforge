@@ -2670,7 +2670,7 @@ function TrendRadar({ data }: { data: Any }) {
  */
 type RendererProps = { data: Any; inputs?: Any };
 
-// Partial: media tools (videogen/voiceover/watermark/captions) produce no
+// Partial: media tools (voiceover/watermark/captions) produce no
 // JSON result, so they have no renderer — ResultView falls back gracefully.
 const RENDERERS: Partial<Record<ToolSlug, (p: RendererProps) => React.ReactNode>> = {
   thumbnails: ({ data, inputs }) => (

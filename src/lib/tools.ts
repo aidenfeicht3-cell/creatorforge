@@ -26,7 +26,6 @@ export type ToolSlug =
   | "trends"
   | "clipper"
   | "autovideo"
-  | "videogen"
   | "voiceover"
   | "watermark"
   | "captions";
@@ -554,36 +553,6 @@ export const TOOLS: Record<ToolSlug, ToolDef> = {
   },
 
   // ──────── AI Media Studio (external-provider tools) ─────────
-  videogen: {
-    slug: "videogen",
-    name: "AI Video Generator",
-    icon: "Video",
-    tagline: "Text → cinematic AI video, no watermark",
-    description:
-      "Describe a shot and get back a clean, watermark-free AI-generated video clip — Sora-class quality. Perfect for B-roll, intros, and faceless content.",
-    accent: "from-blue-500 to-indigo-600",
-    creditCost: 12,
-    requiresPaid: true,
-    mediaTool: true,
-    provider: "OpenAI Sora / Replicate",
-    envVar: "VIDEO_API_KEY",
-    setupNote: "Add an OpenAI Sora or Replicate video key to go live.",
-    badge: "NEW",
-    category: "production",
-    fields: [
-      {
-        name: "prompt",
-        label: "Describe your video",
-        type: "textarea",
-        placeholder:
-          "Cinematic slow push-in on a steaming coffee cup by a rainy window, golden morning light",
-        required: true,
-        hint: "Be specific about subject, motion, and lighting.",
-      },
-      { name: "aspect", label: "Aspect ratio", type: "select", options: ["9:16 (Shorts/TikTok)", "16:9 (YouTube)", "1:1 (Square)"], default: "9:16 (Shorts/TikTok)" },
-      { name: "duration", label: "Clip length", type: "select", options: ["4 seconds", "8 seconds", "12 seconds"], default: "8 seconds" },
-    ],
-  },
   voiceover: {
     slug: "voiceover",
     name: "AI Voiceover",

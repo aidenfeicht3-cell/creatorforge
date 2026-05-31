@@ -6,14 +6,20 @@ export const runtime = "nodejs";
 
 const SITE = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
 
-const PRICE_FOR_PLAN: Record<string, string | undefined> = {
-  pro: process.env.STRIPE_PRO_PRICE_ID,
-  studio: process.env.STRIPE_STUDIO_PRICE_ID,
+const PRICE_FOR_PLAN: Record<string, Record<string, string | undefined>> = {
+  pro: {
+    monthly: process.env.STRIPE_PRO_PRICE_ID,
+    annual: process.env.STRIPE_PRO_PRICE_ID_ANNUAL,
+  },
+  studio: {
+    monthly: process.env.STRIPE_STUDIO_PRICE_ID,
+    annual: process.env.STRIPE_STUDIO_PRICE_ID_ANNUAL,
+  },
 };
 
 /**
  * Creates a Stripe Checkout session for a chosen plan.
- * POST { plan: "pro" | "studio" }
+ * POST { plan: "pro" | "studio", billing?: "monthly" | "annual" }
  */
 export async function POST(req: Request) {
   const supabase = await createClient();
@@ -25,17 +31,23 @@ export async function POST(req: Request) {
   }
 
   let plan = "pro";
+  let billing: "monthly" | "annual" = "monthly";
   try {
     const body = await req.json();
     if (body?.plan === "studio" || body?.plan === "pro") plan = body.plan;
+    if (body?.billing === "annual" || body?.billing === "monthly") {
+      billing = body.billing;
+    }
   } catch {
-    /* default to pro */
+    /* defaults: pro, monthly */
   }
 
-  const priceId = PRICE_FOR_PLAN[plan];
+  const priceId = PRICE_FOR_PLAN[plan]?.[billing];
   if (!priceId) {
     return NextResponse.json(
-      { error: `Billing is not configured (missing Stripe price for ${plan}).` },
+      {
+        error: `Billing is not configured (missing Stripe ${billing} price for ${plan}).`,
+      },
       { status: 500 },
     );
   }
@@ -52,7 +64,7 @@ export async function POST(req: Request) {
     customer: profile?.stripe_customer_id || undefined,
     customer_email: profile?.stripe_customer_id ? undefined : user.email,
     client_reference_id: user.id,
-    metadata: { userId: user.id, plan },
+    metadata: { userId: user.id, plan, billing },
     allow_promotion_codes: true,
     success_url: `${SITE}/dashboard?upgraded=${plan}`,
     cancel_url: `${SITE}/pricing`,
