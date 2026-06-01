@@ -28,8 +28,9 @@ export function PricingCards({ authed = false }: { authed?: boolean }) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ plan, billing }),
       });
-      const data = await res.json();
+      const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || "Checkout failed");
+      if (!data.url) throw new Error("Checkout failed — please try again.");
       window.location.href = data.url;
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Something went wrong");

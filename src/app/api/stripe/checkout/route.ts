@@ -58,17 +58,25 @@ export async function POST(req: Request) {
     .eq("id", user.id)
     .single();
 
-  const session = await getStripe().checkout.sessions.create({
-    mode: "subscription",
-    line_items: [{ price: priceId, quantity: 1 }],
-    customer: profile?.stripe_customer_id || undefined,
-    customer_email: profile?.stripe_customer_id ? undefined : user.email,
-    client_reference_id: user.id,
-    metadata: { userId: user.id, plan, billing },
-    allow_promotion_codes: true,
-    success_url: `${SITE}/dashboard?upgraded=${plan}`,
-    cancel_url: `${SITE}/pricing`,
-  });
-
-  return NextResponse.json({ url: session.url });
+  try {
+    const session = await getStripe().checkout.sessions.create({
+      mode: "subscription",
+      line_items: [{ price: priceId, quantity: 1 }],
+      customer: profile?.stripe_customer_id || undefined,
+      customer_email: profile?.stripe_customer_id ? undefined : user.email,
+      client_reference_id: user.id,
+      metadata: { userId: user.id, plan, billing },
+      allow_promotion_codes: true,
+      success_url: `${SITE}/dashboard?upgraded=${plan}`,
+      cancel_url: `${SITE}/pricing`,
+    });
+    return NextResponse.json({ url: session.url });
+  } catch (err) {
+    // Surface the real Stripe reason instead of crashing with no body (which
+    // shows up client-side as "Unexpected end of JSON input"). Common causes:
+    // missing STRIPE_SECRET_KEY, or a test-mode price used with a live key.
+    console.error("[stripe/checkout] failed:", err);
+    const message = err instanceof Error ? err.message : "Checkout failed.";
+    return NextResponse.json({ error: `Stripe error: ${message}` }, { status: 500 });
+  }
 }
