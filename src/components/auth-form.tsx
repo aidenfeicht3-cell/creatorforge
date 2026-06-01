@@ -163,7 +163,7 @@ export function AuthForm({ mode }: { mode: "login" | "signup" }) {
             href={isSignup ? "/login" : "/signup"}
             className="font-medium text-brand-600 hover:underline"
           >
-            {isSignup ? "Sign in" : "Get early access"}
+            {isSignup ? "Sign in" : "Create a free account"}
           </Link>
         </p>
       </div>

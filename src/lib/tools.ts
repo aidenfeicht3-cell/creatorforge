@@ -459,7 +459,7 @@ export const TOOLS: Record<ToolSlug, ToolDef> = {
     icon: "Clapperboard",
     tagline: "One topic → a whole video, built for you",
     description:
-      "Tubegen-style auto videos. Give us a topic and pick Shorts, Long-form, or both — we write the full scene-by-scene plan, render an AI frame for every scene, and hand you a voiceover-ready script. Connect a video key and the same scenes auto-render into real clips.",
+      "Give us a topic and pick Shorts, Long-form, or both — we write the full scene-by-scene plan with narration and captions, render an AI frame for every scene, and hand you a voiceover-ready script. Drop it into your editor or CapCut and you've got a video.",
     accent: "from-brand-500 via-indigo-600 to-fuchsia-500",
     creditCost: 8,
     generatesImage: true,

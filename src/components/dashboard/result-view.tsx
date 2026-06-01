@@ -2276,7 +2276,7 @@ function AutoVideo({ data }: { data: Any }) {
           <p className="mt-0.5 text-muted">
             {renderEnabled
               ? "Each scene below renders into a real clip. Download them or drop them straight into your editor."
-              : "Connect a video key (VIDEO_API_KEY) and every scene below auto-renders into a real clip — same plan, no rebuild. Until then you get the script, the shot-by-shot plan, and a rendered frame per scene."}
+              : "You get the complete script, a shot-by-shot plan with narration and captions, and a rendered frame for every scene — ready to drop into your editor or CapCut."}
           </p>
         </div>
       </div>
