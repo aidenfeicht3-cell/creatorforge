@@ -82,43 +82,6 @@ export default function LandingPage() {
         </Reveal>
       </section>
 
-      {/* ───────── Feature preview row ───────── */}
-      <section className="mx-auto max-w-6xl px-5 pb-16">
-        <Reveal>
-          <div className="grid gap-5 sm:grid-cols-3">
-            <PreviewCard variant="reverse" />
-            <PreviewCard variant="shorts" />
-            <PreviewCard variant="studio" />
-          </div>
-        </Reveal>
-      </section>
-
-      {/* ───────── Stats band ───────── */}
-      <section className="mx-auto max-w-4xl px-5 py-10">
-        <Reveal>
-          <div className="grid grid-cols-3 gap-4 rounded-3xl border border-border bg-surface px-6 py-8 text-center shadow-sm">
-            <div>
-              <div className="text-4xl font-bold text-ink sm:text-5xl">
-                <NumberTicker value={20} suffix="+" />
-              </div>
-              <div className="mt-1 text-sm text-muted">AI creator tools</div>
-            </div>
-            <div>
-              <div className="text-4xl font-bold text-ink sm:text-5xl">
-                <NumberTicker value={5} />
-              </div>
-              <div className="mt-1 text-sm text-muted">shorts per video</div>
-            </div>
-            <div>
-              <div className="text-4xl font-bold text-ink sm:text-5xl">
-                <NumberTicker value={60} suffix="s" />
-              </div>
-              <div className="mt-1 text-sm text-muted">to your first result</div>
-            </div>
-          </div>
-        </Reveal>
-      </section>
-
       <Marquee />
 
       {/* ───────── How it works ───────── */}
