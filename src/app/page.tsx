@@ -180,25 +180,28 @@ export default function LandingPage() {
             <div className="p-8 sm:p-12">
               <span className="inline-flex items-center gap-2 rounded-full border border-border bg-bg-soft px-3 py-1 text-xs font-medium text-brand-700">
                 <Gift className="h-3.5 w-3.5" />
-                Affiliate &amp; early access
+                Affiliate program
               </span>
               <h2 className="mt-5 text-3xl font-bold tracking-[-0.02em] sm:text-4xl">
-                Share Snipd.
+                Refer creators.
                 <br />
-                Both of you get credits.
+                Earn 30% — every month.
               </h2>
               <p className="mt-4 max-w-md text-muted">
-                Every creator who joins through your link gets bonus credits —
-                and so do you. When a referral upgrades to a paid plan, you earn
-                account credit on top.
+                Earn a{" "}
+                <span className="font-semibold text-ink">
+                  30% recurring commission
+                </span>{" "}
+                on every creator you refer — paid out monthly for as long as they
+                stay subscribed. Real cash, not credits.
               </p>
 
               <ol className="mt-7 space-y-3.5">
                 {[
-                  "Create your free account — you're in instantly.",
-                  "Open Dashboard → Affiliate and copy your unique referral code.",
-                  "Share your link. You + every creator you refer get bonus credits instantly.",
-                  "Earn account credit each time a referral upgrades to a paid plan.",
+                  "Join the affiliate program — free, takes a minute.",
+                  "Share your unique referral link anywhere.",
+                  "Earn 30% of every referral's subscription, recurring.",
+                  "Get paid out automatically each month.",
                 ].map((step, i) => (
                   <li key={i} className="flex gap-3 text-sm">
                     <span className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-brand-50 text-xs font-semibold text-brand-700">
@@ -211,7 +214,7 @@ export default function LandingPage() {
 
               <div className="mt-8">
                 <Link href="/signup" className={buttonClasses("primary", "lg")}>
-                  Get my referral code
+                  Become an affiliate
                   <ArrowRight className="h-4 w-4" />
                 </Link>
               </div>
@@ -233,24 +236,22 @@ export default function LandingPage() {
 
               <div className="mt-4 grid grid-cols-2 gap-4">
                 <div className="glass rounded-2xl p-5">
-                  <Users className="h-5 w-5 text-brand-600" />
-                  <div className="mt-3 text-2xl font-bold">+10</div>
+                  <Coins className="h-5 w-5 text-amber-500" />
+                  <div className="mt-3 text-2xl font-bold">30%</div>
                   <div className="text-xs text-muted">
-                    bonus credits per signup
+                    recurring commission
                   </div>
                 </div>
                 <div className="glass rounded-2xl p-5">
-                  <Coins className="h-5 w-5 text-amber-500" />
-                  <div className="mt-3 text-2xl font-bold">25–30%</div>
-                  <div className="text-xs text-muted">
-                    credit when they upgrade
-                  </div>
+                  <Users className="h-5 w-5 text-brand-600" />
+                  <div className="mt-3 text-2xl font-bold">Monthly</div>
+                  <div className="text-xs text-muted">automatic payouts</div>
                 </div>
               </div>
 
               <p className="mt-5 text-xs leading-relaxed text-muted">
-                Early-access members lock in founder pricing and get first
-                access to new tools as they ship.
+                Example: refer 20 creators on Studio and earn ~$230/month —
+                recurring, for as long as they stay subscribed.
               </p>
             </div>
           </div>

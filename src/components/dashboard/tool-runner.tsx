@@ -368,8 +368,8 @@ export function ToolRunner({
       {/* ── Body: half-and-half until first run, then full width ── */}
       <div
         className={cn(
-          "grid items-start gap-6",
-          showAside && "lg:grid-cols-2",
+          "grid gap-6",
+          showAside && "lg:grid-cols-2 lg:items-stretch",
         )}
       >
         {/* Left — input */}
@@ -386,7 +386,7 @@ export function ToolRunner({
             </div>
           )}
 
-          <div className="glass rounded-3xl p-6 sm:p-8">
+          <div className="glass flex h-full flex-col rounded-3xl p-6 sm:p-8">
             <div className="space-y-5">
               {tool.fields.map((field) => (
                 <label key={field.name} className="block">
@@ -435,8 +435,9 @@ export function ToolRunner({
               ))}
             </div>
 
+            <div className="mt-auto pt-7">
             {tool.mediaTool && !mediaReady ? (
-              <div className="mt-7 rounded-2xl border border-amber-300/70 bg-amber-50 p-4">
+              <div className="rounded-2xl border border-amber-300/70 bg-amber-50 p-4">
                 <div className="flex items-center gap-2 text-sm font-semibold text-amber-900">
                   <Plug className="h-4 w-4" />
                   Almost live — connect {tool.provider ?? "the provider"}
@@ -460,7 +461,7 @@ export function ToolRunner({
                   onClick={run}
                   disabled={loading}
                   size="lg"
-                  className={cn("mt-7 w-full", !blocked && "glow-brand")}
+                  className={cn("w-full", !blocked && "glow-brand")}
                 >
                   {loading ? (
                     <Loader2 className="h-4 w-4 animate-spin" />
@@ -479,6 +480,7 @@ export function ToolRunner({
                 )}
               </>
             )}
+            </div>
           </div>
         </div>
 
