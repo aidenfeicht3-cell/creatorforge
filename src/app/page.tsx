@@ -20,6 +20,8 @@ import { SiteFooter } from "@/components/site-footer";
 import { PricingCards } from "@/components/pricing-cards";
 import { buttonClasses } from "@/components/ui/button";
 import { Reveal } from "@/components/ui/reveal";
+import { HeroAurora } from "@/components/hero-aurora";
+import { Marquee } from "@/components/marquee";
 
 export default function LandingPage() {
   return (
@@ -27,7 +29,8 @@ export default function LandingPage() {
       <SiteHeader />
 
       {/* ───────── Hero ───────── */}
-      <section className="mx-auto max-w-5xl px-5 pt-20 pb-16 text-center lg:pt-28">
+      <section className="relative isolate mx-auto max-w-5xl px-5 pt-20 pb-16 text-center lg:pt-28">
+        <HeroAurora />
         <Reveal>
           <span className="inline-flex items-center gap-2 rounded-full border border-border bg-surface px-4 py-1.5 text-sm shadow-sm">
             <span className="font-semibold text-brand-600">NEW:</span>
@@ -87,6 +90,8 @@ export default function LandingPage() {
           </div>
         </Reveal>
       </section>
+
+      <Marquee />
 
       {/* ───────── Tool grid ───────── */}
       <section

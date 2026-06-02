@@ -145,6 +145,17 @@ body::before {
   .hover-lift:hover { transform: none; }
 }
 
+/* Infinite marquee — duplicate the row and slide -50% for a seamless loop. */
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+.animate-marquee { animation: marquee 40s linear infinite; }
+.animate-marquee:hover { animation-play-state: paused; }
+@media (prefers-reduced-motion: reduce) {
+  .animate-marquee { animation: none; }
+}
+
 /* ─── Dashboard aurora — animated background glows ─── */
 @keyframes aurora-drift-a {
   0%, 100% { transform: translate(0, 0) scale(1); }
