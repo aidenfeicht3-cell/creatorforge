@@ -16,6 +16,7 @@ import { buttonClasses } from "@/components/ui/button";
 import { getAccount } from "@/lib/account";
 import { createClient } from "@/lib/supabase/server";
 import { toolsByCategory, type ToolDef } from "@/lib/tools";
+import { Reveal } from "@/components/ui/reveal";
 
 const CATEGORY_META: Record<
   string,
@@ -66,6 +67,7 @@ export default async function DashboardPage() {
   return (
     <div className="space-y-10">
       {/* ─── Welcome row ─── */}
+      <Reveal>
       <header className="flex flex-wrap items-end justify-between gap-6">
         <div>
           <p className="font-mono text-xs uppercase tracking-wider text-brand-600">
@@ -88,8 +90,10 @@ export default async function DashboardPage() {
           </Link>
         </div>
       </header>
+      </Reveal>
 
       {/* ─── Flagship hero: Launch Pad ─── */}
+      <Reveal delay={0.05}>
       <Link
         href="/dashboard/launch"
         className="group relative block overflow-hidden rounded-3xl border border-brand-500/20 bg-gradient-to-br from-brand-50 via-surface to-surface p-7 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md sm:p-9"
@@ -133,8 +137,10 @@ export default async function DashboardPage() {
           </div>
         </div>
       </Link>
+      </Reveal>
 
       {/* ─── Stat row ─── */}
+      <Reveal delay={0.1}>
       <div className="grid gap-4 sm:grid-cols-3">
         <Stat
           icon={Zap}
@@ -158,6 +164,7 @@ export default async function DashboardPage() {
           sublabel={`Up to Claude ${plan.modelTier}`}
         />
       </div>
+      </Reveal>
 
       {plan.id !== "free" && creditsLeft === 0 && (
         <div className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-brand-500/30 bg-brand-50 p-5">
@@ -176,6 +183,7 @@ export default async function DashboardPage() {
       )}
 
       {/* ─── Featured tools (3 big cards) ─── */}
+      <Reveal>
       <section>
         <div className="mb-4 flex items-baseline justify-between">
           <h2 className="text-lg font-semibold">Most-used tools</h2>
@@ -193,6 +201,7 @@ export default async function DashboardPage() {
           ))}
         </div>
       </section>
+      </Reveal>
 
       {/* ─── Tools by category ─── */}
       {(["youtube", "production", "branding", "growth"] as const).map(
@@ -201,7 +210,8 @@ export default async function DashboardPage() {
           if (!tools || tools.length === 0) return null;
           const meta = CATEGORY_META[category];
           return (
-            <section key={category}>
+            <Reveal key={category}>
+              <section>
               <div className="mb-4">
                 <h2 className="text-lg font-semibold">{meta.title}</h2>
                 <p className="text-sm text-muted">{meta.tagline}</p>
@@ -215,7 +225,8 @@ export default async function DashboardPage() {
                   />
                 ))}
               </div>
-            </section>
+              </section>
+            </Reveal>
           );
         },
       )}
