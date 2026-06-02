@@ -524,9 +524,19 @@ Return JSON: {
         system: `${BASE_SYSTEM} You are a clip editor who packages long-form content into viral short-form clips. You think in vertical 9:16 format. Each clip must survive the first 1 second on a stranger's For You feed. ${JSON_RULE}`,
         user: `Below is the real transcript of a long-form video (~${Math.round(
           context.totalDurationSec / 60,
-        )} minutes). Identify the 5 most clippable moments and package each as a ready-to-edit ${platform} short.
+        )} minutes). Find the 5 most clippable moments and package each as a ready-to-edit ${platform} short.
 
-For each clip — be specific. Quote the VERBATIM line that anchors it. Pick moments that work without context. The first 3 seconds must hook a complete stranger.
+WHAT ACTUALLY CLIPS — pick moments that hit at least one:
+- A bold, contrarian, or surprising claim said in a single sentence
+- A complete micro-story: setup → tension → payoff, all inside 30-60s
+- A specific number, result, or before/after that sounds almost unreal
+- An emotional spike — shock, awe, a strong opinion, a confession
+- A "wait, what?" curiosity gap that only resolves if you keep watching
+Skip anything that needs the rest of the video to make sense.
+
+Rules:
+- The first 3 seconds must hook a total stranger on their For You feed.
+- Each clip must stand 100% on its own.
 
 TRANSCRIPT:
 """
@@ -534,17 +544,17 @@ ${context.transcript}
 """
 
 For each clip, design:
-- "startHint": approximate location ("first quarter", "around 17:00", etc.)
-- "spokenLine": EXACT quote that anchors the clip (must be a real line from the transcript)
-- "clipLengthSec": 30–60 seconds ideal
-- "hookOverlay": bold 3-6 word text overlay that appears at second 1 (massive font, top of screen)
-- "bodyCaption": longer caption that scrolls / appears during the clip (max 100 chars)
-- "voiceoverIntro": optional 1-line voiceover the creator could add at the start to set up context. SHORT.
-- "soundEffectCue": specific SFX to add ("whoosh on hook reveal", "bass drop at 0:15", "ding when X said")
+- "startHint": where it sits in the video ("first quarter", "around 17:00", etc.)
+- "spokenLine": the EXACT quote that anchors the clip — word-for-word, a real line from the transcript above
+- "clipLengthSec": 30–60 (sweet spot ~35)
+- "hookOverlay": 3-6 word overlay at second 1 — a curiosity gap or bold claim, NOT a summary (massive font, top of screen)
+- "bodyCaption": the scroll-stopping post caption (max 100 chars)
+- "voiceoverIntro": optional 1-line setup the creator records at the start. SHORT — only if the clip needs context.
+- "soundEffectCue": one specific SFX ("whoosh on hook reveal", "bass drop at 0:15", "ding when X said")
 - "hashtags": array of 5-8 ${platform}-tuned hashtags, mix of broad + specific niche
-- "editNotes": 1-2 sentences on the cut — zoom moments, captions emphasis, B-roll callouts
-- "viralScore": honest 1-100 — most clips should be 60-85
-- "whyItWorks": one sentence
+- "editNotes": 1-2 sentences on the cut — zoom moments, caption emphasis, B-roll callouts
+- "viralScore": honest 1-100 — only a genuinely rare moment breaks 85; most land 60-80
+- "whyItWorks": one sentence naming which pattern above it hits
 
 Return JSON: {
   "sourceUrl":"${context.url}",
