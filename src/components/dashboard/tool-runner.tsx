@@ -22,6 +22,7 @@ import { ResultSkeleton } from "@/components/ui/skeleton";
 import { ToolIcon } from "@/components/ui/icon";
 import { ResultView } from "@/components/dashboard/result-view";
 import { ExportMenu } from "@/components/dashboard/export-menu";
+import { Reveal } from "@/components/ui/reveal";
 import { cn } from "@/lib/utils";
 import type { ToolDef, ToolSlug } from "@/lib/tools";
 
@@ -330,31 +331,39 @@ export function ToolRunner({
   return (
     <div className="mx-auto max-w-5xl space-y-6">
       {/* ── Header ── */}
-      <header className="flex items-start gap-4">
-        <div
-          className={`grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-gradient-to-br ${tool.accent} shadow-lg ring-1 ring-inset ring-white/20`}
-        >
-          <ToolIcon name={tool.icon} className="h-6 w-6 text-white" />
-        </div>
-        <div className="min-w-0 flex-1">
-          <div className="flex flex-wrap items-center gap-2">
-            <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
-              {tool.name}
-            </h1>
-            {tool.badge && (
-              <span className="inline-flex items-center gap-1 rounded-md bg-emerald-50 px-2 py-0.5 font-mono text-[10px] font-semibold tracking-wider text-emerald-700">
-                <Database className="h-2.5 w-2.5" />
-                {tool.badge}
-              </span>
-            )}
-            <span className="inline-flex items-center gap-1 rounded-md border border-border bg-bg-soft px-2 py-0.5 font-mono text-[10px] text-muted">
-              <Zap className="h-2.5 w-2.5 text-brand-600" />
-              {tool.creditCost} credits
-            </span>
+      <Reveal>
+        <header className="relative overflow-hidden rounded-3xl glass-strong p-6 sm:p-7">
+          <div
+            aria-hidden
+            className={`pointer-events-none absolute -right-16 -top-16 h-44 w-44 rounded-full bg-gradient-to-br ${tool.accent} opacity-20 blur-3xl`}
+          />
+          <div className="relative flex items-start gap-4">
+            <div
+              className={`grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-gradient-to-br ${tool.accent} shadow-lg ring-1 ring-inset ring-white/20`}
+            >
+              <ToolIcon name={tool.icon} className="h-6 w-6 text-white" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <div className="flex flex-wrap items-center gap-2">
+                <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
+                  {tool.name}
+                </h1>
+                {tool.badge && (
+                  <span className="inline-flex items-center gap-1 rounded-md bg-emerald-50 px-2 py-0.5 font-mono text-[10px] font-semibold tracking-wider text-emerald-700">
+                    <Database className="h-2.5 w-2.5" />
+                    {tool.badge}
+                  </span>
+                )}
+                <span className="inline-flex items-center gap-1 rounded-md border border-border bg-bg-soft px-2 py-0.5 font-mono text-[10px] text-muted">
+                  <Zap className="h-2.5 w-2.5 text-brand-600" />
+                  {tool.creditCost} credits
+                </span>
+              </div>
+              <p className="mt-1.5 text-[15px] text-muted">{tool.description}</p>
+            </div>
           </div>
-          <p className="mt-1.5 text-[15px] text-muted">{tool.description}</p>
-        </div>
-      </header>
+        </header>
+      </Reveal>
 
       {/* ── Body: half-and-half until first run, then full width ── */}
       <div

@@ -122,7 +122,7 @@ export default function LandingPage() {
       <Marquee />
 
       {/* ───────── How it works ───────── */}
-      <section className="mx-auto max-w-5xl px-5 py-20">
+      <section id="features" className="mx-auto max-w-5xl px-5 py-20">
         <Reveal className="mx-auto max-w-2xl text-center">
           <h2 className="text-4xl font-bold tracking-[-0.02em] sm:text-5xl">
             How it works
@@ -177,92 +177,6 @@ export default function LandingPage() {
               </p>
             </div>
           </Reveal>
-        </div>
-      </section>
-
-      {/* ───────── Tool grid ───────── */}
-      <section
-        id="features"
-        className="mx-auto max-w-6xl px-5 py-20"
-      >
-        <Reveal className="mx-auto max-w-2xl text-center">
-          <h2 className="text-4xl font-bold tracking-[-0.02em] sm:text-5xl">
-            A full toolkit.
-            <br />
-            One creator workflow.
-          </h2>
-          <p className="mt-5 text-muted">
-            After Launch Pad gets you started, these handle everything you do
-            before hitting upload — all in one dashboard.
-          </p>
-        </Reveal>
-
-        <div className="mt-14 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          <ToolCard
-            icon={Crosshair}
-            title="Reverse Engineer"
-            desc="Paste a viral YouTube URL. Get a teardown of why it worked + a remix for your niche."
-            badge="REAL DATA"
-            color="bg-rose-50"
-            iconColor="text-rose-600"
-          />
-          <ToolCard
-            icon={Scissors}
-            title="Shorts Repurposer"
-            desc="Long-form video in. The 5 most clip-worthy moments out — with timestamps and hooks."
-            badge="REAL DATA"
-            color="bg-sky-50"
-            iconColor="text-sky-600"
-          />
-          <ToolCard
-            icon={Clapperboard}
-            title="Viral Clip Studio"
-            desc="One topic. Thumbnail, title, hook, script, SEO. The full package in one shot."
-            color="bg-blue-50"
-            iconColor="text-brand-600"
-          />
-          <ToolCard
-            icon={ImageIcon}
-            title="Thumbnail Generator"
-            desc="Composition, overlay text, and the emotional angle behind every winning click."
-            color="bg-violet-50"
-            iconColor="text-violet-600"
-          />
-          <ToolCard
-            icon={Type}
-            title="Viral Title Generator"
-            desc="8 titles per topic, each scored 1–100 for click-through and labeled by viral pattern."
-            color="bg-amber-50"
-            iconColor="text-amber-600"
-          />
-          <ToolCard
-            icon={Zap}
-            title="Hook Generator"
-            desc="First-15-second hooks that survive the make-or-break retention window."
-            color="bg-cyan-50"
-            iconColor="text-cyan-600"
-          />
-          <ToolCard
-            icon={FileText}
-            title="AI Script Writer"
-            desc="Long-form or shorts scripts with auto-sections and retention pacing notes."
-            color="bg-emerald-50"
-            iconColor="text-emerald-600"
-          />
-          <ToolCard
-            icon={Search}
-            title="SEO Optimizer"
-            desc="Description, tags, and ranking moves grounded in real search intent."
-            color="bg-indigo-50"
-            iconColor="text-indigo-600"
-          />
-          <ToolCard
-            icon={Lightbulb}
-            title="Viral Idea Generator"
-            desc="Niche in. Trending, series, and high-retention formats out."
-            color="bg-orange-50"
-            iconColor="text-orange-600"
-          />
         </div>
       </section>
 
