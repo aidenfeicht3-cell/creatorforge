@@ -22,6 +22,7 @@ import { buttonClasses } from "@/components/ui/button";
 import { Reveal } from "@/components/ui/reveal";
 import { HeroAurora } from "@/components/hero-aurora";
 import { Marquee } from "@/components/marquee";
+import { NumberTicker } from "@/components/ui/number-ticker";
 
 export default function LandingPage() {
   return (
@@ -91,7 +92,92 @@ export default function LandingPage() {
         </Reveal>
       </section>
 
+      {/* ───────── Stats band ───────── */}
+      <section className="mx-auto max-w-4xl px-5 py-10">
+        <Reveal>
+          <div className="grid grid-cols-3 gap-4 rounded-3xl border border-border bg-surface px-6 py-8 text-center shadow-sm">
+            <div>
+              <div className="text-4xl font-bold text-ink sm:text-5xl">
+                <NumberTicker value={20} suffix="+" />
+              </div>
+              <div className="mt-1 text-sm text-muted">AI creator tools</div>
+            </div>
+            <div>
+              <div className="text-4xl font-bold text-ink sm:text-5xl">
+                <NumberTicker value={5} />
+              </div>
+              <div className="mt-1 text-sm text-muted">shorts per video</div>
+            </div>
+            <div>
+              <div className="text-4xl font-bold text-ink sm:text-5xl">
+                <NumberTicker value={60} suffix="s" />
+              </div>
+              <div className="mt-1 text-sm text-muted">to your first result</div>
+            </div>
+          </div>
+        </Reveal>
+      </section>
+
       <Marquee />
+
+      {/* ───────── How it works ───────── */}
+      <section className="mx-auto max-w-5xl px-5 py-20">
+        <Reveal className="mx-auto max-w-2xl text-center">
+          <h2 className="text-4xl font-bold tracking-[-0.02em] sm:text-5xl">
+            How it works
+          </h2>
+          <p className="mt-5 text-muted">
+            From a blank page to a posted video — three steps.
+          </p>
+        </Reveal>
+        <div className="mt-14 grid gap-6 sm:grid-cols-3">
+          <Reveal delay={0}>
+            <div className="glass hover-lift h-full rounded-2xl p-6">
+              <div className="grid h-11 w-11 place-items-center rounded-xl bg-blue-50">
+                <Crosshair className="h-5 w-5 text-brand-600" />
+              </div>
+              <div className="mt-4 font-mono text-xs tracking-wider text-muted">
+                STEP 1
+              </div>
+              <h3 className="mt-1 text-lg font-semibold">Tell us your niche</h3>
+              <p className="mt-2 text-sm leading-relaxed text-muted">
+                Launch Pad finds your angle, names and brands your channel, and
+                plans your first film-ready video.
+              </p>
+            </div>
+          </Reveal>
+          <Reveal delay={0.1}>
+            <div className="glass hover-lift h-full rounded-2xl p-6">
+              <div className="grid h-11 w-11 place-items-center rounded-xl bg-blue-50">
+                <Zap className="h-5 w-5 text-brand-600" />
+              </div>
+              <div className="mt-4 font-mono text-xs tracking-wider text-muted">
+                STEP 2
+              </div>
+              <h3 className="mt-1 text-lg font-semibold">Generate everything</h3>
+              <p className="mt-2 text-sm leading-relaxed text-muted">
+                20+ AI tools write your titles, hooks, scripts, thumbnails, and
+                SEO — and turn long videos into clip-ready shorts.
+              </p>
+            </div>
+          </Reveal>
+          <Reveal delay={0.2}>
+            <div className="glass hover-lift h-full rounded-2xl p-6">
+              <div className="grid h-11 w-11 place-items-center rounded-xl bg-blue-50">
+                <Clapperboard className="h-5 w-5 text-brand-600" />
+              </div>
+              <div className="mt-4 font-mono text-xs tracking-wider text-muted">
+                STEP 3
+              </div>
+              <h3 className="mt-1 text-lg font-semibold">Post and grow</h3>
+              <p className="mt-2 text-sm leading-relaxed text-muted">
+                Export clean, captioned assets, publish to every platform, and
+                come back for the next one.
+              </p>
+            </div>
+          </Reveal>
+        </div>
+      </section>
 
       {/* ───────── Tool grid ───────── */}
       <section
