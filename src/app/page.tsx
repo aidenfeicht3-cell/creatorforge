@@ -32,6 +32,7 @@ export default function LandingPage() {
       {/* ───────── Hero ───────── */}
       <section className="relative isolate mx-auto max-w-5xl px-5 pt-20 pb-16 text-center lg:pt-28">
         <HeroAurora />
+        <div aria-hidden className="hero-grid" />
         <Reveal>
           <span className="inline-flex items-center gap-2 rounded-full border border-border bg-surface px-4 py-1.5 text-sm shadow-sm">
             <span className="font-semibold text-brand-600">NEW:</span>
@@ -46,7 +47,7 @@ export default function LandingPage() {
           <h1 className="mx-auto mt-8 max-w-4xl text-5xl font-bold leading-[1.05] tracking-[-0.03em] text-ink sm:text-6xl lg:text-7xl">
             From Blank Page to Your
             <br />
-            <span className="text-gradient">First Viral Video</span>
+            <span className="text-gradient-vivid">First Viral Video</span>
           </h1>
         </Reveal>
 
@@ -60,7 +61,7 @@ export default function LandingPage() {
 
         <Reveal delay={0.24}>
           <div className="mt-10 flex justify-center">
-            <Link href="/signup" className={buttonClasses("primary", "lg")}>
+            <Link href="/signup" className={buttonClasses("primary", "lg", "glow-pulse")}>
               Start for Free
               <ArrowRight className="h-4 w-4" />
             </Link>
@@ -390,7 +391,7 @@ export default function LandingPage() {
             Upgrade for pro-grade models any time.
           </p>
           <div className="mt-8 flex justify-center">
-            <Link href="/signup" className={buttonClasses("primary", "lg")}>
+            <Link href="/signup" className={buttonClasses("primary", "lg", "glow-pulse")}>
               Start for Free
               <ArrowRight className="h-4 w-4" />
             </Link>
