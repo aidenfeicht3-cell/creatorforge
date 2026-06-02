@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import Link from "next/link";
 import {
   Sparkles,
   Loader2,
@@ -25,6 +26,7 @@ import { ExportMenu } from "@/components/dashboard/export-menu";
 import { Reveal } from "@/components/ui/reveal";
 import { cn } from "@/lib/utils";
 import type { ToolDef, ToolSlug } from "@/lib/tools";
+import { toolsByCategory } from "@/lib/tools";
 
 type Result = Record<string, unknown>;
 
@@ -327,6 +329,9 @@ export function ToolRunner({
   // user generates (or it's loading), it collapses and results take the stage.
   const showAside = !loading && !result;
   const lockLabel = tool.studioOnly ? "Unlock with Studio" : "Upgrade to use this";
+  const otherTools = Object.values(toolsByCategory())
+    .flat()
+    .filter((t) => t.slug !== tool.slug);
 
   return (
     <div className="mx-auto max-w-5xl space-y-6">
@@ -562,6 +567,32 @@ export function ToolRunner({
           )}
         </div>
       )}
+
+      {/* ── Jump to another tool — fills the page + quick navigation ── */}
+      <Reveal>
+        <div className="pt-2">
+          <div className="mb-3 flex items-center gap-2 text-sm font-semibold text-muted">
+            <Sparkles className="h-4 w-4 text-brand-600" />
+            Jump to another tool
+          </div>
+          <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 lg:grid-cols-4">
+            {otherTools.map((t) => (
+              <Link
+                key={t.slug}
+                href={`/dashboard/tools/${t.slug}`}
+                className="group flex items-center gap-2.5 rounded-xl border border-border bg-surface px-3 py-2.5 text-sm transition-all hover:-translate-y-0.5 hover:border-brand-500/40 hover:shadow-sm"
+              >
+                <span
+                  className={`grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-gradient-to-br ${t.accent}`}
+                >
+                  <ToolIcon name={t.icon} className="h-4 w-4 text-white" />
+                </span>
+                <span className="truncate font-medium">{t.name}</span>
+              </Link>
+            ))}
+          </div>
+        </div>
+      </Reveal>
     </div>
   );
 }
