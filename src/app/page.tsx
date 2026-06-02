@@ -19,6 +19,7 @@ import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import { PricingCards } from "@/components/pricing-cards";
 import { buttonClasses } from "@/components/ui/button";
+import { Reveal } from "@/components/ui/reveal";
 
 export default function LandingPage() {
   return (
@@ -27,53 +28,64 @@ export default function LandingPage() {
 
       {/* ───────── Hero ───────── */}
       <section className="mx-auto max-w-5xl px-5 pt-20 pb-16 text-center lg:pt-28">
-        <span className="inline-flex items-center gap-2 rounded-full border border-border bg-surface px-4 py-1.5 text-sm shadow-sm">
-          <span className="font-semibold text-brand-600">NEW:</span>
-          <span className="text-ink">Launch Pad — your channel, start to finish</span>
-          <Link href="/signup" className="inline-flex items-center gap-0.5 font-medium text-brand-600 hover:underline">
-            try it <ArrowRight className="h-3.5 w-3.5" />
-          </Link>
-        </span>
+        <Reveal>
+          <span className="inline-flex items-center gap-2 rounded-full border border-border bg-surface px-4 py-1.5 text-sm shadow-sm">
+            <span className="font-semibold text-brand-600">NEW:</span>
+            <span className="text-ink">Launch Pad — your channel, start to finish</span>
+            <Link href="/signup" className="inline-flex items-center gap-0.5 font-medium text-brand-600 hover:underline">
+              try it <ArrowRight className="h-3.5 w-3.5" />
+            </Link>
+          </span>
+        </Reveal>
 
-        <h1 className="mx-auto mt-8 max-w-4xl text-5xl font-bold leading-[1.05] tracking-[-0.03em] text-ink sm:text-6xl lg:text-7xl">
-          From Blank Page to Your
-          <br />
-          <span className="text-gradient">First Viral Video</span>
-        </h1>
+        <Reveal delay={0.08}>
+          <h1 className="mx-auto mt-8 max-w-4xl text-5xl font-bold leading-[1.05] tracking-[-0.03em] text-ink sm:text-6xl lg:text-7xl">
+            From Blank Page to Your
+            <br />
+            <span className="text-gradient">First Viral Video</span>
+          </h1>
+        </Reveal>
 
-        <p className="mx-auto mt-7 max-w-xl text-lg leading-relaxed text-muted">
-          Launch Pad walks you through it all — find your niche, name and brand
-          your channel, then plan a complete, film-ready video. Plus 20+ AI tools
-          for everything after you hit record.
-        </p>
+        <Reveal delay={0.16}>
+          <p className="mx-auto mt-7 max-w-xl text-lg leading-relaxed text-muted">
+            Launch Pad walks you through it all — find your niche, name and brand
+            your channel, then plan a complete, film-ready video. Plus 20+ AI tools
+            for everything after you hit record.
+          </p>
+        </Reveal>
 
-        <div className="mt-10 flex justify-center">
-          <Link href="/signup" className={buttonClasses("primary", "lg")}>
-            Start for Free
-            <ArrowRight className="h-4 w-4" />
-          </Link>
-        </div>
+        <Reveal delay={0.24}>
+          <div className="mt-10 flex justify-center">
+            <Link href="/signup" className={buttonClasses("primary", "lg")}>
+              Start for Free
+              <ArrowRight className="h-4 w-4" />
+            </Link>
+          </div>
+          <p className="mt-5 text-sm text-muted">
+            Free forever. No credit card. Upgrade only when you want pro-grade models.
+          </p>
+        </Reveal>
 
-        <p className="mt-5 text-sm text-muted">
-          Free forever. No credit card. Upgrade only when you want pro-grade models.
-        </p>
-
-        <div className="mt-10 flex flex-wrap items-center justify-center gap-x-3 gap-y-2 text-sm text-muted">
-          <span className="font-medium text-ink">20+ AI creator tools</span>
-          <span className="text-border">•</span>
-          <span className="font-medium text-ink">5 captioned shorts per video</span>
-          <span className="text-border">•</span>
-          <span className="font-medium text-ink">Free forever plan</span>
-        </div>
+        <Reveal delay={0.32}>
+          <div className="mt-10 flex flex-wrap items-center justify-center gap-x-3 gap-y-2 text-sm text-muted">
+            <span className="font-medium text-ink">20+ AI creator tools</span>
+            <span className="text-border">•</span>
+            <span className="font-medium text-ink">5 captioned shorts per video</span>
+            <span className="text-border">•</span>
+            <span className="font-medium text-ink">Free forever plan</span>
+          </div>
+        </Reveal>
       </section>
 
       {/* ───────── Feature preview row ───────── */}
       <section className="mx-auto max-w-6xl px-5 pb-16">
-        <div className="grid gap-5 sm:grid-cols-3">
-          <PreviewCard variant="reverse" />
-          <PreviewCard variant="shorts" />
-          <PreviewCard variant="studio" />
-        </div>
+        <Reveal>
+          <div className="grid gap-5 sm:grid-cols-3">
+            <PreviewCard variant="reverse" />
+            <PreviewCard variant="shorts" />
+            <PreviewCard variant="studio" />
+          </div>
+        </Reveal>
       </section>
 
       {/* ───────── Tool grid ───────── */}
@@ -81,7 +93,7 @@ export default function LandingPage() {
         id="features"
         className="mx-auto max-w-6xl px-5 py-20"
       >
-        <div className="mx-auto max-w-2xl text-center">
+        <Reveal className="mx-auto max-w-2xl text-center">
           <h2 className="text-4xl font-bold tracking-[-0.02em] sm:text-5xl">
             A full toolkit.
             <br />
@@ -91,7 +103,7 @@ export default function LandingPage() {
             After Launch Pad gets you started, these handle everything you do
             before hitting upload — all in one dashboard.
           </p>
-        </div>
+        </Reveal>
 
         <div className="mt-14 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           <ToolCard
@@ -346,7 +358,7 @@ function ToolCard({
 function PreviewCard({ variant }: { variant: "reverse" | "shorts" | "studio" }) {
   if (variant === "reverse") {
     return (
-      <div className="glass overflow-hidden rounded-2xl p-5">
+      <div className="glass hover-lift overflow-hidden rounded-2xl p-5">
         <div className="flex items-center gap-2 border-b border-border pb-3">
           <Crosshair className="h-4 w-4 text-rose-600" />
           <span className="text-sm font-semibold">Reverse Engineer</span>
@@ -369,7 +381,7 @@ function PreviewCard({ variant }: { variant: "reverse" | "shorts" | "studio" }) 
   }
   if (variant === "shorts") {
     return (
-      <div className="glass overflow-hidden rounded-2xl p-5">
+      <div className="glass hover-lift overflow-hidden rounded-2xl p-5">
         <div className="flex items-center gap-2 border-b border-border pb-3">
           <Scissors className="h-4 w-4 text-sky-600" />
           <span className="text-sm font-semibold">Shorts Repurposer</span>
@@ -391,7 +403,7 @@ function PreviewCard({ variant }: { variant: "reverse" | "shorts" | "studio" }) 
     );
   }
   return (
-    <div className="glass overflow-hidden rounded-2xl p-5">
+    <div className="glass hover-lift overflow-hidden rounded-2xl p-5">
       <div className="flex items-center gap-2 border-b border-border pb-3">
         <Clapperboard className="h-4 w-4 text-brand-600" />
         <span className="text-sm font-semibold">Viral Clip Studio</span>
