@@ -96,7 +96,7 @@ export default async function DashboardPage() {
       <Reveal delay={0.05}>
       <Link
         href="/dashboard/launch"
-        className="group relative block overflow-hidden rounded-3xl border border-brand-500/20 bg-gradient-to-br from-brand-50 via-surface to-surface p-7 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md sm:p-9"
+        className="group relative block overflow-hidden rounded-3xl border border-brand-500/20 bg-gradient-to-br from-brand-500/10 via-surface to-surface p-7 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md sm:p-9"
       >
         <div className="pointer-events-none absolute -right-16 -top-16 h-56 w-56 rounded-full bg-gradient-to-br from-brand-500 to-brand-400 opacity-20 blur-3xl transition-opacity group-hover:opacity-30" />
         <div className="relative flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
@@ -105,7 +105,7 @@ export default async function DashboardPage() {
               <Sparkles className="h-3 w-3" /> Start here
             </div>
             <h2 className="mt-4 flex items-center gap-2.5 text-2xl font-bold tracking-tight sm:text-3xl">
-              <span className="grid h-10 w-10 place-items-center rounded-2xl bg-gradient-to-br from-brand-500 to-brand-400 text-white shadow-[0_8px_24px_-8px_rgba(37,99,235,0.5)]">
+              <span className="grid h-10 w-10 place-items-center rounded-2xl bg-gradient-to-br from-brand-500 to-brand-400 text-[#0A0A0A] shadow-[0_8px_24px_-8px_rgba(182,255,26,0.35)]">
                 <Rocket className="h-5 w-5" />
               </span>
               Launch Pad

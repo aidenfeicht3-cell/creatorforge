@@ -136,7 +136,7 @@ export function WorkshopCard({
       <div className="p-5">
         <div className="flex items-start gap-4">
           {failed ? (
-            <div className="grid h-12 w-12 shrink-0 place-items-center rounded-full bg-gradient-to-br from-brand-500 to-brand-700 text-base font-bold text-white">
+            <div className="grid h-12 w-12 shrink-0 place-items-center rounded-full bg-gradient-to-br from-brand-500 to-brand-700 text-base font-bold text-[#0A0A0A]">
               {channel.display_name.charAt(0).toUpperCase()}
             </div>
           ) : (
@@ -226,7 +226,7 @@ export function WorkshopCard({
             <button
               type="submit"
               disabled={posting || !newTip.trim()}
-              className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-brand-500 text-white hover:bg-brand-600 disabled:opacity-50"
+              className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-brand-500 text-[#0A0A0A] hover:bg-brand-600 disabled:opacity-50"
               aria-label="Post tip"
             >
               {posting ? (

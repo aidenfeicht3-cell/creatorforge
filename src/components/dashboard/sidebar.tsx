@@ -216,7 +216,7 @@ export function Sidebar({
             href="/dashboard/launch"
             onClick={onMobileClose}
             className={cn(
-              "mt-5 flex items-center gap-2.5 rounded-xl bg-gradient-to-r from-brand-500 to-brand-400 px-3 py-2.5 text-sm font-semibold text-white shadow-[0_8px_24px_-8px_rgba(37,99,235,0.6)] transition-all hover:brightness-105",
+              "mt-5 flex items-center gap-2.5 rounded-xl bg-gradient-to-r from-brand-500 to-brand-400 px-3 py-2.5 text-sm font-semibold text-[#0A0A0A] shadow-[0_8px_24px_-8px_rgba(182,255,26,0.4)] transition-all hover:brightness-105",
               isActive("/dashboard/launch") && "ring-2 ring-brand-500/40",
             )}
           >
@@ -291,7 +291,7 @@ export function Sidebar({
           <Link
             href="/pricing"
             onClick={onMobileClose}
-            className="mt-3 block overflow-hidden rounded-2xl border border-brand-500/20 bg-gradient-to-br from-brand-50 to-surface p-3.5 transition-all hover:border-brand-500/40"
+            className="mt-3 block overflow-hidden rounded-2xl border border-brand-500/20 bg-gradient-to-br from-brand-500/10 to-surface p-3.5 transition-all hover:border-brand-500/40"
           >
             <div className="flex items-center gap-2 text-sm font-semibold text-brand-700">
               <Sparkles className="h-4 w-4" />

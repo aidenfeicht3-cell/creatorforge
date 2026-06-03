@@ -163,7 +163,7 @@ export function LaunchPad({
                     className={cn(
                       "inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium transition-colors",
                       active
-                        ? "bg-brand-500 text-white"
+                        ? "bg-brand-500 text-[#0A0A0A]"
                         : done
                           ? "bg-brand-50 text-brand-700"
                           : "bg-bg-soft text-muted",
@@ -242,7 +242,7 @@ function StepShell({
   return (
     <div className="rounded-3xl border border-border bg-surface p-6 shadow-sm sm:p-8">
       <div className="flex items-start gap-3">
-        <div className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-gradient-to-br from-brand-500 to-brand-400 text-white shadow-[0_8px_24px_-8px_rgba(37,99,235,0.5)]">
+        <div className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-gradient-to-br from-brand-500 to-brand-400 text-[#0A0A0A] shadow-[0_8px_24px_-8px_rgba(182,255,26,0.35)]">
           <Icon className="h-5 w-5" />
         </div>
         <div>
@@ -323,7 +323,7 @@ function RunButton({
       onClick={onClick}
       disabled={loading}
       className={cn(
-        "group flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-brand-500 to-brand-400 px-5 py-3.5 font-semibold text-white shadow-[0_10px_30px_-10px_rgba(37,99,235,0.6)] transition-all hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-60",
+        "group flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-brand-500 to-brand-400 px-5 py-3.5 font-semibold text-[#0A0A0A] shadow-[0_10px_30px_-10px_rgba(182,255,26,0.4)] transition-all hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-60",
       )}
     >
       {loading ? (
@@ -360,7 +360,7 @@ function PickCard({
       )}
     >
       {selected && (
-        <span className="absolute right-3 top-3 grid h-5 w-5 place-items-center rounded-full bg-brand-500 text-white">
+        <span className="absolute right-3 top-3 grid h-5 w-5 place-items-center rounded-full bg-brand-500 text-[#0A0A0A]">
           <Check className="h-3 w-3" />
         </span>
       )}
@@ -371,7 +371,7 @@ function PickCard({
 
 function ScoreBadge({ score }: { score: number }) {
   return (
-    <span className="inline-flex items-center gap-1 rounded-md bg-gradient-to-r from-brand-500 to-brand-400 px-2 py-0.5 font-mono text-[11px] font-semibold text-white">
+    <span className="inline-flex items-center gap-1 rounded-md bg-gradient-to-r from-brand-500 to-brand-400 px-2 py-0.5 font-mono text-[11px] font-semibold text-[#0A0A0A]">
       {score}
     </span>
   );
@@ -524,9 +524,9 @@ function NicheStep({
           </button>
           <button
             onClick={() => setMode("find")}
-            className="flex flex-col items-start gap-2 rounded-2xl border border-brand-500/30 bg-gradient-to-br from-brand-50 to-bg-soft p-5 text-left transition-all hover:-translate-y-0.5 hover:border-brand-500/50"
+            className="flex flex-col items-start gap-2 rounded-2xl border border-brand-500/30 bg-gradient-to-br from-brand-500/10 to-bg-soft p-5 text-left transition-all hover:-translate-y-0.5 hover:border-brand-500/50"
           >
-            <div className="grid h-10 w-10 place-items-center rounded-xl bg-brand-500 text-white">
+            <div className="grid h-10 w-10 place-items-center rounded-xl bg-brand-500 text-[#0A0A0A]">
               <Wand2 className="h-5 w-5" />
             </div>
             <div className="font-semibold">I don&apos;t know — find one for me</div>
@@ -887,13 +887,13 @@ function PfpStep({ plan, patch, runTool, onNext, onBack }: StepProps) {
                       // eslint-disable-next-line @next/next/no-img-element
                       <img src={image} alt={name} className="h-full w-full object-cover" />
                     ) : (
-                      <div className="grid h-full w-full place-items-center bg-gradient-to-br from-brand-500 to-brand-400 text-white">
+                      <div className="grid h-full w-full place-items-center bg-gradient-to-br from-brand-500 to-brand-400 text-[#0A0A0A]">
                         <UserCircle className="h-8 w-8 opacity-80" />
                       </div>
                     )}
                   </div>
                   {selected && (
-                    <span className="absolute right-2 top-2 grid h-5 w-5 place-items-center rounded-full bg-brand-500 text-white">
+                    <span className="absolute right-2 top-2 grid h-5 w-5 place-items-center rounded-full bg-brand-500 text-[#0A0A0A]">
                       <Check className="h-3 w-3" />
                     </span>
                   )}
@@ -1293,7 +1293,7 @@ function DoneStep({ plan, onRestart }: { plan: LaunchPlan; onRestart: () => void
   return (
     <div className="rounded-3xl border border-border bg-surface p-6 shadow-sm sm:p-8">
       <div className="flex items-center gap-3">
-        <div className="grid h-12 w-12 place-items-center rounded-2xl bg-gradient-to-br from-brand-500 to-brand-400 text-white shadow-[0_8px_24px_-8px_rgba(37,99,235,0.5)]">
+        <div className="grid h-12 w-12 place-items-center rounded-2xl bg-gradient-to-br from-brand-500 to-brand-400 text-[#0A0A0A] shadow-[0_8px_24px_-8px_rgba(182,255,26,0.35)]">
           <PartyPopper className="h-6 w-6" />
         </div>
         <div>

@@ -35,7 +35,7 @@ export function CreditSlider({ authed = false }: { authed?: boolean }) {
   }
 
   return (
-    <div className="rounded-3xl border border-brand-500/30 bg-gradient-to-br from-brand-50 to-white p-8 shadow-sm">
+    <div className="rounded-3xl border border-brand-500/30 bg-gradient-to-br from-brand-500/10 to-surface p-8 shadow-sm">
       <div className="flex items-center gap-2">
         <Sparkles className="h-5 w-5 text-brand-600" />
         <h3 className="text-lg font-bold">Build your own pack</h3>

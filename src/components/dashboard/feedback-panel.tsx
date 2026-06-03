@@ -102,7 +102,7 @@ export function FeedbackPanel({ isAdmin }: { isAdmin: boolean }) {
             type="button"
             onClick={submit}
             disabled={submitting || message.trim().length < 3}
-            className="inline-flex items-center gap-1.5 rounded-full bg-brand-500 px-4 py-1.5 text-sm font-semibold text-white hover:bg-brand-600 disabled:opacity-50"
+            className="inline-flex items-center gap-1.5 rounded-full bg-brand-500 px-4 py-1.5 text-sm font-semibold text-[#0A0A0A] hover:bg-brand-600 disabled:opacity-50"
           >
             {submitting ? (
               <Loader2 className="h-4 w-4 animate-spin" />

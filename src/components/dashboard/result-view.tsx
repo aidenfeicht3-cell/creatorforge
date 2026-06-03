@@ -851,9 +851,9 @@ function Shorts({ data }: { data: Any }) {
       {/* Cross-sell: turn these moments into finished videos automatically. */}
       <Link
         href="/dashboard/tools/autovideo?format=Shorts+%289%3A16%29"
-        className="flex items-center gap-3 rounded-2xl border border-brand-500/30 bg-gradient-to-br from-brand-50 to-surface p-4 transition-all hover:border-brand-500/50"
+        className="flex items-center gap-3 rounded-2xl border border-brand-500/30 bg-gradient-to-br from-brand-500/10 to-surface p-4 transition-all hover:border-brand-500/50"
       >
-        <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-brand-500 to-brand-400 text-white">
+        <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-brand-500 to-brand-400 text-[#0A0A0A]">
           <Wand2 className="h-5 w-5" />
         </span>
         <span className="min-w-0 flex-1">
@@ -876,7 +876,7 @@ function Shorts({ data }: { data: Any }) {
                 type="button"
                 onClick={renderAll}
                 disabled={bulkLoading}
-                className="inline-flex items-center gap-1.5 rounded-full bg-brand-500 px-4 py-1.5 text-xs font-semibold text-white hover:bg-brand-600 disabled:opacity-50"
+                className="inline-flex items-center gap-1.5 rounded-full bg-brand-500 px-4 py-1.5 text-xs font-semibold text-[#0A0A0A] hover:bg-brand-600 disabled:opacity-50"
               >
                 {bulkLoading ? (
                   <Loader2 className="h-3 w-3 animate-spin" />
@@ -935,12 +935,12 @@ function Shorts({ data }: { data: Any }) {
 
                 {/* Render UI */}
                 {sourceUrl && s.startSec != null && s.endSec != null && (
-                  <div className="rounded-lg border border-brand-500/30 bg-gradient-to-br from-brand-50 to-surface p-3">
+                  <div className="rounded-lg border border-brand-500/30 bg-gradient-to-br from-brand-500/10 to-surface p-3">
                     {(!job || job.status === "idle") && (
                       <button
                         type="button"
                         onClick={() => renderOne(i, s)}
-                        className="inline-flex w-full items-center justify-center gap-1.5 rounded-full bg-brand-500 px-3 py-1.5 text-xs font-semibold text-white hover:bg-brand-600"
+                        className="inline-flex w-full items-center justify-center gap-1.5 rounded-full bg-brand-500 px-3 py-1.5 text-xs font-semibold text-[#0A0A0A] hover:bg-brand-600"
                       >
                         <Download className="h-3 w-3" />
                         Render this short (10 credits)
@@ -965,7 +965,7 @@ function Shorts({ data }: { data: Any }) {
                         <a
                           href={job.url}
                           download={`short-${i + 1}.mp4`}
-                          className="inline-flex w-full items-center justify-center gap-1.5 rounded-full bg-brand-500 px-3 py-1.5 text-xs font-semibold text-white hover:bg-brand-600"
+                          className="inline-flex w-full items-center justify-center gap-1.5 rounded-full bg-brand-500 px-3 py-1.5 text-xs font-semibold text-[#0A0A0A] hover:bg-brand-600"
                         >
                           <Download className="h-3 w-3" />
                           Download MP4
@@ -1974,7 +1974,7 @@ function Clipper({ data }: { data: Any }) {
                 "{String(c.spokenLine)}"
               </div>
 
-              <div className="rounded-xl bg-gradient-to-br from-brand-50 to-surface p-3">
+              <div className="rounded-xl bg-gradient-to-br from-brand-500/10 to-surface p-3">
                 <Label>Hook overlay (top of screen, big font)</Label>
                 <div className="mt-1 text-lg font-bold text-gradient">
                   {String(c.hookOverlay)}
@@ -2208,7 +2208,7 @@ function MediaFrame({
         <a
           href={video}
           download={`${downloadName}.mp4`}
-          className="inline-flex items-center gap-1.5 rounded-full bg-brand-500 px-3 py-1.5 text-xs font-semibold text-white hover:bg-brand-600"
+          className="inline-flex items-center gap-1.5 rounded-full bg-brand-500 px-3 py-1.5 text-xs font-semibold text-[#0A0A0A] hover:bg-brand-600"
         >
           <Download className="h-3 w-3" />
           Download MP4
@@ -2255,7 +2255,7 @@ function AutoVideo({ data }: { data: Any }) {
         className={`flex items-start gap-3 rounded-2xl border p-4 ${
           renderEnabled
             ? "border-emerald-200 bg-emerald-50"
-            : "border-brand-500/30 bg-gradient-to-br from-brand-50 to-surface"
+            : "border-brand-500/30 bg-gradient-to-br from-brand-500/10 to-surface"
         }`}
       >
         <span

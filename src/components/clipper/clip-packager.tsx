@@ -560,7 +560,7 @@ export function ClipPackager({
       </div>
 
       {/* Sticky action bar */}
-      <div className="sticky top-2 z-20 rounded-2xl border border-brand-500/30 bg-gradient-to-br from-brand-50 to-surface p-5 shadow-sm backdrop-blur">
+      <div className="sticky top-2 z-20 rounded-2xl border border-brand-500/30 bg-gradient-to-br from-brand-500/10 to-surface p-5 shadow-sm backdrop-blur">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="min-w-0">
             <h2 className="text-lg font-bold">
@@ -659,7 +659,7 @@ export function ClipPackager({
                   <div
                     className={`absolute right-2 top-2 flex h-6 w-6 items-center justify-center rounded-full border-2 transition-all ${
                       isSelected
-                        ? "border-white bg-brand-500 text-white"
+                        ? "border-white bg-brand-500 text-[#0A0A0A]"
                         : "border-white/80 bg-black/30 text-transparent"
                     }`}
                     aria-hidden

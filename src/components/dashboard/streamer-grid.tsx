@@ -130,7 +130,7 @@ function StreamerCard({
       >
         <div className="flex items-start gap-3">
           {failed ? (
-            <div className="grid h-12 w-12 shrink-0 place-items-center rounded-full bg-gradient-to-br from-brand-500 to-brand-700 text-base font-bold text-white">
+            <div className="grid h-12 w-12 shrink-0 place-items-center rounded-full bg-gradient-to-br from-brand-500 to-brand-700 text-base font-bold text-[#0A0A0A]">
               {creator.name.charAt(0)}
             </div>
           ) : (
@@ -160,7 +160,7 @@ function StreamerCard({
         </div>
       </a>
 
-      <div className="border-t border-border bg-gradient-to-br from-brand-50 to-surface px-4 py-2.5">
+      <div className="border-t border-border bg-gradient-to-br from-brand-500/10 to-surface px-4 py-2.5">
         <button
           onClick={onClip}
           disabled={loading}

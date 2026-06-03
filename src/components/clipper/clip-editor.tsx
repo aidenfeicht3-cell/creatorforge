@@ -379,7 +379,7 @@ export function ClipEditor({
             </>
           ) : (
             <>
-              <div className="rounded-lg bg-gradient-to-br from-brand-50 to-surface px-3 py-2">
+              <div className="rounded-lg bg-gradient-to-br from-brand-500/10 to-surface px-3 py-2">
                 <div className="font-mono text-[10px] uppercase tracking-wider text-muted">
                   Hook overlay
                 </div>
@@ -423,7 +423,7 @@ export function ClipEditor({
         <div className="mt-4 flex flex-wrap gap-2">
           <button
             onClick={copyPackage}
-            className="inline-flex items-center gap-1.5 rounded-full bg-brand-500 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-600"
+            className="inline-flex items-center gap-1.5 rounded-full bg-brand-500 px-4 py-2 text-sm font-semibold text-[#0A0A0A] hover:bg-brand-600"
           >
             {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
             {copied ? "Copied" : "Copy full package"}
@@ -439,7 +439,7 @@ export function ClipEditor({
         </div>
 
         {/* Real 9:16 video render — Twitch MP4 + Deepgram captions + Creatomate */}
-        <div className="mt-5 rounded-2xl border border-brand-500/30 bg-gradient-to-br from-brand-50 to-surface p-4">
+        <div className="mt-5 rounded-2xl border border-brand-500/30 bg-gradient-to-br from-brand-500/10 to-surface p-4">
           {render.status === "idle" && (
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div className="min-w-0">
@@ -455,7 +455,7 @@ export function ClipEditor({
               </div>
               <button
                 onClick={renderShort}
-                className="inline-flex items-center gap-1.5 rounded-full bg-brand-500 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-600"
+                className="inline-flex items-center gap-1.5 rounded-full bg-brand-500 px-4 py-2 text-sm font-semibold text-[#0A0A0A] hover:bg-brand-600"
               >
                 <Film className="h-4 w-4" />
                 Render video
@@ -497,7 +497,7 @@ export function ClipEditor({
               <a
                 href={render.videoUrl}
                 download={`short-${clip.clipId}.mp4`}
-                className="inline-flex items-center gap-1.5 rounded-full bg-brand-500 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-600"
+                className="inline-flex items-center gap-1.5 rounded-full bg-brand-500 px-4 py-2 text-sm font-semibold text-[#0A0A0A] hover:bg-brand-600"
               >
                 <Download className="h-4 w-4" />
                 Download MP4

@@ -1,13 +1,13 @@
 /**
  * Snipd brand-mark SVGs. Used on the /brand download page.
- * Visual system: clean white field + electric-blue cut (#2563eb) — matches the
- * clear site logo. Lowercase wordmark in the spirit of `linear` / `vercel`.
+ * Visual system: near-black field (#0A0A0A) + electric-lime cut (#B6FF1A),
+ * matching the site logo. Lowercase wordmark in the spirit of linear / vercel.
  */
 
-const BG = "#FFFFFF";
-const LIME = "#2563eb"; // electric-blue cut (kept the name to avoid churn below)
-const INK = "#0a0f1f";
-const SUB = "rgba(10,15,31,0.55)";
+const BG = "#0A0A0A";
+const LIME = "#B6FF1A";
+const INK = "#FAFAFA";
+const SUB = "rgba(250,250,250,0.55)";
 
 /** Shared cut-wedge path, scaled into a 1024×1024 viewport from a 512 center. */
 function CutWedge({ scale = 1, cx = 512, cy = 512 }: { scale?: number; cx?: number; cy?: number }) {
