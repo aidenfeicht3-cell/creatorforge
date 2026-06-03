@@ -186,25 +186,25 @@ const DELIVERABLES: Record<string, string[]> = {
 
 const TIPS: Record<string, string> = {
   thumbnails: "Use a verb in your topic. 'I survived 100 days alone' beats 'survival video.'",
-  titles: "Add who it's for in the audience field — it sharpens every result.",
+  titles: "Add who it's for in the audience field . It sharpens every result.",
   hooks: "Pick the style that matches your channel's existing tone.",
   scripts: "Long-form scripts work best when your topic has a clear before/after.",
   seo: "Include a seed keyword — it grounds the description in real search behavior.",
   ideas: "Niche down further than you think. 'Personal finance for first-gen immigrants' returns gold.",
   shorts: "Pick a long-form video that hit above its channel's average.",
-  reverse: "Pick a video with a specific viral move — vague viral = vague teardown.",
+  reverse: "Pick a video with a specific viral move. Vague viral, vague teardown.",
   studio: "Be specific. 'I tried David Goggins' morning routine for 30 days' returns a real package.",
   pfp: "The vibe matters more than the niche. Describe the energy you want.",
   banner: "Your tagline is what people read in 2 seconds. Make it specific.",
-  bio: "The goal field changes the CTA — pick what you actually want.",
+  bio: "The goal field changes the CTA. Pick what you actually want.",
   channelname: "Avoid the niche in the name. Builds branding flexibility long-term.",
-  niche: "Be honest in interests. Specific > broad. 'gaming' loses to 'speedrunning indie horror.'",
-  storyboard: "Specific moments beat generic topics. 'My morning at 4am' > 'morning routine.'",
+  niche: "Be honest in interests. Specific beats broad. 'Gaming' loses to 'speedrunning indie horror.'",
+  storyboard: "Specific moments beat generic topics. 'My morning at 4am' beats 'morning routine.'",
   broll: "Vibe drives the shots. Energetic = quick cuts. Cinematic = slow + handheld.",
-  shotlist: "Pick the actual duration — long-form gets more cinematic shots.",
+  shotlist: "Pick the actual duration. Long-form gets more cinematic shots.",
   nichebend: "Be specific about what YOU bring. Vague inputs = generic pivots.",
-  audit: "Use your real handle — we pull live YouTube data to ground the analysis in your actual videos.",
-  trends: "Get specific with your niche — 'faceless finance for Gen Z' maps to sharper trends than just 'finance.' This is a strategist read, so use the verify-live checklist before you post.",
+  audit: "Use your real handle. We pull live YouTube data to ground the analysis in your actual videos.",
+  trends: "Get specific with your niche. 'Faceless finance for Gen Z' maps to sharper trends than 'finance.' Use the verify-live checklist before you post.",
   clipper: "Long-form content with captions works best. Podcasts and interviews clip way harder than vlogs.",
   autovideo: "Pick 'Both' to get a long-form plan plus a batch of shorts from one idea. Specific topics render sharper frames.",
   voiceover: "Write the way people talk. Short sentences read more naturally than long ones.",
@@ -335,7 +335,7 @@ export function ToolRunner({
         <header className="relative overflow-hidden rounded-3xl glass-strong p-6 sm:p-7">
           <div
             aria-hidden
-            className={`pointer-events-none absolute -right-16 -top-16 h-44 w-44 rounded-full bg-gradient-to-br ${tool.accent} opacity-20 blur-3xl`}
+            className={`pointer-events-none absolute -right-12 -top-12 h-32 w-32 rounded-full bg-gradient-to-br ${tool.accent} opacity-[0.14] blur-2xl sm:h-40 sm:w-40`}
           />
           <div className="relative flex items-start gap-4">
             <div
@@ -349,7 +349,7 @@ export function ToolRunner({
                   {tool.name}
                 </h1>
                 {tool.badge && (
-                  <span className="inline-flex items-center gap-1 rounded-md bg-emerald-50 px-2 py-0.5 font-mono text-[10px] font-semibold tracking-wider text-emerald-700">
+                  <span className="inline-flex items-center gap-1 rounded-md border border-border bg-bg-soft px-2 py-0.5 font-mono text-[10px] font-semibold tracking-wider text-brand-700">
                     <Database className="h-2.5 w-2.5" />
                     {tool.badge}
                   </span>
@@ -375,13 +375,14 @@ export function ToolRunner({
         {/* Left — input */}
         <div className="space-y-4">
           {blocked && (
-            <div className="flex items-start gap-2.5 rounded-2xl border border-amber-300/70 bg-amber-50 px-4 py-3 text-sm text-amber-900">
-              <Lock className="mt-0.5 h-4 w-4 shrink-0" />
+            <div className="flex items-start gap-2.5 rounded-2xl border border-brand-500/25 bg-bg-soft px-4 py-3 text-sm text-ink">
+              <Lock className="mt-0.5 h-4 w-4 shrink-0 text-brand-600" />
               <span>
                 {tool.studioOnly
                   ? "This tool is part of the Studio plan. "
                   : "This tool needs a Creator or Studio plan. "}
-                You can still see exactly what it does on the right.
+                The example output is still visible so you can see exactly
+                what it returns.
               </span>
             </div>
           )}
@@ -392,7 +393,12 @@ export function ToolRunner({
                 <label key={field.name} className="block">
                   <span className="mb-2 block text-sm font-semibold">
                     {field.label}
-                    {field.required && <span className="text-rose-500"> *</span>}
+                    {field.required && (
+                      <>
+                        <span aria-hidden className="text-brand-600"> *</span>
+                        <span className="sr-only"> (required)</span>
+                      </>
+                    )}
                   </span>
 
                   {field.type === "select" ? (
@@ -400,7 +406,8 @@ export function ToolRunner({
                       <select
                         value={inputs[field.name]}
                         onChange={(e) => set(field.name, e.target.value)}
-                        className="h-12 w-full appearance-none rounded-xl border border-border bg-bg-soft px-4 pr-11 text-[15px] outline-none transition-colors hover:border-brand-500/40 focus:border-brand-500/60 focus:ring-2 focus:ring-brand-500/15"
+                        aria-required={field.required || undefined}
+                        className="h-12 w-full appearance-none rounded-xl border border-border bg-bg-soft px-4 pr-11 text-[15px] text-ink outline-none transition-colors hover:border-brand-500/40 focus:border-brand-500/60 focus:ring-2 focus:ring-brand-500/15"
                       >
                         {field.options?.map((opt) => (
                           <option key={opt} value={opt}>
@@ -408,23 +415,28 @@ export function ToolRunner({
                           </option>
                         ))}
                       </select>
-                      <ChevronDown className="pointer-events-none absolute right-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted" />
+                      <ChevronDown
+                        aria-hidden
+                        className="pointer-events-none absolute right-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted"
+                      />
                     </div>
                   ) : field.type === "textarea" ? (
                     <textarea
                       rows={4}
                       value={inputs[field.name]}
                       placeholder={field.placeholder}
+                      aria-required={field.required || undefined}
                       onChange={(e) => set(field.name, e.target.value)}
-                      className="w-full rounded-xl border border-border bg-bg-soft px-4 py-3 text-[15px] outline-none placeholder:text-muted/60 transition-colors hover:border-brand-500/40 focus:border-brand-500/60 focus:ring-2 focus:ring-brand-500/15"
+                      className="w-full rounded-xl border border-border bg-bg-soft px-4 py-3 text-[15px] text-ink outline-none placeholder:text-muted/70 transition-colors hover:border-brand-500/40 focus:border-brand-500/60 focus:ring-2 focus:ring-brand-500/15"
                     />
                   ) : (
                     <input
                       type={field.type === "url" ? "url" : "text"}
                       value={inputs[field.name]}
                       placeholder={field.placeholder}
+                      aria-required={field.required || undefined}
                       onChange={(e) => set(field.name, e.target.value)}
-                      className="h-12 w-full rounded-xl border border-border bg-bg-soft px-4 text-[15px] outline-none placeholder:text-muted/60 transition-colors hover:border-brand-500/40 focus:border-brand-500/60 focus:ring-2 focus:ring-brand-500/15"
+                      className="h-12 w-full rounded-xl border border-border bg-bg-soft px-4 text-[15px] text-ink outline-none placeholder:text-muted/70 transition-colors hover:border-brand-500/40 focus:border-brand-500/60 focus:ring-2 focus:ring-brand-500/15"
                     />
                   )}
 
@@ -437,21 +449,21 @@ export function ToolRunner({
 
             <div className="mt-auto pt-7">
             {tool.mediaTool && !mediaReady ? (
-              <div className="rounded-2xl border border-amber-300/70 bg-amber-50 p-4">
-                <div className="flex items-center gap-2 text-sm font-semibold text-amber-900">
-                  <Plug className="h-4 w-4" />
-                  Almost live — connect {tool.provider ?? "the provider"}
+              <div className="rounded-2xl border border-brand-500/25 bg-bg-soft p-4">
+                <div className="flex items-center gap-2 text-sm font-semibold text-ink">
+                  <Plug className="h-4 w-4 text-brand-600" />
+                  Connect {tool.provider ?? "the provider"} to go live
                 </div>
-                <p className="mt-1.5 text-xs leading-relaxed text-amber-900/80">
+                <p className="mt-1.5 text-xs leading-relaxed text-muted">
                   {tool.setupNote ? `${tool.setupNote} ` : ""}
                   Add{" "}
                   {tool.envVar && (
-                    <code className="rounded bg-amber-100 px-1 py-0.5 font-mono text-[11px]">
+                    <code className="rounded border border-border bg-surface px-1 py-0.5 font-mono text-[11px] text-brand-700">
                       {tool.envVar}
                     </code>
                   )}{" "}
-                  in Vercel → Settings → Environment Variables, then redeploy.
-                  The form above is wired and ready — it starts generating the
+                  in Vercel under Settings, Environment Variables, then
+                  redeploy. The form above is wired; it starts generating the
                   moment the key is set.
                 </p>
               </div>
@@ -461,7 +473,7 @@ export function ToolRunner({
                   onClick={run}
                   disabled={loading}
                   size="lg"
-                  className={cn("w-full", !blocked && "glow-brand")}
+                  className="w-full"
                 >
                   {loading ? (
                     <Loader2 className="h-4 w-4 animate-spin" />
@@ -510,57 +522,59 @@ export function ToolRunner({
 
       {/* ── Result ── */}
       {!loading && result && (
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <h2 className="text-lg font-semibold">Result</h2>
-            <div className="flex items-center gap-2">
-              {tool.slug === "studio" && canSaveVideo && (
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  onClick={saveAsVideo}
-                  disabled={saving}
-                >
-                  {saving ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                  ) : (
-                    <Save className="h-4 w-4" />
-                  )}
-                  Save as video
-                </Button>
-              )}
-              <ExportMenu
-                tool={tool.slug}
-                data={result}
-                watermark={!cleanExports}
-              />
-            </div>
-          </div>
-          <ResultView tool={tool.slug} data={result} inputs={inputs} />
-
-          {/* Moment-of-value upgrade nudge — only on free (watermarked) plans. */}
-          {!cleanExports && (
-            <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-brand-500/20 bg-gradient-to-br from-brand-50 to-surface p-4">
-              <div className="flex items-start gap-2.5">
-                <Sparkles className="mt-0.5 h-4 w-4 shrink-0 text-brand-600" />
-                <p className="text-sm text-ink">
-                  <span className="font-semibold">Made on the free model.</span>{" "}
-                  <span className="text-muted">
-                    Upgrade to Creator for sharper Claude Sonnet results and
-                    watermark-free exports.
-                  </span>
-                </p>
+        <Reveal>
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <h2 className="text-lg font-semibold">Result</h2>
+              <div className="flex items-center gap-2">
+                {tool.slug === "studio" && canSaveVideo && (
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={saveAsVideo}
+                    disabled={saving}
+                  >
+                    {saving ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <Save className="h-4 w-4" />
+                    )}
+                    Save as video
+                  </Button>
+                )}
+                <ExportMenu
+                  tool={tool.slug}
+                  data={result}
+                  watermark={!cleanExports}
+                />
               </div>
-              <Button
-                variant="primary"
-                size="sm"
-                onClick={() => router.push("/pricing")}
-              >
-                Upgrade
-              </Button>
             </div>
-          )}
-        </div>
+            <ResultView tool={tool.slug} data={result} inputs={inputs} />
+
+            {/* Moment-of-value upgrade nudge — only on free (watermarked) plans. */}
+            {!cleanExports && (
+              <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-border bg-surface p-4 shadow-sm">
+                <div className="flex items-start gap-2.5">
+                  <Sparkles className="mt-0.5 h-4 w-4 shrink-0 text-brand-600" />
+                  <p className="text-sm text-ink">
+                    <span className="font-semibold">Made on the free model.</span>{" "}
+                    <span className="text-muted">
+                      Upgrade to Creator for sharper Claude Sonnet results and
+                      watermark-free exports.
+                    </span>
+                  </p>
+                </div>
+                <Button
+                  variant="primary"
+                  size="sm"
+                  onClick={() => router.push("/pricing")}
+                >
+                  Upgrade
+                </Button>
+              </div>
+            )}
+          </div>
+        </Reveal>
       )}
     </div>
   );
