@@ -25,14 +25,21 @@ const sizes: Record<ButtonSize, string> = {
   lg: "h-13 px-7 text-base",
 };
 
-/** Shared class string — apply to <Link> for button-styled links. */
+/** Shared class string — apply to <Link> for button-styled links.
+ *
+ * `btn-feel` (defined in globals.css) carries the asymmetric per-property
+ * timing Emil prescribes: transform 160ms (press feedback should land instantly),
+ * background-color 200ms (hue shift feels considered), shadow/border 240ms
+ * (the softer properties shouldn't race the transform). Curve is Emil's
+ * strong ease-out: cubic-bezier(0.23, 1, 0.32, 1).
+ */
 export function buttonClasses(
   variant: ButtonVariant = "primary",
   size: ButtonSize = "md",
   className?: string,
 ) {
   return cn(
-    "inline-flex items-center justify-center gap-2 rounded-full font-medium transition-all duration-200 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5 active:scale-[0.97] active:translate-y-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500/50 focus-visible:ring-offset-2 focus-visible:ring-offset-bg disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0",
+    "btn-feel inline-flex items-center justify-center gap-2 rounded-full font-medium hover:-translate-y-0.5 active:scale-[0.97] active:translate-y-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500/50 focus-visible:ring-offset-2 focus-visible:ring-offset-bg disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0",
     variants[variant],
     sizes[size],
     className,

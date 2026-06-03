@@ -99,20 +99,25 @@ export function LiveExample() {
         />
       </div>
 
-      {/* Output: three captioned 9:16 clip previews */}
+      {/* Output: three captioned 9:16 clip previews.
+          Stagger is 0.06 (60ms) between cards — at the snappier end of
+          Emil's 30-80ms range. Total cascade = 0.06 × 2 + 0.45 = 570ms.
+          Hover state uses the same Emil curve as the page-wide `.hover-lift`
+          (cubic-bezier(0.23,1,0.32,1), 200ms), gated behind hover-capable
+          pointers so touch devices don't get the sticky tap-state bug. */}
       <div className="mt-10 grid gap-5 sm:grid-cols-3 sm:gap-6">
         {CLIPS.map((clip, i) => (
           <motion.article
             key={clip.ts}
-            initial={reduce ? false : { opacity: 0, y: 28 }}
+            initial={reduce ? false : { opacity: 0, y: 16 }}
             whileInView={reduce ? undefined : { opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-60px" }}
             transition={{
-              duration: 0.6,
-              delay: i * 0.08,
-              ease: [0.22, 1, 0.36, 1],
+              duration: 0.45,
+              delay: i * 0.06,
+              ease: [0.23, 1, 0.32, 1],
             }}
-            className="group relative overflow-hidden rounded-2xl border border-border bg-surface transition-all duration-300 hover:-translate-y-1 hover:border-brand-500/40 hover:shadow-[0_24px_60px_-20px_rgba(182,255,26,0.22)]"
+            className="hover-lift group relative overflow-hidden rounded-2xl border border-border bg-surface"
             aria-label={`Example clip at ${clip.ts}: ${clip.caption}`}
           >
             {/* 9:16 phone frame */}

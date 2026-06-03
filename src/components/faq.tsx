@@ -64,14 +64,14 @@ export function Faq() {
               <span className="text-base font-medium text-ink">{item.q}</span>
               <ChevronDown
                 className={cn(
-                  "h-5 w-5 shrink-0 text-muted transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]",
-                  isOpen && "rotate-180 text-brand-600",
+                  "h-5 w-5 shrink-0 text-muted transition-[transform,color] duration-[250ms] ease-[cubic-bezier(0.23,1,0.32,1)]",
+                  isOpen && "rotate-180 text-brand-500",
                 )}
               />
             </button>
             <div
               className={cn(
-                "grid overflow-hidden px-5 transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]",
+                "grid overflow-hidden px-5 transition-[grid-template-rows,padding,opacity] duration-300 ease-[cubic-bezier(0.23,1,0.32,1)]",
                 isOpen
                   ? "grid-rows-[1fr] pb-5 opacity-100"
                   : "grid-rows-[0fr] opacity-0",

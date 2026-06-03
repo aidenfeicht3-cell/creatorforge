@@ -9,6 +9,17 @@
    explicit override via the theme toggle.
    ─────────────────────────────────────────────── */
 @theme {
+  /* ── Motion easings (Emil Kowalski's curves; named for reuse) ─────
+     - `--ease-out` is sharper than the CSS built-in: same family as
+       cubic-bezier(0.22,1,0.36,1) but with a slightly stronger endpoint
+       so press feedback feels intentional, not soft.
+     - `--ease-in-out` is the on-screen-movement curve.
+     - `--ease-drawer` is the iOS-flavored long-pull curve from Ionic.
+     ──────────────────────────────────────────────────────────────── */
+  --ease-out:     cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out:  cubic-bezier(0.77, 0, 0.175, 1);
+  --ease-drawer:  cubic-bezier(0.32, 0.72, 0, 1);
+
   /* Backgrounds — near-black + true off-black surfaces */
   --color-bg:      #0A0A0A;
   --color-bg-soft: #131313;
@@ -117,17 +128,41 @@ p, li { text-wrap: pretty; }
 
 /* ─── Motion primitives ───────────────────────── */
 
-/* Hover-lift — sharper expo-out, lime-tinted shadow */
+/*
+ * Button feel: specific properties, asymmetric durations.
+ *   - transform is the press-feedback signal -> fastest (160ms) so the
+ *     scale(0.97) on :active lands the moment the finger goes down.
+ *   - background-color slightly slower (200ms) so the hover hue shift
+ *     feels considered, not jumpy.
+ *   - shadow + border follow the hover lift at 240ms — they're the
+ *     "softer" properties; they shouldn't race the transform.
+ * Curve: Emil's strong ease-out (cubic-bezier(0.23, 1, 0.32, 1)).
+ */
+.btn-feel {
+  transition-property: transform, background-color, box-shadow, border-color;
+  transition-duration: 160ms, 200ms, 240ms, 240ms;
+  transition-timing-function: var(--ease-out);
+}
+
+/*
+ * Hover-lift on cards. Sharper curve and shorter duration than before
+ * (was 400ms — felt languid). Gated behind hover-capable pointers so
+ * touch devices don't get the sticky-tap-state bug.
+ */
 .hover-lift {
   transition:
-    transform 0.4s cubic-bezier(0.22, 1, 0.36, 1),
-    box-shadow 0.4s cubic-bezier(0.22, 1, 0.36, 1),
-    border-color 0.3s ease;
+    transform 220ms var(--ease-out),
+    box-shadow 220ms var(--ease-out),
+    border-color 200ms ease;
 }
-.hover-lift:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 28px 60px -24px rgba(182, 255, 26, 0.24);
-  border-color: rgba(182, 255, 26, 0.32);
+@media (hover: hover) and (pointer: fine) {
+  .hover-lift:hover {
+    transform: translateY(-3px);
+    box-shadow:
+      0 28px 60px -24px rgba(182, 255, 26, 0.22),
+      inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    border-color: rgba(182, 255, 26, 0.32);
+  }
 }
 @media (prefers-reduced-motion: reduce) {
   .hover-lift { transition: none; }

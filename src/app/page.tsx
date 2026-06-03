@@ -4,7 +4,6 @@ import {
   Play,
   Sparkles,
   Crosshair,
-  Scissors,
   Layers,
 } from "lucide-react";
 import { SiteHeader } from "@/components/site-header";
@@ -15,6 +14,7 @@ import { Reveal } from "@/components/ui/reveal";
 import { Marquee } from "@/components/marquee";
 import { LiveExample } from "@/components/live-example";
 import { Faq } from "@/components/faq";
+import { HeroClipCard } from "@/components/hero-clip-card";
 
 export default function LandingPage() {
   return (
@@ -39,20 +39,20 @@ export default function LandingPage() {
               </span>
             </Reveal>
 
-            <Reveal delay={0.08}>
+            <Reveal delay={0.06}>
               <h1 className="mt-6 text-5xl font-semibold leading-[1.02] tracking-[-0.035em] text-ink sm:text-6xl lg:text-7xl">
                 Cut your YouTube into shorts that hook.
               </h1>
             </Reveal>
 
-            <Reveal delay={0.16}>
+            <Reveal delay={0.12}>
               <p className="mt-7 max-w-xl text-lg leading-relaxed text-muted">
                 Paste any URL. Snipd finds the moments that hook, captions
                 them, and exports 9:16 MP4s for Shorts and Reels.
               </p>
             </Reveal>
 
-            <Reveal delay={0.24}>
+            <Reveal delay={0.18}>
               <div className="mt-9 flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:gap-4">
                 <Link
                   href="/signup"
@@ -74,9 +74,10 @@ export default function LandingPage() {
           </div>
 
           {/* Right column: the brand visual — a single big clip card.
-              This is the hero's "real visual" per Section 4.8: a real
-              component preview shaped exactly like the Clipper output. */}
-          <Reveal delay={0.18} className="lg:col-span-5">
+              Real component preview shaped exactly like the Clipper
+              output. The internal lime spotlight tracks the cursor on
+              desktop (subtle, decorative, gated to mouse pointer). */}
+          <Reveal delay={0.2} className="lg:col-span-5">
             <HeroClipCard />
           </Reveal>
         </div>
@@ -149,7 +150,7 @@ export default function LandingPage() {
           </Reveal>
 
           {/* Cell B — the 20+ tools as a label cloud (small) */}
-          <Reveal delay={0.08} className="sm:col-span-5">
+          <Reveal delay={0.06} className="sm:col-span-5">
             <article className="hover-lift relative h-full overflow-hidden rounded-3xl border border-border bg-surface p-7 sm:p-9">
               <div className="flex items-center gap-2">
                 <Layers
@@ -196,7 +197,7 @@ export default function LandingPage() {
           </Reveal>
 
           {/* Cell C — the model stack (full width below) */}
-          <Reveal delay={0.16} className="sm:col-span-12">
+          <Reveal delay={0.12} className="sm:col-span-12">
             <article className="hover-lift relative overflow-hidden rounded-3xl border border-border bg-surface p-7 sm:p-9">
               <div className="grid gap-8 sm:grid-cols-12 sm:items-center sm:gap-10">
                 <div className="sm:col-span-5">
@@ -447,7 +448,7 @@ export default function LandingPage() {
           <div className="mt-9 flex justify-center">
             <Link
               href="/signup"
-              className={buttonClasses("primary", "lg", "glow-pulse")}
+              className={buttonClasses("primary", "lg")}
             >
               Start for free
               <ArrowRight className="h-4 w-4" />
@@ -458,101 +459,5 @@ export default function LandingPage() {
 
       <SiteFooter />
     </>
-  );
-}
-
-/* ──────────────────────────────────────────────────────── */
-
-/**
- * The hero's right-column visual: a single, large 9:16 clip card shaped
- * exactly like Snipd's real Clipper output. Per Section 4.8 this counts as
- * a "real component preview" — it's literally the shape the user gets back.
- *
- * Tilted slightly for visual confidence, with a lime spotlight bleed behind.
- */
-function HeroClipCard() {
-  return (
-    <div className="relative mx-auto w-full max-w-sm">
-      {/* Soft pedestal — secondary card receding behind the primary one */}
-      <div
-        aria-hidden
-        className="absolute inset-0 translate-x-4 translate-y-4 rotate-[3deg] rounded-3xl border border-border bg-bg-soft opacity-60"
-      />
-
-      <article
-        className="relative -rotate-[2deg] overflow-hidden rounded-3xl border border-border bg-surface shadow-[0_40px_80px_-30px_rgba(0,0,0,0.7),0_0_0_1px_rgba(182,255,26,0.12)]"
-        aria-label="Example Snipd clip: timestamp 2:14, retention score 92"
-      >
-        {/* 9:16 frame */}
-        <div className="relative aspect-[9/16] bg-gradient-to-br from-brand-500/12 via-bg-soft to-bg">
-          {/* Grain */}
-          <div
-            aria-hidden
-            className="pointer-events-none absolute inset-0 opacity-[0.2]"
-            style={{
-              backgroundImage:
-                "repeating-linear-gradient(0deg, rgba(255,255,255,0.05) 0px, rgba(255,255,255,0.05) 1px, transparent 1px, transparent 3px)",
-            }}
-          />
-
-          {/* Internal radial lime accent */}
-          <div
-            aria-hidden
-            className="pointer-events-none absolute -inset-12 opacity-60"
-            style={{
-              background:
-                "radial-gradient(circle at 50% 65%, rgba(182,255,26,0.22), transparent 55%)",
-              filter: "blur(32px)",
-            }}
-          />
-
-          {/* Timestamp */}
-          <div className="absolute left-4 top-4 inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-black/50 px-2.5 py-1 font-mono text-[11px] font-semibold tracking-wider text-white/90 backdrop-blur-sm">
-            <span className="h-1.5 w-1.5 rounded-full bg-brand-500" />
-            2:14
-          </div>
-
-          {/* Retention */}
-          <div className="absolute right-4 top-4 rounded-full border border-brand-500/30 bg-brand-500/15 px-2.5 py-1 font-mono text-[11px] font-semibold text-brand-300 backdrop-blur-sm">
-            92
-          </div>
-
-          {/* Burned-in caption */}
-          <div className="absolute inset-x-5 bottom-16 text-center">
-            <p
-              className="text-balance text-[19px] font-extrabold uppercase leading-[1.08] tracking-tight text-white sm:text-[21px]"
-              style={{
-                textShadow:
-                  "0 2px 0 rgba(0,0,0,0.9), 0 0 16px rgba(0,0,0,0.55)",
-              }}
-            >
-              The first 30 seconds decide everything.
-            </p>
-          </div>
-
-          {/* Watermark rail */}
-          <div className="absolute inset-x-0 bottom-0 flex items-center justify-between bg-gradient-to-t from-black/75 to-transparent px-4 pb-3 pt-8">
-            <span className="font-mono text-[10px] uppercase tracking-wider text-white/70">
-              snip<span className="text-brand-500">d</span>
-            </span>
-            <span className="inline-flex items-center gap-1 font-mono text-[10px] uppercase tracking-wider text-white/70">
-              <Scissors className="h-3 w-3" />
-              9:16 captioned
-            </span>
-          </div>
-        </div>
-
-        {/* Footer technique */}
-        <div className="flex items-center justify-between gap-3 border-t border-border px-4 py-3">
-          <span className="truncate text-xs text-muted">
-            Cold open, pattern interrupt
-          </span>
-          <span className="inline-flex shrink-0 items-center gap-1 text-xs font-semibold text-brand-500">
-            Hook
-            <ArrowRight className="h-3 w-3" />
-          </span>
-        </div>
-      </article>
-    </div>
   );
 }

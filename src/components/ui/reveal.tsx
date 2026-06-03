@@ -4,24 +4,31 @@ import { motion, useReducedMotion } from "motion/react";
 import type { ReactNode } from "react";
 
 /**
- * Scroll-reveal wrapper — the motion layer that makes static sections feel
- * premium. Fades + slides its children up as they enter the viewport (or
- * immediately if already visible, e.g. the hero). Respects
- * prefers-reduced-motion: users who opt out get the content with no animation.
+ * Scroll-reveal wrapper. Fades + slides children up as they enter view.
  *
- * Usage: wrap a block and optionally stagger siblings with `delay`.
- *   <Reveal>…</Reveal>
- *   <Reveal delay={0.08}>…</Reveal>
+ * Defaults are tuned per Emil's framework:
+ *   - duration: 0.45s (was 0.6s — under his 300ms cap is the UI rule, but
+ *     entrance reveals are the "occasional" register where ~450ms reads
+ *     as deliberate without dragging)
+ *   - y: 14px (was 24px — 24 reads as keynote-entrance; 14 is the right
+ *     "settles in" punch for an app/tool brand register)
+ *   - easing: cubic-bezier(0.23, 1, 0.32, 1) — Emil's strong ease-out
+ *
+ * Honors prefers-reduced-motion: users who opt out get the content
+ * with no transform, only the opacity fade (so they still get a sense
+ * of "section appeared" without the motion sickness risk).
  */
 export function Reveal({
   children,
   delay = 0,
-  y = 24,
+  y = 14,
+  duration = 0.45,
   className,
 }: {
   children: ReactNode;
   delay?: number;
   y?: number;
+  duration?: number;
   className?: string;
 }) {
   const reduce = useReducedMotion();
@@ -34,7 +41,7 @@ export function Reveal({
       initial={{ opacity: 0, y }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-80px" }}
-      transition={{ duration: 0.6, delay, ease: [0.22, 1, 0.36, 1] }}
+      transition={{ duration, delay, ease: [0.23, 1, 0.32, 1] }}
     >
       {children}
     </motion.div>
