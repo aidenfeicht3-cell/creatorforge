@@ -684,7 +684,7 @@ function Ideas({ data }: { data: Any }) {
 }
 
 /** Shorts renderer — grounded in real transcript with timestamps + per-moment render. */
-function Shorts({ data }: { data: Any }) {
+export function Shorts({ data }: { data: Any }) {
   const shorts = [...((data.shorts as Any[]) || [])].sort(
     (a, b) => Number(b.viralScore || 0) - Number(a.viralScore || 0),
   );
