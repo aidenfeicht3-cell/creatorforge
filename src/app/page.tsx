@@ -8,6 +8,7 @@ import {
   Users,
   Coins,
   Copy,
+  Play,
 } from "lucide-react";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
@@ -16,6 +17,8 @@ import { buttonClasses } from "@/components/ui/button";
 import { Reveal } from "@/components/ui/reveal";
 import { HeroAurora } from "@/components/hero-aurora";
 import { Marquee } from "@/components/marquee";
+import { LiveExample } from "@/components/live-example";
+import { Faq } from "@/components/faq";
 
 export default function LandingPage() {
   return (
@@ -29,7 +32,7 @@ export default function LandingPage() {
         <Reveal>
           <span className="inline-flex items-center gap-2 rounded-full border border-border bg-surface px-4 py-1.5 text-sm shadow-sm">
             <span className="font-semibold text-brand-600">NEW:</span>
-            <span className="text-ink">Launch Pad: your channel, start to finish.</span>
+            <span className="text-ink">Launch Pad: your channel, start to finish</span>
             <Link
               href="/signup"
               className="inline-flex items-center gap-0.5 font-medium text-brand-600 hover:underline"
@@ -54,10 +57,18 @@ export default function LandingPage() {
         </Reveal>
 
         <Reveal delay={0.24}>
-          <div className="mt-10 flex justify-center">
+          <div className="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row sm:gap-4">
             <Link href="/signup" className={buttonClasses("primary", "lg", "glow-pulse")}>
               Start for free
               <ArrowRight className="h-4 w-4" />
+            </Link>
+            <Link
+              href="#example"
+              className={buttonClasses("outline", "lg")}
+              aria-label="Jump to a live example of the Clipper"
+            >
+              <Play className="h-4 w-4" />
+              See it work
             </Link>
           </div>
           <p className="mt-5 text-sm text-muted">
@@ -110,7 +121,7 @@ export default function LandingPage() {
             },
           ].map(({ n, icon: Icon, title, body }, i) => (
             <Reveal key={n} delay={i * 0.08}>
-              <div className="relative pl-4 sm:pl-0 sm:pt-2">
+              <div className="group relative pl-4 sm:pl-0 sm:pt-2">
                 <span
                   aria-hidden
                   className="absolute -left-0 top-0 font-mono text-[11px] font-semibold tracking-[0.18em] text-brand-600 sm:relative sm:left-auto sm:block"
@@ -118,7 +129,10 @@ export default function LandingPage() {
                   0{n}
                 </span>
                 <div className="flex items-center gap-3 sm:mt-3">
-                  <Icon className="h-5 w-5 text-brand-600" strokeWidth={2.25} />
+                  <Icon
+                    className="h-5 w-5 text-brand-600 transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:translate-x-0.5"
+                    strokeWidth={2.25}
+                  />
                   <h3 className="text-lg font-semibold text-ink">{title}</h3>
                 </div>
                 <p className="mt-3 text-sm leading-relaxed text-muted">
@@ -130,9 +144,12 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* ───────── Live example (the "show, don't tell") ───────── */}
+      <LiveExample />
+
       {/* ───────── Pricing ───────── */}
-      <section id="pricing" className="mx-auto max-w-6xl px-5 py-20">
-        <div className="mx-auto max-w-2xl text-center">
+      <section id="pricing" className="mx-auto max-w-6xl px-5 py-24">
+        <Reveal className="mx-auto max-w-2xl text-center">
           <span className="inline-flex items-center gap-2 rounded-full border border-border bg-bg-soft px-3 py-1 text-xs font-medium text-brand-700">
             Genuinely free to start
           </span>
@@ -144,7 +161,7 @@ export default function LandingPage() {
             Creator, Claude Opus 4.8 on Studio, more credits, and watermark-free
             exports.
           </p>
-        </div>
+        </Reveal>
 
         <div className="mt-14">
           <PricingCards />
@@ -156,7 +173,7 @@ export default function LandingPage() {
         </p>
       </section>
 
-      {/* ───────── Affiliate / early access ───────── */}
+      {/* ───────── Affiliate ───────── */}
       <section id="affiliate" className="mx-auto max-w-6xl px-5 py-20">
         <div className="glass-strong overflow-hidden rounded-3xl">
           <div className="grid gap-0 lg:grid-cols-2">
@@ -241,6 +258,52 @@ export default function LandingPage() {
             </div>
           </div>
         </div>
+      </section>
+
+      {/* ───────── FAQ ───────── */}
+      <section id="faq" className="mx-auto max-w-5xl px-5 py-24">
+        <Reveal className="mx-auto max-w-2xl text-center">
+          <h2 className="text-4xl font-bold tracking-[-0.02em] sm:text-5xl">
+            Questions worth asking.
+          </h2>
+          <p className="mt-5 text-muted">
+            The free plan, the model differences, what credits cover, how to
+            cancel. Direct answers.
+          </p>
+        </Reveal>
+        <div className="mt-12">
+          <Faq />
+        </div>
+      </section>
+
+      {/* ───────── Founder note ───────── */}
+      <section className="mx-auto max-w-3xl px-5 py-20">
+        <Reveal>
+          <figure className="relative rounded-3xl border border-border bg-surface p-8 sm:p-10 shadow-sm">
+            <span
+              aria-hidden
+              className="absolute -top-3 left-8 inline-flex items-center gap-1.5 rounded-full bg-brand-500 px-3 py-1 text-[11px] font-semibold uppercase tracking-wider text-white"
+            >
+              From the founder
+            </span>
+            <blockquote className="mt-2 text-lg leading-relaxed text-ink">
+              I&apos;m building Snipd solo. Every tool exists because I needed
+              it myself when I tried to start a channel from zero. The free
+              plan stays free because I remember how brutal that first month
+              is when nothing&apos;s working yet. If something breaks or feels
+              wrong, the feedback button in your dashboard goes straight to me.
+            </blockquote>
+            <figcaption className="mt-6 flex items-center gap-3">
+              <span className="grid h-10 w-10 place-items-center rounded-full bg-gradient-to-br from-brand-500 to-brand-700 font-mono text-sm font-semibold text-white">
+                A
+              </span>
+              <div>
+                <div className="text-sm font-semibold text-ink">Aiden</div>
+                <div className="text-xs text-muted">Founder, Snipd</div>
+              </div>
+            </figcaption>
+          </figure>
+        </Reveal>
       </section>
 
       {/* ───────── CTA band ───────── */}

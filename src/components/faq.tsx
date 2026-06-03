@@ -6,32 +6,36 @@ import { cn } from "@/lib/utils";
 
 const FAQS = [
   {
-    q: "Do I need any design or scriptwriting skills?",
-    a: "None at all. You type your video topic, pick a style, and Snipd does the heavy lifting — thumbnails concepts, titles, hooks, scripts and SEO are generated in seconds.",
+    q: "Do I really need no credit card to start?",
+    a: "Correct. The Starter plan is free forever and needs no card. You get unlimited generations on the free model stack (Groq's Llama 3.3 70B for text, Pollinations for images, plus all 20+ creator tools). Upgrade only if you want Claude Sonnet or Opus 4.8 driving the output.",
   },
   {
-    q: "Which AI model powers the tools?",
-    a: "Every generation runs on Anthropic's Claude. Starter uses fast Haiku, Creator uses Sonnet, and Studio unlocks Opus 4.8 — the sharpest model — for the heaviest tools.",
+    q: "What's the difference between the plans?",
+    a: "It's the model and the credit pool. Starter ($0) runs on Groq's Llama 3.3 70B for text and Pollinations for images. Creator ($15/mo) upgrades to Claude Sonnet plus more credits. Studio ($39/mo) unlocks Claude Opus 4.8, the highest-quality model available, plus larger credit pools and watermark-free media exports.",
   },
   {
-    q: "How do credits work?",
-    a: "Each tool costs credits — cheap tools like titles and hooks are 1 credit, scripts are 3, and the full Studio package is 5. Credits reset monthly. You always see your remaining balance in the sidebar.",
+    q: "What happens when I run out of credits on a paid plan?",
+    a: "You don't get cut off. Paid plans silently fall back to the free model stack (Groq + Pollinations) until your next monthly reset, so you can keep working. Credits cover the premium media tools (voiceover, captions, watermark removal, the Clipper render) and the paid AI engine; text generations on the free stack are uncapped.",
+  },
+  {
+    q: "Which AI models power Snipd?",
+    a: "Text: Groq Llama 3.3 70B on free, Claude Sonnet on Creator, Claude Opus 4.8 on Studio. Images: Pollinations on free, Replicate Flux on paid. Transcription: AssemblyAI. Voiceover: ElevenLabs. Video render: Creatomate. We picked best-in-class per role, not one provider for everything.",
   },
   {
     q: "Can I cancel anytime?",
-    a: "Yes. Plans are month-to-month, no contract. Manage or cancel in one click from the billing portal — you keep access until the end of the cycle.",
+    a: "Yes. Plans are month-to-month, no contract, one click from the Stripe billing portal. You keep paid access until the end of the cycle, then drop to Starter automatically. No win-back emails, no friction.",
   },
   {
-    q: "Will the thumbnails be ready-to-upload images?",
-    a: "Snipd generates detailed thumbnail concepts — composition, overlay text, color psychology and emotional angles — plus a preview brief your editor (or you) can execute fast.",
+    q: "Are the thumbnails ready-to-upload images?",
+    a: "On paid plans, yes — Replicate Flux renders the actual image file. On free, you get the full thumbnail concept (composition, overlay text, color logic, emotional angle) plus a Pollinations preview. The concept brief alone usually saves an hour of back-and-forth with an editor.",
   },
   {
-    q: "Is there a free plan?",
-    a: "Yes. The Starter plan gives you 30 credits a month across every tool, no credit card required.",
+    q: "How does the Clipper actually work?",
+    a: "Paste a YouTube URL. Snipd transcribes the video, picks the 5 strongest moments (contrarian claims, complete micro-stories, emotional spikes), generates a hook for each, and renders captioned 9:16 MP4s sized for Shorts / Reels / TikTok. The full async render is shipping shortly; today the moment selection + captioned previews are live.",
   },
   {
-    q: "How does the referral program work?",
-    a: "Every account gets a unique referral link. When friends sign up and upgrade, you both earn bonus generations and rewards — tracked live on your affiliate dashboard.",
+    q: "How does the affiliate program work?",
+    a: "30% recurring commission on every subscription you refer, paid in cash to your account each month for as long as they stay subscribed. Sign up in the dashboard, share your unique link, get paid. Real cash, not platform credits.",
   },
 ];
 
@@ -39,35 +43,47 @@ export function Faq() {
   const [open, setOpen] = useState<number | null>(0);
 
   return (
-    <div className="mx-auto max-w-3xl space-y-3">
-      {FAQS.map((item, i) => (
-        <div key={item.q} className="glass rounded-2xl">
-          <button
-            onClick={() => setOpen(open === i ? null : i)}
-            className="flex w-full items-center justify-between gap-4 px-5 py-4 text-left"
-          >
-            <span className="font-medium">{item.q}</span>
-            <ChevronDown
-              className={cn(
-                "h-5 w-5 shrink-0 text-muted transition-transform",
-                open === i && "rotate-180",
-              )}
-            />
-          </button>
+    <div className="mx-auto max-w-3xl space-y-2">
+      {FAQS.map((item, i) => {
+        const isOpen = open === i;
+        return (
           <div
+            key={item.q}
             className={cn(
-              "grid overflow-hidden px-5 transition-all duration-300",
-              open === i
-                ? "grid-rows-[1fr] pb-5 opacity-100"
-                : "grid-rows-[0fr] opacity-0",
+              "rounded-2xl border bg-surface transition-colors",
+              isOpen
+                ? "border-brand-500/30 shadow-[0_8px_28px_-12px_rgba(37,99,235,0.18)]"
+                : "border-border hover:border-brand-500/20",
             )}
           >
-            <p className="min-h-0 text-sm leading-relaxed text-muted">
-              {item.a}
-            </p>
+            <button
+              onClick={() => setOpen(isOpen ? null : i)}
+              aria-expanded={isOpen}
+              className="flex w-full items-center justify-between gap-4 rounded-2xl px-5 py-4 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500/40"
+            >
+              <span className="text-base font-medium text-ink">{item.q}</span>
+              <ChevronDown
+                className={cn(
+                  "h-5 w-5 shrink-0 text-muted transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]",
+                  isOpen && "rotate-180 text-brand-600",
+                )}
+              />
+            </button>
+            <div
+              className={cn(
+                "grid overflow-hidden px-5 transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]",
+                isOpen
+                  ? "grid-rows-[1fr] pb-5 opacity-100"
+                  : "grid-rows-[0fr] opacity-0",
+              )}
+            >
+              <p className="min-h-0 text-sm leading-relaxed text-muted">
+                {item.a}
+              </p>
+            </div>
           </div>
-        </div>
-      ))}
+        );
+      })}
     </div>
   );
 }
