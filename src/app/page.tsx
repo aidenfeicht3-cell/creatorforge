@@ -1,7 +1,6 @@
 import Link from "next/link";
 import {
   ArrowRight,
-  Play,
   Sparkles,
   Crosshair,
   Layers,
@@ -12,9 +11,8 @@ import { PricingCards } from "@/components/pricing-cards";
 import { buttonClasses } from "@/components/ui/button";
 import { Reveal } from "@/components/ui/reveal";
 import { Marquee } from "@/components/marquee";
-import { LiveExample } from "@/components/live-example";
 import { Faq } from "@/components/faq";
-import { HeroClipCard } from "@/components/hero-clip-card";
+import { LogoMark } from "@/components/logo";
 
 export default function LandingPage() {
   return (
@@ -62,31 +60,36 @@ export default function LandingPage() {
                   <ArrowRight className="h-4 w-4" />
                 </Link>
                 <Link
-                  href="#example"
+                  href="#features"
                   className={buttonClasses("outline", "lg")}
-                  aria-label="Jump to a live example of the Clipper"
+                  aria-label="Jump to the toolkit overview"
                 >
-                  <Play className="h-4 w-4" />
-                  See it work
+                  What's inside
                 </Link>
               </div>
             </Reveal>
           </div>
 
-          {/* Right column: the brand visual — a single big clip card.
-              Real component preview shaped exactly like the Clipper
-              output. The internal lime spotlight tracks the cursor on
-              desktop (subtle, decorative, gated to mouse pointer). */}
+          {/* Right column: the Snipd brand mark, large and lime. Honest
+              brand visual instead of a fake product screenshot. The lime
+              spotlight behind it does the atmospheric work. */}
           <Reveal delay={0.2} className="lg:col-span-5">
-            <HeroClipCard />
+            <div className="relative mx-auto aspect-square w-full max-w-sm">
+              {/* Lime spotlight behind the mark */}
+              <div
+                aria-hidden
+                className="absolute inset-0 rounded-full bg-brand-500/20 blur-3xl"
+              />
+              {/* The mark itself */}
+              <div className="relative flex h-full w-full items-center justify-center">
+                <LogoMark size={280} className="text-brand-500" />
+              </div>
+            </div>
           </Reveal>
         </div>
       </section>
 
       <Marquee />
-
-      {/* ───────── Live example — full demo ───────── */}
-      <LiveExample />
 
       {/* ───────── What it does — bento ───────── */}
       <section className="mx-auto max-w-6xl px-5 py-24">
