@@ -52,6 +52,10 @@ body {
   scroll-behavior: smooth;
 }
 
+/* Headings balance their own line length; body prose avoids orphans. */
+h1, h2, h3 { text-wrap: balance; }
+p, li { text-wrap: pretty; }
+
 /* ─── Dark theme overrides ─── */
 .dark {
   --color-bg:      #0a0f1f;
@@ -156,14 +160,7 @@ body::before {
   .animate-marquee { animation: none; }
 }
 
-/* ── Bold hero: vivid gradient text, grid backdrop, pulsing CTA glow ── */
-@utility text-gradient-vivid {
-  background: linear-gradient(120deg, #2563eb 0%, #7c3aed 45%, #06b6d4 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-}
-
+/* ── Hero: grid backdrop, pulsing CTA glow ── */
 .hero-grid {
   position: absolute;
   inset: 0;
@@ -210,9 +207,13 @@ body::before {
   opacity: 0.55;
   pointer-events: none;
 }
-.aurora-a { animation: aurora-drift-a 18s ease-in-out infinite; }
-.aurora-b { animation: aurora-drift-b 22s ease-in-out infinite; }
-.aurora-c { animation: aurora-drift-c 26s ease-in-out infinite; }
+/* Aurora only animates on larger viewports; mobile gets a static mesh to keep
+   the first viewport smooth on lower-end GPUs (blur(80px) × 3 is expensive). */
+@media (min-width: 1024px) and (prefers-reduced-motion: no-preference) {
+  .aurora-a { animation: aurora-drift-a 18s ease-in-out infinite; }
+  .aurora-b { animation: aurora-drift-b 22s ease-in-out infinite; }
+  .aurora-c { animation: aurora-drift-c 26s ease-in-out infinite; }
+}
 
 @keyframes shimmer {
   100% { transform: translateX(100%); }

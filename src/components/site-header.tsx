@@ -54,20 +54,23 @@ export function SiteHeader() {
           <Logo size={28} />
         </Link>
 
-        <nav className="hidden items-center gap-7 md:flex">
+        <nav className="hidden items-center gap-4 md:flex">
           {NAV.map((item) => (
             <Link
               key={item.href}
               href={item.href}
-              className="text-sm text-muted transition-colors hover:text-ink"
+              className="px-2 py-2.5 text-sm text-muted transition-colors hover:text-ink"
             >
               {item.label}
             </Link>
           ))}
         </nav>
 
-        <div className="hidden items-center gap-2 md:flex">
-          <Link href="/login" className="text-sm text-muted transition-colors hover:text-ink">
+        <div className="hidden items-center gap-1 md:flex">
+          <Link
+            href="/login"
+            className="px-3 py-2.5 text-sm text-muted transition-colors hover:text-ink"
+          >
             Sign in
           </Link>
           <Link href="/signup" className={buttonClasses("primary", "sm")}>

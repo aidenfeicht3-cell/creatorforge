@@ -24,7 +24,10 @@ const ITEMS = [
 export function Marquee() {
   const row = [...ITEMS, ...ITEMS];
   return (
-    <div className="relative overflow-hidden border-y border-border bg-bg-soft/60 py-4">
+    <div
+      aria-hidden="true"
+      className="relative overflow-hidden border-y border-border bg-bg-soft/60 py-4"
+    >
       <div className="flex w-max animate-marquee gap-3">
         {row.map((label, i) => (
           <span
