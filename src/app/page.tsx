@@ -12,78 +12,60 @@ import { buttonClasses } from "@/components/ui/button";
 import { Reveal } from "@/components/ui/reveal";
 import { Marquee } from "@/components/marquee";
 import { Faq } from "@/components/faq";
-import { LogoMark } from "@/components/logo";
 
 export default function LandingPage() {
   return (
     <>
       <SiteHeader />
 
-      {/* ───────── Hero — asymmetric split ───────── */}
-      <section className="relative isolate mx-auto max-w-7xl px-5 pt-20 pb-20 lg:pt-24">
+      {/* ───────── Hero — editorial, type-forward ─────────
+          The type IS the visual. No lone-logo placeholder, no fake
+          screenshot. The grid + lime spotlight carry the right-side
+          atmosphere as intentional negative space. Left-weighted so it
+          stays consistent with the asymmetric sections below. */}
+      <section className="relative isolate mx-auto flex min-h-[82dvh] max-w-7xl flex-col justify-center px-5 pt-14 pb-24 lg:pt-16">
         <div aria-hidden className="hero-grid" />
         <div
           aria-hidden
-          className="spotlight spotlight-pulse -z-10 right-[12%] top-[28%] hidden h-[28rem] w-[28rem] lg:block"
+          className="spotlight spotlight-pulse -z-10 right-[4%] top-[14%] hidden h-[36rem] w-[36rem] lg:block"
         />
 
-        <div className="grid items-center gap-12 lg:grid-cols-12 lg:gap-10">
-          {/* Left column: pill + H1 + sub + CTAs */}
-          <div className="lg:col-span-7">
-            <Reveal>
-              <span className="inline-flex items-center gap-2 rounded-full border border-brand-500/30 bg-brand-500/10 px-3 py-1 text-xs font-medium text-brand-300">
-                <span className="h-1.5 w-1.5 rounded-full bg-brand-500" />
-                Launch Pad is live
-              </span>
-            </Reveal>
+        <div className="max-w-4xl">
+          <Reveal>
+            <span className="inline-flex items-center gap-2 rounded-full border border-brand-500/30 bg-brand-500/10 px-3.5 py-1.5 text-xs font-medium text-brand-300">
+              Launch Pad is live
+            </span>
+          </Reveal>
 
-            <Reveal delay={0.06}>
-              <h1 className="mt-6 text-5xl font-semibold leading-[1.02] tracking-[-0.035em] text-ink sm:text-6xl lg:text-7xl">
-                Cut your YouTube into shorts that hook.
-              </h1>
-            </Reveal>
+          <Reveal delay={0.06}>
+            <h1 className="mt-7 text-[2.85rem] font-semibold leading-[0.98] tracking-[-0.04em] text-ink sm:text-6xl lg:text-7xl">
+              Cut your YouTube into shorts that hook.
+            </h1>
+          </Reveal>
 
-            <Reveal delay={0.12}>
-              <p className="mt-7 max-w-xl text-lg leading-relaxed text-muted">
-                Paste any URL. Snipd finds the moments that hook, captions
-                them, and exports 9:16 MP4s for Shorts and Reels.
-              </p>
-            </Reveal>
+          <Reveal delay={0.12}>
+            <p className="mt-8 max-w-xl text-lg leading-relaxed text-muted sm:text-xl">
+              Paste any URL. Snipd finds the moments that hook, captions them,
+              and exports 9:16 MP4s for Shorts and Reels.
+            </p>
+          </Reveal>
 
-            <Reveal delay={0.18}>
-              <div className="mt-9 flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:gap-4">
-                <Link
-                  href="/signup"
-                  className={buttonClasses("primary", "lg", "glow-pulse")}
-                >
-                  Start for free
-                  <ArrowRight className="h-4 w-4" />
-                </Link>
-                <Link
-                  href="#features"
-                  className={buttonClasses("outline", "lg")}
-                  aria-label="Jump to the toolkit overview"
-                >
-                  What's inside
-                </Link>
-              </div>
-            </Reveal>
-          </div>
-
-          {/* Right column: the Snipd brand mark, large and lime. Honest
-              brand visual instead of a fake product screenshot. The lime
-              spotlight behind it does the atmospheric work. */}
-          <Reveal delay={0.2} className="lg:col-span-5">
-            <div className="relative mx-auto aspect-square w-full max-w-sm">
-              {/* Lime spotlight behind the mark */}
-              <div
-                aria-hidden
-                className="absolute inset-0 rounded-full bg-brand-500/20 blur-3xl"
-              />
-              {/* The mark itself */}
-              <div className="relative flex h-full w-full items-center justify-center">
-                <LogoMark size={280} className="text-brand-500" />
-              </div>
+          <Reveal delay={0.18}>
+            <div className="mt-10 flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:gap-4">
+              <Link
+                href="/signup"
+                className={buttonClasses("primary", "lg", "glow-pulse")}
+              >
+                Start for free
+                <ArrowRight className="h-4 w-4" />
+              </Link>
+              <Link
+                href="#features"
+                className={buttonClasses("outline", "lg")}
+                aria-label="Jump to the toolkit overview"
+              >
+                What&apos;s inside
+              </Link>
             </div>
           </Reveal>
         </div>
@@ -92,18 +74,18 @@ export default function LandingPage() {
       <Marquee />
 
       {/* ───────── What it does — bento ───────── */}
-      <section className="mx-auto max-w-6xl px-5 py-24">
+      <section id="features" className="mx-auto max-w-6xl px-5 py-28">
         <Reveal className="max-w-2xl">
           <h2 className="text-4xl font-semibold tracking-[-0.025em] text-ink sm:text-5xl">
             Built for the parts that aren&apos;t filming.
           </h2>
-          <p className="mt-5 text-muted">
+          <p className="mt-5 text-lg text-muted">
             Snipd is three products in one toolkit. Use them solo or together,
             free, with no credit card.
           </p>
         </Reveal>
 
-        <div className="mt-14 grid gap-5 sm:grid-cols-12 sm:gap-6">
+        <div className="mt-16 grid gap-5 sm:grid-cols-12 sm:gap-6">
           {/* Cell A — Launch Pad, the on-ramp (large) */}
           <Reveal className="sm:col-span-7">
             <article className="hover-lift relative h-full overflow-hidden rounded-3xl border border-border bg-surface p-7 sm:p-9">
@@ -273,22 +255,22 @@ export default function LandingPage() {
       </section>
 
       {/* ───────── Pricing ───────── */}
-      <section id="pricing" className="mx-auto max-w-6xl px-5 py-24">
+      <section id="pricing" className="mx-auto max-w-6xl px-5 py-28">
         <Reveal className="mx-auto max-w-2xl text-center">
-          <span className="inline-flex items-center gap-2 rounded-full border border-brand-500/30 bg-brand-500/10 px-3 py-1 text-xs font-medium text-brand-300">
+          <span className="inline-flex items-center gap-2 rounded-full border border-brand-500/30 bg-brand-500/10 px-3.5 py-1.5 text-xs font-medium text-brand-300">
             Genuinely free to start
           </span>
-          <h2 className="mt-5 text-4xl font-semibold tracking-[-0.025em] text-ink sm:text-5xl">
+          <h2 className="mt-6 text-4xl font-semibold tracking-[-0.025em] text-ink sm:text-5xl">
             Plans built around the model you want.
           </h2>
-          <p className="mt-5 text-muted">
+          <p className="mt-5 text-lg text-muted">
             Every plan includes all 20+ tools. Upgrade for Claude Sonnet on
             Creator, Claude Opus 4.8 on Studio, more credits, and watermark-free
             exports.
           </p>
         </Reveal>
 
-        <div className="mt-14">
+        <div className="mt-16">
           <PricingCards />
         </div>
 
@@ -299,7 +281,7 @@ export default function LandingPage() {
       </section>
 
       {/* ───────── Affiliate — split with stat callouts ───────── */}
-      <section id="affiliate" className="mx-auto max-w-6xl px-5 py-20">
+      <section id="affiliate" className="mx-auto max-w-6xl px-5 py-24">
         <div className="relative overflow-hidden rounded-3xl border border-border bg-surface">
           {/* Lime spotlight bleed across the top-left */}
           <div
@@ -390,23 +372,23 @@ export default function LandingPage() {
       </section>
 
       {/* ───────── FAQ ───────── */}
-      <section id="faq" className="mx-auto max-w-5xl px-5 py-24">
+      <section id="faq" className="mx-auto max-w-5xl px-5 py-28">
         <Reveal className="mx-auto max-w-2xl text-center">
           <h2 className="text-4xl font-semibold tracking-[-0.025em] text-ink sm:text-5xl">
             Questions worth asking.
           </h2>
-          <p className="mt-5 text-muted">
+          <p className="mt-5 text-lg text-muted">
             The free plan, the model differences, what credits cover, how to
             cancel. Direct answers.
           </p>
         </Reveal>
-        <div className="mt-12">
+        <div className="mt-14">
           <Faq />
         </div>
       </section>
 
       {/* ───────── Founder note ───────── */}
-      <section className="mx-auto max-w-3xl px-5 py-20">
+      <section className="mx-auto max-w-3xl px-5 py-24">
         <Reveal>
           <figure className="relative rounded-3xl border border-border bg-surface p-8 sm:p-10">
             <span

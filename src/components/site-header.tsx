@@ -9,7 +9,7 @@ import { buttonClasses } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 const NAV = [
-  { href: "/#example", label: "See it work" },
+  { href: "/#features", label: "Features" },
   { href: "/pricing", label: "Pricing" },
   { href: "/#affiliate", label: "Affiliate" },
 ];
