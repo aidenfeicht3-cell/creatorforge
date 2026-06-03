@@ -1,41 +1,48 @@
 import type { Metadata } from "next";
-import { Inter, JetBrains_Mono, Instrument_Serif } from "next/font/google";
+import { Geist, Geist_Mono, JetBrains_Mono } from "next/font/google";
 import { Toaster } from "sonner";
 import { ThemeScript } from "@/components/theme-toggle";
 import "./globals.css";
 
 const SITE = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
 
-const inter = Inter({
+/**
+ * Type stack:
+ *  - Geist Sans: display + body (replaces Inter; intentional break from the
+ *    LLM default per the taste-skill anti-default rule)
+ *  - Geist Mono: technical accents (replaces Instrument Serif, which is
+ *    in the banned-default list)
+ *  - JetBrains Mono kept as a backup variable for places that still
+ *    reference --font-jetbrains (dashboard, tool-runner code badges)
+ */
+const geist = Geist({
   subsets: ["latin"],
-  variable: "--font-inter",
+  variable: "--font-geist",
   display: "swap",
 });
-const mono = JetBrains_Mono({
+const geistMono = Geist_Mono({
+  subsets: ["latin"],
+  variable: "--font-geist-mono",
+  display: "swap",
+});
+const jetbrains = JetBrains_Mono({
   subsets: ["latin"],
   variable: "--font-jetbrains",
-  display: "swap",
-});
-const serif = Instrument_Serif({
-  subsets: ["latin"],
-  weight: "400",
-  style: ["normal", "italic"],
-  variable: "--font-serif",
   display: "swap",
 });
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE),
   title: {
-    default: "Snipd — the AI that clips your YouTube into 9:16 shorts",
+    default: "Snipd — the AI cutting room for solo YouTubers",
     template: "%s · Snipd",
   },
   description:
-    "Paste any YouTube URL — Snipd finds the 5 best moments, renders them as 9:16 shorts with burned-in captions, and hands you the MP4s. Built for solo creators who don't want to edit.",
+    "Paste any YouTube URL. Snipd finds the moments that hook, captions them, and exports 9:16 MP4s for Shorts and Reels. Plus 20+ AI tools for everything else.",
   openGraph: {
     title: "Snipd",
     description:
-      "Paste a YouTube link → get 5 TikTok-ready clips with captions in 60 seconds.",
+      "Paste a YouTube link, get 5 captioned shorts. Built for solo creators going 0 to 1.",
     url: SITE,
     siteName: "Snipd",
     type: "website",
@@ -51,7 +58,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${inter.variable} ${mono.variable} ${serif.variable}`}
+      className={`${geist.variable} ${geistMono.variable} ${jetbrains.variable}`}
       suppressHydrationWarning
     >
       <head>
@@ -60,7 +67,7 @@ export default function RootLayout({
       <body className="min-h-screen antialiased">
         {children}
         <Toaster
-          theme="system"
+          theme="dark"
           position="top-center"
           toastOptions={{
             style: {

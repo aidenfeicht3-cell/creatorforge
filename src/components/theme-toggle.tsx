@@ -6,11 +6,19 @@ import { Toggle } from "@/components/dashboard/settings-form";
 
 const STORAGE_KEY = "cf-theme";
 
-/** Applies/removes the `.dark` class on <html> and persists to localStorage. */
+/**
+ * Applies/removes the `.light` class on <html> and persists to localStorage.
+ * Dark is the brand default (no class needed). `.light` is the override.
+ */
 function applyTheme(dark: boolean) {
   if (typeof document === "undefined") return;
-  if (dark) document.documentElement.classList.add("dark");
-  else document.documentElement.classList.remove("dark");
+  if (dark) {
+    document.documentElement.classList.add("dark");
+    document.documentElement.classList.remove("light");
+  } else {
+    document.documentElement.classList.add("light");
+    document.documentElement.classList.remove("dark");
+  }
   try {
     localStorage.setItem(STORAGE_KEY, dark ? "dark" : "light");
   } catch {}
@@ -22,13 +30,14 @@ export function ThemeToggle() {
 
   useEffect(() => {
     setMounted(true);
-    let initial = false;
+    // Snipd brand defaults to dark. Light is an explicit opt-in via the
+    // toggle. We only respect the system preference if the user has
+    // never touched the toggle AND has explicitly set a light system theme.
+    let initial = true;
     try {
       const saved = localStorage.getItem(STORAGE_KEY);
-      if (saved === "dark") initial = true;
-      else if (saved === "light") initial = false;
-      else
-        initial = window.matchMedia("(prefers-color-scheme: dark)").matches;
+      if (saved === "light") initial = false;
+      else if (saved === "dark") initial = true;
     } catch {}
     setDark(initial);
     applyTheme(initial);
@@ -62,15 +71,21 @@ export function ThemeToggle() {
   );
 }
 
-/** Runs early before React hydration to prevent flash of wrong theme. */
+/** Runs early before React hydration to prevent flash of wrong theme.
+ *  Dark is the brand default. Only flip to light if the user opted in. */
 export function ThemeScript() {
   const code = `
     (function() {
       try {
         var saved = localStorage.getItem('${STORAGE_KEY}');
-        var dark = saved === 'dark' || (!saved && window.matchMedia('(prefers-color-scheme: dark)').matches);
-        if (dark) document.documentElement.classList.add('dark');
-      } catch (e) {}
+        if (saved === 'light') {
+          document.documentElement.classList.add('light');
+        } else {
+          document.documentElement.classList.add('dark');
+        }
+      } catch (e) {
+        document.documentElement.classList.add('dark');
+      }
     })();
   `;
   return <script dangerouslySetInnerHTML={{ __html: code }} />;

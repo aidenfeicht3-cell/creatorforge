@@ -30,7 +30,7 @@ export function PricingCards({ authed = false }: { authed?: boolean }) {
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || "Checkout failed");
-      if (!data.url) throw new Error("Checkout failed — please try again.");
+      if (!data.url) throw new Error("Checkout failed. Please try again.");
       window.location.href = data.url;
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Something went wrong");
@@ -49,7 +49,7 @@ export function PricingCards({ authed = false }: { authed?: boolean }) {
             className={cn(
               "rounded-full px-4 py-1.5 font-medium transition-colors",
               billing === "monthly"
-                ? "bg-bg text-ink shadow-sm"
+                ? "bg-brand-500 text-[#0A0A0A]"
                 : "text-muted hover:text-ink",
             )}
           >
@@ -61,12 +61,19 @@ export function PricingCards({ authed = false }: { authed?: boolean }) {
             className={cn(
               "inline-flex items-center gap-2 rounded-full px-4 py-1.5 font-medium transition-colors",
               billing === "annual"
-                ? "bg-bg text-ink shadow-sm"
+                ? "bg-brand-500 text-[#0A0A0A]"
                 : "text-muted hover:text-ink",
             )}
           >
             Annual
-            <span className="rounded-full bg-brand-500/15 px-2 py-0.5 text-xs font-semibold text-brand-600">
+            <span
+              className={cn(
+                "rounded-full px-2 py-0.5 text-xs font-semibold",
+                billing === "annual"
+                  ? "bg-[#0A0A0A]/15 text-[#0A0A0A]"
+                  : "bg-brand-500/15 text-brand-300",
+              )}
+            >
               Save 33%
             </span>
           </button>
@@ -81,34 +88,35 @@ export function PricingCards({ authed = false }: { authed?: boolean }) {
             <div
               key={plan.id}
               className={cn(
-                "relative rounded-3xl p-8",
-                plan.highlighted ? "glass-strong glow-brand" : "glass",
-                plan.id === "studio" && "border border-brand-500/20",
+                "relative rounded-3xl p-8 transition-colors",
+                plan.highlighted
+                  ? "border border-brand-500/35 bg-surface shadow-[0_24px_60px_-20px_rgba(182,255,26,0.18)]"
+                  : "border border-border bg-surface hover:border-brand-500/20",
               )}
             >
               {plan.highlighted && (
-                <span className="absolute -top-3 left-8 rounded-full bg-gradient-to-r from-brand-500 to-accent px-3 py-1 text-xs font-semibold text-white">
+                <span className="absolute -top-3 left-8 rounded-full bg-brand-500 px-3 py-1 text-xs font-semibold text-[#0A0A0A]">
                   Most popular
                 </span>
               )}
               {plan.id === "studio" && (
-                <span className="absolute -top-3 right-8 inline-flex items-center gap-1 rounded-full border border-brand-400/40 bg-bg px-3 py-1 text-xs font-semibold text-brand-600">
+                <span className="absolute -top-3 right-8 inline-flex items-center gap-1 rounded-full border border-brand-500/30 bg-bg-soft px-3 py-1 text-xs font-semibold text-brand-300">
                   <Sparkles className="h-3 w-3" />
                   Opus 4.8
                 </span>
               )}
 
-              <h3 className="text-lg font-semibold">{plan.name}</h3>
+              <h3 className="text-lg font-semibold text-ink">{plan.name}</h3>
               <p className="mt-1 text-sm text-muted">{plan.tagline}</p>
 
               <div className="mt-5 flex items-baseline gap-1">
                 {isFree ? (
-                  <span className="text-5xl font-semibold tracking-tight">
+                  <span className="text-5xl font-semibold tracking-tight text-ink">
                     Free
                   </span>
                 ) : (
                   <>
-                    <span className="text-5xl font-semibold tracking-tight">
+                    <span className="text-5xl font-semibold tracking-tight text-ink">
                       ${monthly}
                     </span>
                     <span className="text-muted">/month</span>
@@ -125,8 +133,8 @@ export function PricingCards({ authed = false }: { authed?: boolean }) {
 
               <ul className="mt-6 space-y-3">
                 {plan.features.map((f) => (
-                  <li key={f} className="flex items-start gap-2.5 text-sm">
-                    <Check className="mt-0.5 h-4 w-4 shrink-0 text-brand-400" />
+                  <li key={f} className="flex items-start gap-2.5 text-sm text-ink">
+                    <Check className="mt-0.5 h-4 w-4 shrink-0 text-brand-500" />
                     <span>{f}</span>
                   </li>
                 ))}

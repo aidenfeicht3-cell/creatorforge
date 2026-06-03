@@ -58,12 +58,8 @@ export function SiteFooter() {
             </div>
           ))}
         </div>
-        <div className="mt-12 flex flex-col items-start justify-between gap-3 border-t border-border/60 pt-6 text-sm text-muted sm:flex-row sm:items-center">
-          <span>© {new Date().getFullYear()} Snipd. Built by a solo creator.</span>
-          <span className="inline-flex items-center gap-2 font-mono text-xs">
-            <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-            All systems normal
-          </span>
+        <div className="mt-12 border-t border-border/60 pt-6 text-sm text-muted">
+          © {new Date().getFullYear()} Snipd. Built by a solo creator.
         </div>
       </div>
     </footer>

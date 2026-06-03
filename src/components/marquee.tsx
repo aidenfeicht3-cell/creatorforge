@@ -1,8 +1,7 @@
 /**
  * Infinite capability marquee — a scrolling strip of what Snipd actually does.
- * Honest (every item is a real tool), and the motion reads as "premium product"
- * without faking logos or testimonials. Pauses on hover; stops for
- * reduced-motion users (handled in globals.css).
+ * Honest (every item is a real tool). Pauses on hover. Reduced-motion users
+ * see it static. Decoration only, so aria-hidden.
  */
 const ITEMS = [
   "Launch Pad",
@@ -26,21 +25,20 @@ export function Marquee() {
   return (
     <div
       aria-hidden="true"
-      className="relative overflow-hidden border-y border-border bg-bg-soft/60 py-4"
+      className="relative overflow-hidden border-y border-border bg-bg-soft py-5"
     >
       <div className="flex w-max animate-marquee gap-3">
         {row.map((label, i) => (
           <span
             key={i}
-            className="inline-flex shrink-0 items-center gap-2 rounded-full border border-border bg-surface px-4 py-1.5 text-sm text-muted"
+            className="inline-flex shrink-0 items-center rounded-full border border-border bg-surface px-4 py-1.5 text-sm text-muted"
           >
-            <span className="h-1.5 w-1.5 rounded-full bg-brand-500" />
             {label}
           </span>
         ))}
       </div>
-      <div className="pointer-events-none absolute inset-y-0 left-0 w-20 bg-gradient-to-r from-bg-soft to-transparent" />
-      <div className="pointer-events-none absolute inset-y-0 right-0 w-20 bg-gradient-to-l from-bg-soft to-transparent" />
+      <div className="pointer-events-none absolute inset-y-0 left-0 w-24 bg-gradient-to-r from-bg-soft to-transparent" />
+      <div className="pointer-events-none absolute inset-y-0 right-0 w-24 bg-gradient-to-l from-bg-soft to-transparent" />
     </div>
   );
 }

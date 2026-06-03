@@ -1,21 +1,17 @@
 import Link from "next/link";
 import {
   ArrowRight,
-  Crosshair,
-  Clapperboard,
-  Zap,
-  Gift,
-  Users,
-  Coins,
-  Copy,
   Play,
+  Sparkles,
+  Crosshair,
+  Scissors,
+  Layers,
 } from "lucide-react";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import { PricingCards } from "@/components/pricing-cards";
 import { buttonClasses } from "@/components/ui/button";
 import { Reveal } from "@/components/ui/reveal";
-import { HeroAurora } from "@/components/hero-aurora";
 import { Marquee } from "@/components/marquee";
 import { LiveExample } from "@/components/live-example";
 import { Faq } from "@/components/faq";
@@ -25,135 +21,260 @@ export default function LandingPage() {
     <>
       <SiteHeader />
 
-      {/* ───────── Hero ───────── */}
-      <section className="relative isolate mx-auto max-w-5xl px-5 pt-20 pb-16 text-center lg:pt-28">
-        <HeroAurora />
+      {/* ───────── Hero — asymmetric split ───────── */}
+      <section className="relative isolate mx-auto max-w-7xl px-5 pt-20 pb-20 lg:pt-24">
         <div aria-hidden className="hero-grid" />
-        <Reveal>
-          <span className="inline-flex items-center gap-2 rounded-full border border-border bg-surface px-4 py-1.5 text-sm shadow-sm">
-            <span className="font-semibold text-brand-600">NEW:</span>
-            <span className="text-ink">Launch Pad: your channel, start to finish</span>
-            <Link
-              href="/signup"
-              className="inline-flex items-center gap-0.5 font-medium text-brand-600 hover:underline"
-            >
-              try it <ArrowRight className="h-3.5 w-3.5" />
-            </Link>
-          </span>
-        </Reveal>
+        <div
+          aria-hidden
+          className="spotlight spotlight-pulse -z-10 right-[12%] top-[28%] hidden h-[28rem] w-[28rem] lg:block"
+        />
 
-        <Reveal delay={0.08}>
-          <h1 className="mx-auto mt-8 max-w-4xl text-5xl font-bold leading-[1.05] tracking-[-0.03em] text-ink sm:text-6xl lg:text-7xl">
-            From a blank page to your first viral video.
-          </h1>
-        </Reveal>
+        <div className="grid items-center gap-12 lg:grid-cols-12 lg:gap-10">
+          {/* Left column: pill + H1 + sub + CTAs */}
+          <div className="lg:col-span-7">
+            <Reveal>
+              <span className="inline-flex items-center gap-2 rounded-full border border-brand-500/30 bg-brand-500/10 px-3 py-1 text-xs font-medium text-brand-300">
+                <span className="h-1.5 w-1.5 rounded-full bg-brand-500" />
+                Launch Pad is live
+              </span>
+            </Reveal>
 
-        <Reveal delay={0.16}>
-          <p className="mx-auto mt-7 max-w-xl text-lg leading-relaxed text-muted">
-            Launch Pad helps you find your niche, name and brand the channel, and
-            plan a film-ready first video. Plus 20+ AI tools for everything after
-            you hit record.
-          </p>
-        </Reveal>
+            <Reveal delay={0.08}>
+              <h1 className="mt-6 text-5xl font-semibold leading-[1.02] tracking-[-0.035em] text-ink sm:text-6xl lg:text-7xl">
+                Cut your YouTube into shorts that hook.
+              </h1>
+            </Reveal>
 
-        <Reveal delay={0.24}>
-          <div className="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row sm:gap-4">
-            <Link href="/signup" className={buttonClasses("primary", "lg", "glow-pulse")}>
-              Start for free
-              <ArrowRight className="h-4 w-4" />
-            </Link>
-            <Link
-              href="#example"
-              className={buttonClasses("outline", "lg")}
-              aria-label="Jump to a live example of the Clipper"
-            >
-              <Play className="h-4 w-4" />
-              See it work
-            </Link>
+            <Reveal delay={0.16}>
+              <p className="mt-7 max-w-xl text-lg leading-relaxed text-muted">
+                Paste any URL. Snipd finds the moments that hook, captions
+                them, and exports 9:16 MP4s for Shorts and Reels.
+              </p>
+            </Reveal>
+
+            <Reveal delay={0.24}>
+              <div className="mt-9 flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:gap-4">
+                <Link
+                  href="/signup"
+                  className={buttonClasses("primary", "lg", "glow-pulse")}
+                >
+                  Start for free
+                  <ArrowRight className="h-4 w-4" />
+                </Link>
+                <Link
+                  href="#example"
+                  className={buttonClasses("outline", "lg")}
+                  aria-label="Jump to a live example of the Clipper"
+                >
+                  <Play className="h-4 w-4" />
+                  See it work
+                </Link>
+              </div>
+            </Reveal>
           </div>
-          <p className="mt-5 text-sm text-muted">
-            The free plan is unlimited and needs no credit card.
-          </p>
-        </Reveal>
 
-        <Reveal delay={0.32}>
-          <div className="mt-10 flex flex-wrap items-center justify-center gap-x-3 gap-y-2 text-sm text-muted">
-            <span className="font-medium text-ink">20+ AI creator tools</span>
-            <span className="text-border">•</span>
-            <span className="font-medium text-ink">5 captioned shorts per video</span>
-            <span className="text-border">•</span>
-            <span className="font-medium text-ink">Claude Opus 4.8 on Studio</span>
-          </div>
-        </Reveal>
+          {/* Right column: the brand visual — a single big clip card.
+              This is the hero's "real visual" per Section 4.8: a real
+              component preview shaped exactly like the Clipper output. */}
+          <Reveal delay={0.18} className="lg:col-span-5">
+            <HeroClipCard />
+          </Reveal>
+        </div>
       </section>
 
       <Marquee />
 
-      {/* ───────── How it works ───────── */}
-      <section id="features" className="mx-auto max-w-5xl px-5 py-24">
-        <Reveal className="mx-auto max-w-2xl text-center">
-          <h2 className="text-4xl font-bold tracking-[-0.02em] sm:text-5xl">
-            How it works
+      {/* ───────── Live example — full demo ───────── */}
+      <LiveExample />
+
+      {/* ───────── What it does — bento ───────── */}
+      <section className="mx-auto max-w-6xl px-5 py-24">
+        <Reveal className="max-w-2xl">
+          <h2 className="text-4xl font-semibold tracking-[-0.025em] text-ink sm:text-5xl">
+            Built for the parts that aren&apos;t filming.
           </h2>
           <p className="mt-5 text-muted">
-            From a blank page to a posted video, in three steps.
+            Snipd is three products in one toolkit. Use them solo or together,
+            free, with no credit card.
           </p>
         </Reveal>
-        <div className="mt-16 grid gap-10 sm:grid-cols-3 sm:gap-8">
-          {[
-            {
-              n: 1,
-              icon: Crosshair,
-              title: "Tell us your niche",
-              body: "Launch Pad finds your angle, names and brands the channel, and plans a film-ready first video.",
-            },
-            {
-              n: 2,
-              icon: Zap,
-              title: "Generate everything",
-              body: "20+ AI tools write titles, hooks, scripts, thumbnails, and SEO, then cut long videos into clip-ready shorts.",
-            },
-            {
-              n: 3,
-              icon: Clapperboard,
-              title: "Post and grow",
-              body: "Export clean captioned assets, publish to every platform, and come back for the next one.",
-            },
-          ].map(({ n, icon: Icon, title, body }, i) => (
-            <Reveal key={n} delay={i * 0.08}>
-              <div className="group relative pl-4 sm:pl-0 sm:pt-2">
-                <span
+
+        <div className="mt-14 grid gap-5 sm:grid-cols-12 sm:gap-6">
+          {/* Cell A — Launch Pad, the on-ramp (large) */}
+          <Reveal className="sm:col-span-7">
+            <article className="hover-lift relative h-full overflow-hidden rounded-3xl border border-border bg-surface p-7 sm:p-9">
+              <div className="flex items-center gap-2">
+                <Crosshair
+                  className="h-4 w-4 text-brand-500"
+                  strokeWidth={2.25}
                   aria-hidden
-                  className="absolute -left-0 top-0 font-mono text-[11px] font-semibold tracking-[0.18em] text-brand-600 sm:relative sm:left-auto sm:block"
-                >
-                  0{n}
+                />
+                <span className="text-sm font-semibold text-ink">
+                  Launch Pad
                 </span>
-                <div className="flex items-center gap-3 sm:mt-3">
-                  <Icon
-                    className="h-5 w-5 text-brand-600 transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:translate-x-0.5"
-                    strokeWidth={2.25}
-                  />
-                  <h3 className="text-lg font-semibold text-ink">{title}</h3>
-                </div>
-                <p className="mt-3 text-sm leading-relaxed text-muted">
-                  {body}
-                </p>
               </div>
-            </Reveal>
-          ))}
+              <h3 className="mt-4 text-2xl font-semibold tracking-tight text-ink sm:text-3xl">
+                Start from nothing, end with a film-ready first video.
+              </h3>
+              <p className="mt-3 max-w-md text-sm leading-relaxed text-muted">
+                Tell Launch Pad your interests. It picks an underserved niche,
+                names and brands the channel, and plans a first video you can
+                actually film this week.
+              </p>
+
+              {/* Visual: stacked typographic niche pivots */}
+              <div className="mt-7 space-y-2">
+                {[
+                  { tag: "01", name: "Speedrunning indie horror", score: 91 },
+                  { tag: "02", name: "Retro console restoration", score: 86 },
+                  { tag: "03", name: "Indie post-mortems", score: 79 },
+                ].map((row) => (
+                  <div
+                    key={row.tag}
+                    className="flex items-center gap-3 rounded-xl border border-border bg-bg-soft px-3 py-2.5"
+                  >
+                    <span className="font-mono text-[11px] font-semibold text-muted">
+                      {row.tag}
+                    </span>
+                    <span className="flex-1 truncate text-sm text-ink">
+                      {row.name}
+                    </span>
+                    <span className="rounded-md border border-brand-500/30 bg-brand-500/10 px-1.5 py-0.5 font-mono text-[10px] font-semibold text-brand-300">
+                      {row.score}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </article>
+          </Reveal>
+
+          {/* Cell B — the 20+ tools as a label cloud (small) */}
+          <Reveal delay={0.08} className="sm:col-span-5">
+            <article className="hover-lift relative h-full overflow-hidden rounded-3xl border border-border bg-surface p-7 sm:p-9">
+              <div className="flex items-center gap-2">
+                <Layers
+                  className="h-4 w-4 text-brand-500"
+                  strokeWidth={2.25}
+                  aria-hidden
+                />
+                <span className="text-sm font-semibold text-ink">
+                  20+ tools beyond the cut
+                </span>
+              </div>
+              <h3 className="mt-4 text-2xl font-semibold tracking-tight text-ink sm:text-3xl">
+                Hooks, titles, thumbs, scripts, SEO.
+              </h3>
+              <p className="mt-3 text-sm leading-relaxed text-muted">
+                The toolkit a solo creator needs after they stop staring at the
+                blank doc.
+              </p>
+
+              {/* Visual: label cloud */}
+              <div className="mt-7 flex flex-wrap gap-1.5">
+                {[
+                  "Thumbnails",
+                  "Titles",
+                  "Hooks",
+                  "Scripts",
+                  "SEO",
+                  "Reverse Engineer",
+                  "Voiceover",
+                  "Channel Audit",
+                  "Trend Radar",
+                  "Captions",
+                  "B-Roll",
+                ].map((label) => (
+                  <span
+                    key={label}
+                    className="rounded-full border border-border bg-bg-soft px-2.5 py-1 text-xs text-muted"
+                  >
+                    {label}
+                  </span>
+                ))}
+              </div>
+            </article>
+          </Reveal>
+
+          {/* Cell C — the model stack (full width below) */}
+          <Reveal delay={0.16} className="sm:col-span-12">
+            <article className="hover-lift relative overflow-hidden rounded-3xl border border-border bg-surface p-7 sm:p-9">
+              <div className="grid gap-8 sm:grid-cols-12 sm:items-center sm:gap-10">
+                <div className="sm:col-span-5">
+                  <div className="flex items-center gap-2">
+                    <Sparkles
+                      className="h-4 w-4 text-brand-500"
+                      strokeWidth={2.25}
+                      aria-hidden
+                    />
+                    <span className="text-sm font-semibold text-ink">
+                      The right model for the job
+                    </span>
+                  </div>
+                  <h3 className="mt-4 text-2xl font-semibold tracking-tight text-ink sm:text-3xl">
+                    Best-in-class per role, not one provider for everything.
+                  </h3>
+                </div>
+
+                {/* Visual: model progression strip */}
+                <div className="sm:col-span-7">
+                  <div className="grid gap-2 sm:grid-cols-3">
+                    {[
+                      {
+                        tier: "Starter",
+                        model: "Llama 3.3 70B",
+                        eng: "Groq",
+                        muted: true,
+                      },
+                      {
+                        tier: "Creator",
+                        model: "Claude Sonnet",
+                        eng: "Anthropic",
+                      },
+                      {
+                        tier: "Studio",
+                        model: "Claude Opus 4.8",
+                        eng: "Anthropic",
+                        accent: true,
+                      },
+                    ].map((tier) => (
+                      <div
+                        key={tier.tier}
+                        className={
+                          tier.accent
+                            ? "rounded-2xl border border-brand-500/30 bg-brand-500/8 p-4"
+                            : "rounded-2xl border border-border bg-bg-soft p-4"
+                        }
+                      >
+                        <div
+                          className={`font-mono text-[10px] uppercase tracking-wider ${
+                            tier.accent ? "text-brand-300" : "text-muted"
+                          }`}
+                        >
+                          {tier.tier}
+                        </div>
+                        <div className="mt-2 text-sm font-semibold text-ink">
+                          {tier.model}
+                        </div>
+                        <div className="mt-0.5 text-xs text-muted">
+                          {tier.eng}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </article>
+          </Reveal>
         </div>
       </section>
-
-      {/* ───────── Live example (the "show, don't tell") ───────── */}
-      <LiveExample />
 
       {/* ───────── Pricing ───────── */}
       <section id="pricing" className="mx-auto max-w-6xl px-5 py-24">
         <Reveal className="mx-auto max-w-2xl text-center">
-          <span className="inline-flex items-center gap-2 rounded-full border border-border bg-bg-soft px-3 py-1 text-xs font-medium text-brand-700">
+          <span className="inline-flex items-center gap-2 rounded-full border border-brand-500/30 bg-brand-500/10 px-3 py-1 text-xs font-medium text-brand-300">
             Genuinely free to start
           </span>
-          <h2 className="mt-5 text-4xl font-bold tracking-[-0.02em] sm:text-5xl">
+          <h2 className="mt-5 text-4xl font-semibold tracking-[-0.025em] text-ink sm:text-5xl">
             Plans built around the model you want.
           </h2>
           <p className="mt-5 text-muted">
@@ -173,17 +294,22 @@ export default function LandingPage() {
         </p>
       </section>
 
-      {/* ───────── Affiliate ───────── */}
+      {/* ───────── Affiliate — split with stat callouts ───────── */}
       <section id="affiliate" className="mx-auto max-w-6xl px-5 py-20">
-        <div className="glass-strong overflow-hidden rounded-3xl">
-          <div className="grid gap-0 lg:grid-cols-2">
-            {/* Left — the pitch + how to get your code */}
-            <div className="p-8 sm:p-12">
-              <span className="inline-flex items-center gap-2 rounded-full border border-border bg-bg-soft px-3 py-1 text-xs font-medium text-brand-700">
-                <Gift className="h-3.5 w-3.5" />
+        <div className="relative overflow-hidden rounded-3xl border border-border bg-surface">
+          {/* Lime spotlight bleed across the top-left */}
+          <div
+            aria-hidden
+            className="pointer-events-none absolute -left-24 -top-24 h-72 w-72 rounded-full bg-brand-500/20 blur-3xl"
+          />
+
+          <div className="relative grid gap-0 lg:grid-cols-12">
+            {/* Left — the pitch */}
+            <div className="lg:col-span-7 p-8 sm:p-12">
+              <span className="inline-flex items-center gap-2 rounded-full border border-brand-500/30 bg-brand-500/10 px-3 py-1 text-xs font-medium text-brand-300">
                 Affiliate program
               </span>
-              <h2 className="mt-5 text-3xl font-bold tracking-[-0.02em] sm:text-4xl">
+              <h2 className="mt-5 text-3xl font-semibold tracking-[-0.025em] text-ink sm:text-4xl">
                 30% recurring on every creator you refer.
               </h2>
               <p className="mt-4 max-w-md text-muted">
@@ -191,8 +317,8 @@ export default function LandingPage() {
                 <span className="font-semibold text-ink">
                   30% commission
                 </span>{" "}
-                on every subscription you refer, paid out in cash each month for
-                as long as they stay subscribed.
+                on every subscription you refer, paid out in cash each month
+                for as long as they stay subscribed.
               </p>
 
               <ol className="mt-7 space-y-3.5">
@@ -202,11 +328,11 @@ export default function LandingPage() {
                   "Earn 30% of every referral's subscription, recurring.",
                   "Get paid out automatically each month.",
                 ].map((step, i) => (
-                  <li key={i} className="flex gap-3 text-sm">
-                    <span className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-brand-50 text-xs font-semibold text-brand-700">
+                  <li key={i} className="flex gap-3 text-sm text-ink">
+                    <span className="grid h-6 w-6 shrink-0 place-items-center rounded-full border border-brand-500/35 bg-brand-500/10 text-xs font-semibold text-brand-300">
                       {i + 1}
                     </span>
-                    <span className="text-ink">{step}</span>
+                    <span>{step}</span>
                   </li>
                 ))}
               </ol>
@@ -219,42 +345,41 @@ export default function LandingPage() {
               </div>
             </div>
 
-            {/* Right — visual: the affiliate card */}
-            <div
-              aria-hidden
-              className="relative border-t border-border bg-gradient-to-br from-brand-50 to-surface p-8 sm:p-12 lg:border-l lg:border-t-0"
-            >
-              <div className="rounded-2xl border border-border bg-surface p-5 shadow-sm">
-                <div className="text-xs font-medium text-muted">
-                  Your referral link
-                </div>
-                <div className="mt-2 flex items-center gap-2 rounded-xl border border-border bg-bg-soft px-3.5 py-2.5">
-                  <span className="flex-1 truncate font-mono text-sm text-ink">
-                    snipd.ai/?ref=<span className="text-brand-600">AIDEN42</span>
-                  </span>
-                  <Copy className="h-4 w-4 shrink-0 text-muted" />
-                </div>
-              </div>
-
-              <div className="mt-4 grid grid-cols-2 gap-4">
-                <div className="rounded-2xl border border-border bg-surface p-5 shadow-sm">
-                  <Coins className="h-5 w-5 text-brand-600" />
-                  <div className="mt-3 text-2xl font-bold">30%</div>
-                  <div className="text-xs text-muted">
-                    recurring commission
+            {/* Right — stat callouts, no fake referral link preview */}
+            <div className="lg:col-span-5 border-t border-border bg-bg-soft p-8 sm:p-12 lg:border-l lg:border-t-0">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="rounded-2xl border border-border bg-surface p-5">
+                  <div className="font-mono text-[10px] uppercase tracking-wider text-muted">
+                    Commission
                   </div>
+                  <div className="mt-3 text-3xl font-semibold text-brand-500">
+                    30%
+                  </div>
+                  <div className="text-xs text-muted">recurring, cash</div>
                 </div>
-                <div className="rounded-2xl border border-border bg-surface p-5 shadow-sm">
-                  <Users className="h-5 w-5 text-brand-600" />
-                  <div className="mt-3 text-2xl font-bold">Monthly</div>
-                  <div className="text-xs text-muted">automatic payouts</div>
+                <div className="rounded-2xl border border-border bg-surface p-5">
+                  <div className="font-mono text-[10px] uppercase tracking-wider text-muted">
+                    Payout
+                  </div>
+                  <div className="mt-3 text-3xl font-semibold text-ink">
+                    Monthly
+                  </div>
+                  <div className="text-xs text-muted">auto, no minimums</div>
                 </div>
               </div>
 
-              <p className="mt-5 text-xs leading-relaxed text-muted">
-                Example: refer 20 creators on Studio and earn about $230 a
-                month, recurring, for as long as they stay subscribed.
-              </p>
+              <div className="mt-4 rounded-2xl border border-border bg-surface p-5">
+                <div className="font-mono text-[10px] uppercase tracking-wider text-muted">
+                  Worked example
+                </div>
+                <p className="mt-3 text-sm leading-relaxed text-ink">
+                  Refer 20 creators on Studio. Earn about{" "}
+                  <span className="font-semibold text-brand-500">
+                    $230 a month
+                  </span>
+                  , recurring, for as long as they stay subscribed.
+                </p>
+              </div>
             </div>
           </div>
         </div>
@@ -263,7 +388,7 @@ export default function LandingPage() {
       {/* ───────── FAQ ───────── */}
       <section id="faq" className="mx-auto max-w-5xl px-5 py-24">
         <Reveal className="mx-auto max-w-2xl text-center">
-          <h2 className="text-4xl font-bold tracking-[-0.02em] sm:text-5xl">
+          <h2 className="text-4xl font-semibold tracking-[-0.025em] text-ink sm:text-5xl">
             Questions worth asking.
           </h2>
           <p className="mt-5 text-muted">
@@ -279,22 +404,20 @@ export default function LandingPage() {
       {/* ───────── Founder note ───────── */}
       <section className="mx-auto max-w-3xl px-5 py-20">
         <Reveal>
-          <figure className="relative rounded-3xl border border-border bg-surface p-8 sm:p-10 shadow-sm">
+          <figure className="relative rounded-3xl border border-border bg-surface p-8 sm:p-10">
             <span
               aria-hidden
-              className="absolute -top-3 left-8 inline-flex items-center gap-1.5 rounded-full bg-brand-500 px-3 py-1 text-[11px] font-semibold uppercase tracking-wider text-white"
+              className="absolute -top-3 left-8 inline-flex items-center gap-1.5 rounded-full bg-brand-500 px-3 py-1 text-[11px] font-semibold uppercase tracking-wider text-[#0A0A0A]"
             >
               From the founder
             </span>
             <blockquote className="mt-2 text-lg leading-relaxed text-ink">
               I&apos;m building Snipd solo. Every tool exists because I needed
-              it myself when I tried to start a channel from zero. The free
-              plan stays free because I remember how brutal that first month
-              is when nothing&apos;s working yet. If something breaks or feels
-              wrong, the feedback button in your dashboard goes straight to me.
+              it myself starting from zero. If something feels wrong, the
+              feedback button in your dashboard goes straight to me.
             </blockquote>
             <figcaption className="mt-6 flex items-center gap-3">
-              <span className="grid h-10 w-10 place-items-center rounded-full bg-gradient-to-br from-brand-500 to-brand-700 font-mono text-sm font-semibold text-white">
+              <span className="grid h-10 w-10 place-items-center rounded-full bg-brand-500 font-mono text-sm font-semibold text-[#0A0A0A]">
                 A
               </span>
               <div>
@@ -306,18 +429,26 @@ export default function LandingPage() {
         </Reveal>
       </section>
 
-      {/* ───────── CTA band ───────── */}
-      <section className="mx-auto max-w-5xl px-5 py-20">
-        <div className="rounded-3xl border border-border bg-gradient-to-br from-brand-50 to-surface p-12 text-center shadow-sm">
-          <h2 className="text-3xl font-bold tracking-[-0.02em] sm:text-4xl">
+      {/* ───────── CTA band — full bleed ───────── */}
+      <section className="mx-auto max-w-6xl px-5 pb-24">
+        <div className="relative overflow-hidden rounded-3xl border border-border bg-surface p-10 text-center sm:p-16">
+          {/* Lime spotlight behind the headline */}
+          <div
+            aria-hidden
+            className="pointer-events-none absolute left-1/2 top-1/2 -z-10 h-[28rem] w-[28rem] -translate-x-1/2 -translate-y-1/2 rounded-full bg-brand-500/15 blur-3xl"
+          />
+          <h2 className="text-3xl font-semibold tracking-[-0.025em] text-ink sm:text-5xl">
             Make your first video this week.
           </h2>
-          <p className="mx-auto mt-4 max-w-md text-muted">
+          <p className="mx-auto mt-5 max-w-md text-muted">
             Create a free account, pick a niche in Launch Pad, and ship the
             first video by Sunday.
           </p>
-          <div className="mt-8 flex justify-center">
-            <Link href="/signup" className={buttonClasses("primary", "lg", "glow-pulse")}>
+          <div className="mt-9 flex justify-center">
+            <Link
+              href="/signup"
+              className={buttonClasses("primary", "lg", "glow-pulse")}
+            >
               Start for free
               <ArrowRight className="h-4 w-4" />
             </Link>
@@ -327,5 +458,101 @@ export default function LandingPage() {
 
       <SiteFooter />
     </>
+  );
+}
+
+/* ──────────────────────────────────────────────────────── */
+
+/**
+ * The hero's right-column visual: a single, large 9:16 clip card shaped
+ * exactly like Snipd's real Clipper output. Per Section 4.8 this counts as
+ * a "real component preview" — it's literally the shape the user gets back.
+ *
+ * Tilted slightly for visual confidence, with a lime spotlight bleed behind.
+ */
+function HeroClipCard() {
+  return (
+    <div className="relative mx-auto w-full max-w-sm">
+      {/* Soft pedestal — secondary card receding behind the primary one */}
+      <div
+        aria-hidden
+        className="absolute inset-0 translate-x-4 translate-y-4 rotate-[3deg] rounded-3xl border border-border bg-bg-soft opacity-60"
+      />
+
+      <article
+        className="relative -rotate-[2deg] overflow-hidden rounded-3xl border border-border bg-surface shadow-[0_40px_80px_-30px_rgba(0,0,0,0.7),0_0_0_1px_rgba(182,255,26,0.12)]"
+        aria-label="Example Snipd clip: timestamp 2:14, retention score 92"
+      >
+        {/* 9:16 frame */}
+        <div className="relative aspect-[9/16] bg-gradient-to-br from-brand-500/12 via-bg-soft to-bg">
+          {/* Grain */}
+          <div
+            aria-hidden
+            className="pointer-events-none absolute inset-0 opacity-[0.2]"
+            style={{
+              backgroundImage:
+                "repeating-linear-gradient(0deg, rgba(255,255,255,0.05) 0px, rgba(255,255,255,0.05) 1px, transparent 1px, transparent 3px)",
+            }}
+          />
+
+          {/* Internal radial lime accent */}
+          <div
+            aria-hidden
+            className="pointer-events-none absolute -inset-12 opacity-60"
+            style={{
+              background:
+                "radial-gradient(circle at 50% 65%, rgba(182,255,26,0.22), transparent 55%)",
+              filter: "blur(32px)",
+            }}
+          />
+
+          {/* Timestamp */}
+          <div className="absolute left-4 top-4 inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-black/50 px-2.5 py-1 font-mono text-[11px] font-semibold tracking-wider text-white/90 backdrop-blur-sm">
+            <span className="h-1.5 w-1.5 rounded-full bg-brand-500" />
+            2:14
+          </div>
+
+          {/* Retention */}
+          <div className="absolute right-4 top-4 rounded-full border border-brand-500/30 bg-brand-500/15 px-2.5 py-1 font-mono text-[11px] font-semibold text-brand-300 backdrop-blur-sm">
+            92
+          </div>
+
+          {/* Burned-in caption */}
+          <div className="absolute inset-x-5 bottom-16 text-center">
+            <p
+              className="text-balance text-[19px] font-extrabold uppercase leading-[1.08] tracking-tight text-white sm:text-[21px]"
+              style={{
+                textShadow:
+                  "0 2px 0 rgba(0,0,0,0.9), 0 0 16px rgba(0,0,0,0.55)",
+              }}
+            >
+              The first 30 seconds decide everything.
+            </p>
+          </div>
+
+          {/* Watermark rail */}
+          <div className="absolute inset-x-0 bottom-0 flex items-center justify-between bg-gradient-to-t from-black/75 to-transparent px-4 pb-3 pt-8">
+            <span className="font-mono text-[10px] uppercase tracking-wider text-white/70">
+              snip<span className="text-brand-500">d</span>
+            </span>
+            <span className="inline-flex items-center gap-1 font-mono text-[10px] uppercase tracking-wider text-white/70">
+              <Scissors className="h-3 w-3" />
+              9:16 captioned
+            </span>
+          </div>
+        </div>
+
+        {/* Footer technique */}
+        <div className="flex items-center justify-between gap-3 border-t border-border px-4 py-3">
+          <span className="truncate text-xs text-muted">
+            Cold open, pattern interrupt
+          </span>
+          <span className="inline-flex shrink-0 items-center gap-1 text-xs font-semibold text-brand-500">
+            Hook
+            <ArrowRight className="h-3 w-3" />
+          </span>
+        </div>
+      </article>
+    </div>
   );
 }

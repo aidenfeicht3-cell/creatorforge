@@ -1,37 +1,41 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { Menu, X } from "lucide-react";
+import { useScroll, useMotionValueEvent } from "motion/react";
 import { Logo } from "@/components/logo";
 import { buttonClasses } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 const NAV = [
-  { href: "/#features", label: "Features" },
+  { href: "/#example", label: "See it work" },
   { href: "/pricing", label: "Pricing" },
   { href: "/#affiliate", label: "Affiliate" },
 ];
 
+/**
+ * Sticky rounded-pill header. Dark surface with a 1px lime-tinted ring on
+ * scroll. Auto-hide on scroll-down past 140px, slide back in on scroll-up.
+ * The pill shape is kept (it was the project's reference for "premium feel")
+ * but the chrome is sharper, less "glass."
+ *
+ * Scroll signal goes through Motion's `useScroll` + `useMotionValueEvent` so
+ * we don't re-render the whole header on every scroll frame (taste-skill
+ * Section 5.D bans raw `window.addEventListener('scroll')`).
+ */
 export function SiteHeader() {
   const [open, setOpen] = useState(false);
-  // `scrolled` deepens the glass once you leave the top of the page.
-  // `hidden` slides the bar up when scrolling down, back in when scrolling up.
   const [scrolled, setScrolled] = useState(false);
   const [hidden, setHidden] = useState(false);
   const lastY = useRef(0);
 
-  useEffect(() => {
-    function onScroll() {
-      const y = window.scrollY;
-      setScrolled(y > 8);
-      // Only auto-hide deep in the page, and never while the mobile menu is open.
-      setHidden(y > 140 && y > lastY.current && !open);
-      lastY.current = y;
-    }
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
-  }, [open]);
+  const { scrollY } = useScroll();
+  useMotionValueEvent(scrollY, "change", (latest) => {
+    setScrolled(latest > 8);
+    setHidden(latest > 140 && latest > lastY.current && !open);
+    lastY.current = latest;
+  });
 
   return (
     <header
@@ -42,24 +46,25 @@ export function SiteHeader() {
     >
       <div
         className={cn(
-          // Liquid glass: blur + saturation + a faint top sheen via the ring.
-          "relative flex h-14 items-center justify-between gap-3 overflow-hidden rounded-full px-5 ring-1 transition-all duration-300",
-          "before:pointer-events-none before:absolute before:inset-x-0 before:top-0 before:h-px before:bg-gradient-to-r before:from-transparent before:via-white/60 before:to-transparent",
+          "relative flex h-14 items-center justify-between gap-3 rounded-full px-5 transition-all duration-300",
           scrolled
-            ? "bg-surface/65 shadow-[0_10px_36px_-10px_rgba(15,23,42,0.22)] ring-white/40 backdrop-blur-2xl backdrop-saturate-150"
-            : "bg-surface/85 shadow-[0_6px_24px_-8px_rgba(15,23,42,0.12)] ring-border backdrop-blur-xl",
+            ? "bg-surface/90 backdrop-blur-xl ring-1 ring-brand-500/15 shadow-[0_12px_36px_-12px_rgba(0,0,0,0.6)]"
+            : "bg-surface/70 backdrop-blur-md ring-1 ring-border",
         )}
       >
-        <Link href="/" className="flex items-center">
-          <Logo size={28} />
+        <Link
+          href="/"
+          className="flex items-center transition-opacity hover:opacity-80"
+        >
+          <Logo size={26} />
         </Link>
 
-        <nav className="hidden items-center gap-4 md:flex">
+        <nav className="hidden items-center gap-1 md:flex">
           {NAV.map((item) => (
             <Link
               key={item.href}
               href={item.href}
-              className="px-2 py-2.5 text-sm text-muted transition-colors hover:text-ink"
+              className="rounded-full px-3 py-2 text-sm text-muted transition-colors hover:bg-bg-soft hover:text-ink"
             >
               {item.label}
             </Link>
@@ -69,27 +74,28 @@ export function SiteHeader() {
         <div className="hidden items-center gap-1 md:flex">
           <Link
             href="/login"
-            className="px-3 py-2.5 text-sm text-muted transition-colors hover:text-ink"
+            className="rounded-full px-3 py-2 text-sm text-muted transition-colors hover:bg-bg-soft hover:text-ink"
           >
             Sign in
           </Link>
           <Link href="/signup" className={buttonClasses("primary", "sm")}>
-            Start for free →
+            Start for free
           </Link>
         </div>
 
         <button
-          className="md:hidden text-ink"
+          className="rounded-md p-1.5 text-ink md:hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500/50"
           onClick={() => setOpen((v) => !v)}
           aria-label="Toggle menu"
+          aria-expanded={open}
         >
-          {open ? <X /> : <Menu />}
+          {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
         </button>
       </div>
 
       <div
         className={cn(
-          "md:hidden mx-2 overflow-hidden rounded-2xl border border-border bg-surface shadow-lg transition-all",
+          "mx-2 overflow-hidden rounded-2xl border border-border bg-surface shadow-[0_24px_60px_-24px_rgba(0,0,0,0.7)] transition-all md:hidden",
           open ? "mt-2 max-h-80 opacity-100" : "max-h-0 opacity-0",
         )}
       >
@@ -106,11 +112,16 @@ export function SiteHeader() {
           ))}
           <Link
             href="/login"
+            onClick={() => setOpen(false)}
             className={buttonClasses("secondary", "md", "mt-2")}
           >
             Sign in
           </Link>
-          <Link href="/signup" className={buttonClasses("primary", "md")}>
+          <Link
+            href="/signup"
+            onClick={() => setOpen(false)}
+            className={buttonClasses("primary", "md")}
+          >
             Start for free
           </Link>
         </div>

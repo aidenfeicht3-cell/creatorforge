@@ -27,7 +27,7 @@ const FAQS = [
   },
   {
     q: "Are the thumbnails ready-to-upload images?",
-    a: "On paid plans, yes — Replicate Flux renders the actual image file. On free, you get the full thumbnail concept (composition, overlay text, color logic, emotional angle) plus a Pollinations preview. The concept brief alone usually saves an hour of back-and-forth with an editor.",
+    a: "On paid plans, yes. Replicate Flux renders the actual image file. On free, you get the full thumbnail concept (composition, overlay text, color logic, emotional angle) plus a Pollinations preview. The concept brief alone usually saves an hour of back-and-forth with an editor.",
   },
   {
     q: "How does the Clipper actually work?",
@@ -52,7 +52,7 @@ export function Faq() {
             className={cn(
               "rounded-2xl border bg-surface transition-colors",
               isOpen
-                ? "border-brand-500/30 shadow-[0_8px_28px_-12px_rgba(37,99,235,0.18)]"
+                ? "border-brand-500/35 shadow-[0_8px_28px_-12px_rgba(182,255,26,0.2)]"
                 : "border-border hover:border-brand-500/20",
             )}
           >

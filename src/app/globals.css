@@ -1,42 +1,60 @@
 @import "tailwindcss";
 
-/* Tailwind v4: enable class-based dark mode. */
+/* Tailwind v4: class-based theme override (`.light` swaps the tokens). */
 @custom-variant dark (&:where(.dark, .dark *));
 
 /* ───────────────────────────────────────────────
-   Snipd — design tokens
-   Clean white + electric blue (light, default).
-   Dark theme overrides below.
+   Snipd — design tokens.
+   Dark + electric-lime by default. Light is an
+   explicit override via the theme toggle.
    ─────────────────────────────────────────────── */
 @theme {
-  /* Backgrounds — pure white surface with a pale blue page tint */
-  --color-bg:      #ffffff;
-  --color-bg-soft: #f5f8fd;
-  --color-surface: #ffffff;
-  --color-border:  #e6ecf3;
+  /* Backgrounds — near-black + true off-black surfaces */
+  --color-bg:      #0A0A0A;
+  --color-bg-soft: #131313;
+  --color-surface: #161616;
+  --color-border:  #262626;
 
-  /* Primary — electric blue (ViewMax-style) */
-  --color-brand-50:  #eff6ff;
-  --color-brand-300: #60a5fa;
-  --color-brand-400: #3b82f6;
-  --color-brand-500: #2563eb;
-  --color-brand-600: #1d4ed8;
-  --color-brand-700: #1e40af;
+  /* Brand — electric lime (the original Snipd brand) */
+  --color-brand-50:  #F5FFD9;
+  --color-brand-300: #DCFF66;
+  --color-brand-400: #C9FF36;
+  --color-brand-500: #B6FF1A;
+  --color-brand-600: #94D900;
+  --color-brand-700: #6FA500;
 
-  /* Accent (used sparingly) */
-  --color-accent:     #2563eb;
-  --color-accent-300: #60a5fa;
-  --color-accent-500: #2563eb;
+  /* Accent (lime is the only accent; tokens kept for compat) */
+  --color-accent:     #B6FF1A;
+  --color-accent-300: #DCFF66;
+  --color-accent-500: #B6FF1A;
 
   /* Text */
-  --color-ink:   #0a0f1f;
-  --color-muted: #64748b;
+  --color-ink:   #FAFAFA;
+  --color-muted: #A1A1AA;
 
-  --font-sans: var(--font-inter), "Inter", ui-sans-serif, system-ui, -apple-system, sans-serif;
-  --font-mono: var(--font-jetbrains), ui-monospace, "JetBrains Mono", "SF Mono", Menlo, Consolas, monospace;
+  --font-sans: var(--font-geist), "Geist", ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-mono: var(--font-geist-mono), var(--font-jetbrains), ui-monospace, "Geist Mono", "JetBrains Mono", monospace;
 
   --radius-xl:  1rem;
   --radius-2xl: 1.5rem;
+}
+
+/* Light theme override (when user explicitly opts in) */
+:where(.light) {
+  --color-bg:      #FFFFFF;
+  --color-bg-soft: #FAFAF9;
+  --color-surface: #FFFFFF;
+  --color-border:  #E5E5E5;
+  --color-ink:     #0A0A0A;
+  --color-muted:   #525252;
+}
+
+/* Legacy `.dark` selector — keeps existing tokens that the dashboard
+   relied on for explicit dark. Now effectively a no-op since dark IS
+   the default, but kept so the toggle's classList add/remove still
+   round-trips without re-flowing. */
+.dark {
+  /* Dark is the default; explicitly setting `.dark` does nothing extra. */
 }
 
 * {
@@ -52,133 +70,121 @@ body {
   scroll-behavior: smooth;
 }
 
-/* Headings balance their own line length; body prose avoids orphans. */
+/* Headings auto-balance line length; prose avoids orphans. */
 h1, h2, h3 { text-wrap: balance; }
 p, li { text-wrap: pretty; }
 
-/* ─── Dark theme overrides ─── */
-.dark {
-  --color-bg:      #0a0f1f;
-  --color-bg-soft: #131a2d;
-  --color-surface: #1a2238;
-  --color-border:  #2a3450;
-  --color-ink:     #f4f6fb;
-  --color-muted:   #8b97b1;
-
-  --color-brand-50:  #1e3a8a;
-  --color-brand-300: #60a5fa;
-  --color-brand-400: #60a5fa;
-  --color-brand-500: #3b82f6;
-  --color-brand-600: #93c5fd;
-  --color-brand-700: #bfdbfe;
+/* Selection in brand color (high contrast on near-black) */
+::selection {
+  background: var(--color-brand-500);
+  color: #0A0A0A;
 }
 
-/* Soft top-down gradient backdrop — adapts to theme */
-body::before {
-  content: "";
-  position: fixed;
-  inset: 0;
-  z-index: -1;
-  background:
-    linear-gradient(180deg, #eaf1fb 0%, #ffffff 55%, #ffffff 100%);
-  pointer-events: none;
+/* Scrollbar — slim, neutral, theme-tracking */
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border-radius: 9999px;
 }
-.dark body::before {
-  background:
-    linear-gradient(180deg, #0d1428 0%, #0a0f1f 55%, #0a0f1f 100%);
-}
+::-webkit-scrollbar-thumb:hover { background: #404040; }
 
-/* ─── Card utilities (use --color-surface so they adapt to theme) ─── */
+/* ─── Card surfaces ──────────────────────────────
+   `glass` and `glass-strong` utility names are kept for backward
+   compat (tool-runner + dashboard reference them) but the new
+   visual is a confident solid panel with a subtle inner highlight
+   — not glassmorphism. The blue/white era is over.
+   ───────────────────────────────────────────── */
 @utility glass {
   background: var(--color-surface);
   border: 1px solid var(--color-border);
-  box-shadow:
-    0 1px 2px rgba(15, 23, 42, 0.04),
-    0 4px 16px rgba(15, 23, 42, 0.04);
 }
 
 @utility glass-strong {
   background: var(--color-surface);
   border: 1px solid var(--color-border);
   box-shadow:
-    0 2px 6px rgba(15, 23, 42, 0.04),
-    0 12px 40px rgba(15, 23, 42, 0.08);
+    inset 0 1px 0 rgba(255, 255, 255, 0.04),
+    0 24px 60px -28px rgba(0, 0, 0, 0.7);
 }
 
-@utility text-gradient {
-  background: linear-gradient(120deg, #0a0f1f 0%, #2563eb 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-}
-
+/* Lime glow ring — for hero brand mark accent only */
 @utility glow-brand {
   box-shadow:
-    0 0 0 1px rgba(37, 99, 235, 0.12),
-    0 16px 40px -10px rgba(37, 99, 235, 0.25);
+    0 0 0 1px rgba(182, 255, 26, 0.16),
+    0 24px 60px -10px rgba(182, 255, 26, 0.28);
 }
 
-::-webkit-scrollbar { width: 9px; height: 9px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb {
-  background: var(--color-border);
-  border-radius: 9999px;
-}
-::-webkit-scrollbar-thumb:hover { background: var(--color-muted); }
+/* ─── Motion primitives ───────────────────────── */
 
-@keyframes float {
-  0%, 100% { transform: translateY(0); }
-  50%      { transform: translateY(-8px); }
-}
-.animate-float { animation: float 6s ease-in-out infinite; }
-
-/* Premium hover lift — for cards / tiles. Smooth expo-out easing. */
+/* Hover-lift — sharper expo-out, lime-tinted shadow */
 .hover-lift {
   transition:
-    transform 0.3s cubic-bezier(0.22, 1, 0.36, 1),
-    box-shadow 0.3s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.4s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.4s cubic-bezier(0.22, 1, 0.36, 1),
     border-color 0.3s ease;
 }
 .hover-lift:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 22px 48px -16px rgba(37, 99, 235, 0.3);
-  border-color: rgba(37, 99, 235, 0.4);
+  transform: translateY(-3px);
+  box-shadow: 0 28px 60px -24px rgba(182, 255, 26, 0.24);
+  border-color: rgba(182, 255, 26, 0.32);
 }
 @media (prefers-reduced-motion: reduce) {
   .hover-lift { transition: none; }
   .hover-lift:hover { transform: none; }
 }
 
-/* Infinite marquee — duplicate the row and slide -50% for a seamless loop. */
+/* Marquee */
 @keyframes marquee {
   from { transform: translateX(0); }
   to   { transform: translateX(-50%); }
 }
-.animate-marquee { animation: marquee 40s linear infinite; }
+.animate-marquee { animation: marquee 38s linear infinite; }
 .animate-marquee:hover { animation-play-state: paused; }
 @media (prefers-reduced-motion: reduce) {
   .animate-marquee { animation: none; }
 }
 
-/* ── Hero: grid backdrop, pulsing CTA glow ── */
+/* ─── Hero backdrop ─────────────────────────────
+   Sharper than the old aurora. A faint dotted grid +
+   one lime spotlight behind the brand mark.
+   ───────────────────────────────────────────── */
 .hero-grid {
   position: absolute;
   inset: 0;
   z-index: -10;
   background-image:
-    linear-gradient(to right, rgba(37, 99, 235, 0.09) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(37, 99, 235, 0.09) 1px, transparent 1px);
-  background-size: 44px 44px;
-  -webkit-mask-image: radial-gradient(ellipse 75% 55% at 50% 28%, #000 25%, transparent 75%);
-  mask-image: radial-gradient(ellipse 75% 55% at 50% 28%, #000 25%, transparent 75%);
+    linear-gradient(to right, rgba(255, 255, 255, 0.035) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.035) 1px, transparent 1px);
+  background-size: 48px 48px;
+  -webkit-mask-image: radial-gradient(ellipse 75% 60% at 50% 35%, #000 28%, transparent 75%);
+  mask-image: radial-gradient(ellipse 75% 60% at 50% 35%, #000 28%, transparent 75%);
 }
 
+.spotlight {
+  position: absolute;
+  border-radius: 9999px;
+  background: radial-gradient(circle, rgba(182, 255, 26, 0.32), transparent 60%);
+  filter: blur(56px);
+  pointer-events: none;
+}
+@keyframes spotlight-pulse {
+  0%, 100% { opacity: 0.55; transform: scale(1); }
+  50%      { opacity: 0.8;  transform: scale(1.04); }
+}
+@media (min-width: 1024px) and (prefers-reduced-motion: no-preference) {
+  .spotlight-pulse { animation: spotlight-pulse 7s ease-in-out infinite; }
+}
+
+/* Primary-CTA pulse — recolored to lime */
 @keyframes glow-pulse {
   0%, 100% {
-    box-shadow: 0 0 0 0 rgba(37, 99, 235, 0.5), 0 10px 34px -8px rgba(37, 99, 235, 0.55);
+    box-shadow: 0 0 0 0 rgba(182, 255, 26, 0.5),
+                0 10px 34px -8px rgba(182, 255, 26, 0.55);
   }
   50% {
-    box-shadow: 0 0 0 10px rgba(37, 99, 235, 0), 0 14px 46px -6px rgba(37, 99, 235, 0.8);
+    box-shadow: 0 0 0 10px rgba(182, 255, 26, 0),
+                0 14px 46px -6px rgba(182, 255, 26, 0.85);
   }
 }
 .glow-pulse { animation: glow-pulse 2.6s ease-in-out infinite; }
@@ -186,7 +192,10 @@ body::before {
   .glow-pulse { animation: none; }
 }
 
-/* ─── Dashboard aurora — animated background glows ─── */
+/* ─── Dashboard aurora — legacy keyframes, now disabled by default.
+   Kept as a no-op container so any existing references don't error;
+   actual animations are gated to lg+ where the dashboard surface
+   genuinely benefits. ─── */
 @keyframes aurora-drift-a {
   0%, 100% { transform: translate(0, 0) scale(1); }
   33%      { transform: translate(40px, -30px) scale(1.1); }
@@ -204,20 +213,17 @@ body::before {
   position: absolute;
   border-radius: 9999px;
   filter: blur(80px);
-  opacity: 0.55;
+  opacity: 0.32;
   pointer-events: none;
 }
-/* Aurora only animates on larger viewports; mobile gets a static mesh to keep
-   the first viewport smooth on lower-end GPUs (blur(80px) × 3 is expensive). */
 @media (min-width: 1024px) and (prefers-reduced-motion: no-preference) {
   .aurora-a { animation: aurora-drift-a 18s ease-in-out infinite; }
   .aurora-b { animation: aurora-drift-b 22s ease-in-out infinite; }
   .aurora-c { animation: aurora-drift-c 26s ease-in-out infinite; }
 }
 
-@keyframes shimmer {
-  100% { transform: translateX(100%); }
-}
+/* Skeleton — dashboard / tool-runner result loader */
+@keyframes shimmer { 100% { transform: translateX(100%); } }
 .skeleton {
   position: relative;
   overflow: hidden;
@@ -229,9 +235,16 @@ body::before {
   position: absolute;
   inset: 0;
   transform: translateX(-100%);
-  background: linear-gradient(90deg, transparent, rgba(148, 163, 184, 0.18), transparent);
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.06), transparent);
   animation: shimmer 1.5s infinite;
 }
-.dark .skeleton::after {
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.06), transparent);
+
+/* Subtle float for decorative elements */
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-8px); }
+}
+.animate-float { animation: float 6s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) {
+  .animate-float { animation: none; }
 }
