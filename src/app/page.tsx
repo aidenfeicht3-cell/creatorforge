@@ -12,61 +12,69 @@ import { buttonClasses } from "@/components/ui/button";
 import { Reveal } from "@/components/ui/reveal";
 import { Marquee } from "@/components/marquee";
 import { Faq } from "@/components/faq";
+import { HeroShowcase } from "@/components/hero-showcase";
 
 export default function LandingPage() {
   return (
     <>
       <SiteHeader />
 
-      {/* ───────── Hero — editorial, type-forward ─────────
-          The type IS the visual. No lone-logo placeholder, no fake
-          screenshot. The grid + lime spotlight carry the right-side
-          atmosphere as intentional negative space. Left-weighted so it
-          stays consistent with the asymmetric sections below. */}
+      {/* ───────── Hero — type-forward, with a live output panel ─────────
+          Left column carries the pitch; the right column shows the real
+          shapes Snipd outputs (scored titles/hooks/shorts), cycling with
+          motion. Honest "show the cut", not a fake screenshot. The panel
+          hides below lg, where the type stands on its own. */}
       <section className="relative isolate mx-auto flex min-h-[82dvh] max-w-7xl flex-col justify-center px-5 pt-14 pb-24 lg:pt-16">
         <div aria-hidden className="hero-grid" />
         <div
           aria-hidden
-          className="spotlight spotlight-pulse -z-10 right-[4%] top-[14%] hidden h-[36rem] w-[36rem] lg:block"
+          className="spotlight spotlight-pulse -z-10 right-[6%] top-[18%] hidden h-[34rem] w-[34rem] lg:block"
         />
 
-        <div className="max-w-4xl">
-          <Reveal>
-            <span className="inline-flex items-center gap-2 rounded-full border border-brand-500/30 bg-brand-500/10 px-3.5 py-1.5 text-xs font-medium text-brand-300">
-              Launch Pad is live
-            </span>
-          </Reveal>
+        <div className="grid w-full items-center gap-12 lg:grid-cols-[1.05fr_0.95fr]">
+          <div className="max-w-2xl">
+            <Reveal>
+              <span className="inline-flex items-center gap-2 rounded-full border border-brand-500/30 bg-brand-500/10 px-3.5 py-1.5 text-xs font-medium text-brand-300">
+                Launch Pad is live
+              </span>
+            </Reveal>
 
-          <Reveal delay={0.06}>
-            <h1 className="mt-7 text-[2.85rem] font-semibold leading-[0.98] tracking-[-0.04em] text-ink sm:text-6xl lg:text-7xl">
-              Cut your YouTube into shorts that hook.
-            </h1>
-          </Reveal>
+            <Reveal delay={0.06}>
+              <h1 className="mt-7 text-[2.6rem] font-semibold leading-[1.02] tracking-[-0.035em] text-ink sm:text-5xl lg:text-6xl">
+                Cut your YouTube into shorts that hook.
+              </h1>
+            </Reveal>
 
-          <Reveal delay={0.12}>
-            <p className="mt-8 max-w-xl text-lg leading-relaxed text-muted sm:text-xl">
-              Paste any URL. Snipd finds the moments that hook, captions them,
-              and exports 9:16 MP4s for Shorts and Reels.
-            </p>
-          </Reveal>
+            <Reveal delay={0.12}>
+              <p className="mt-7 max-w-xl text-lg leading-relaxed text-muted sm:text-xl">
+                Paste any URL. Snipd finds the moments that hook, captions them,
+                and exports 9:16 MP4s for Shorts and Reels.
+              </p>
+            </Reveal>
 
-          <Reveal delay={0.18}>
-            <div className="mt-10 flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:gap-4">
-              <Link
-                href="/signup"
-                className={buttonClasses("primary", "lg", "glow-pulse")}
-              >
-                Start for free
-                <ArrowRight className="h-4 w-4" />
-              </Link>
-              <Link
-                href="#features"
-                className={buttonClasses("outline", "lg")}
-                aria-label="Jump to the toolkit overview"
-              >
-                What&apos;s inside
-              </Link>
-            </div>
+            <Reveal delay={0.18}>
+              <div className="mt-9 flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:gap-4">
+                <Link
+                  href="/signup"
+                  className={buttonClasses("primary", "lg", "glow-pulse")}
+                >
+                  Start for free
+                  <ArrowRight className="h-4 w-4" />
+                </Link>
+                <Link
+                  href="#features"
+                  className={buttonClasses("outline", "lg")}
+                  aria-label="Jump to the toolkit overview"
+                >
+                  What&apos;s inside
+                </Link>
+              </div>
+            </Reveal>
+          </div>
+
+          {/* Right — live output panel (lg+ only) */}
+          <Reveal delay={0.24} className="hidden justify-self-center lg:block lg:justify-self-end">
+            <HeroShowcase />
           </Reveal>
         </div>
       </section>

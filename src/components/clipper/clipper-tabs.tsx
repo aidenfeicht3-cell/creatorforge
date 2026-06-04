@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { motion, useReducedMotion } from "motion/react";
 import { Youtube, Twitch, Lock, Check, ArrowRight } from "lucide-react";
 import { TwitchBrowser } from "@/components/clipper/twitch-browser";
 import { YoutubeClipper } from "@/components/clipper/youtube-clipper";
@@ -63,6 +64,7 @@ function TabButton({
   label: string;
   locked?: boolean;
 }) {
+  const reduce = useReducedMotion();
   return (
     <button
       type="button"
@@ -70,12 +72,21 @@ function TabButton({
       aria-selected={active}
       onClick={onClick}
       className={cn(
-        "inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium transition-colors",
-        active
-          ? "bg-brand-500 text-[#0A0A0A]"
-          : "text-muted hover:text-ink",
+        "relative inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium transition-colors",
+        active ? "text-[#0A0A0A]" : "text-muted hover:text-ink",
       )}
     >
+      {active && (
+        <motion.span
+          layoutId="clipper-tab-thumb"
+          className="absolute inset-0 -z-10 rounded-full bg-brand-500"
+          transition={
+            reduce
+              ? { duration: 0 }
+              : { type: "spring", stiffness: 380, damping: 32 }
+          }
+        />
+      )}
       {icon}
       {label}
       {locked && <Lock className="h-3 w-3" />}

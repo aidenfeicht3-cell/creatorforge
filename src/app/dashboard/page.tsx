@@ -258,7 +258,7 @@ function Stat({
         </span>
         <Icon className={`h-4 w-4 ${highlight ? "text-brand-600" : "text-muted"}`} />
       </div>
-      <div className="mt-3 text-2xl font-semibold tracking-tight">{value}</div>
+      <div className="mt-3 text-2xl font-semibold tracking-tight tabular-nums">{value}</div>
       {sublabel && (
         <div className="mt-1 font-mono text-xs text-muted">{sublabel}</div>
       )}
