@@ -74,18 +74,15 @@ export function ThemeToggle() {
 /** Runs early before React hydration to prevent flash of wrong theme.
  *  Dark is the brand default. Only flip to light if the user opted in. */
 export function ThemeScript() {
+  // Dark-only: force dark on every load and clear any stale light preference.
+  // (Light theme retired per product decision.)
   const code = `
     (function() {
       try {
-        var saved = localStorage.getItem('${STORAGE_KEY}');
-        if (saved === 'light') {
-          document.documentElement.classList.add('light');
-        } else {
-          document.documentElement.classList.add('dark');
-        }
-      } catch (e) {
         document.documentElement.classList.add('dark');
-      }
+        document.documentElement.classList.remove('light');
+        localStorage.removeItem('${STORAGE_KEY}');
+      } catch (e) {}
     })();
   `;
   return <script dangerouslySetInnerHTML={{ __html: code }} />;
