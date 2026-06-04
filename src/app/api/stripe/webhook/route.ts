@@ -6,13 +6,25 @@ import { createAdminClient } from "@/lib/supabase/server";
 export const runtime = "nodejs";
 
 const PRO_PRICE = process.env.STRIPE_PRO_PRICE_ID;
+const PRO_PRICE_ANNUAL = process.env.STRIPE_PRO_PRICE_ID_ANNUAL;
 const STUDIO_PRICE = process.env.STRIPE_STUDIO_PRICE_ID;
+const STUDIO_PRICE_ANNUAL = process.env.STRIPE_STUDIO_PRICE_ID_ANNUAL;
 
-/** Map a Stripe price id back to a plan tier. */
+/** Map a Stripe price id back to a plan tier. Includes the ANNUAL price ids —
+ *  omitting them silently downgraded every annual subscriber to free on the
+ *  next subscription.updated event. */
 function planFromPriceId(priceId?: string): "free" | "pro" | "studio" {
-  if (priceId && priceId === STUDIO_PRICE) return "studio";
-  if (priceId && priceId === PRO_PRICE) return "pro";
+  if (!priceId) return "free";
+  if (priceId === STUDIO_PRICE || priceId === STUDIO_PRICE_ANNUAL) return "studio";
+  if (priceId === PRO_PRICE || priceId === PRO_PRICE_ANNUAL) return "pro";
   return "free";
+}
+
+/** Credit-cycle anchor: now + 1 month, ISO. */
+function nextResetISO(): string {
+  const d = new Date();
+  d.setMonth(d.getMonth() + 1);
+  return d.toISOString();
 }
 
 /** Keeps profiles.plan in sync with Stripe subscription lifecycle. */
@@ -46,8 +58,24 @@ export async function POST(req: Request) {
           .update({
             plan: planMeta === "studio" ? "studio" : "pro",
             stripe_customer_id: session.customer as string,
+            // Fresh cycle on upgrade so the new tier's full allowance is live.
+            credits_used: 0,
+            credits_reset_at: nextResetISO(),
           })
           .eq("id", userId);
+      }
+      break;
+    }
+
+    case "invoice.payment_succeeded": {
+      // Subscription renewed/paid — refresh the monthly credit allowance.
+      const invoice = event.data.object as Stripe.Invoice;
+      const customer = invoice.customer as string | null;
+      if (customer) {
+        await db
+          .from("profiles")
+          .update({ credits_used: 0, credits_reset_at: nextResetISO() })
+          .eq("stripe_customer_id", customer);
       }
       break;
     }

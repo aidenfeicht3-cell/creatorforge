@@ -1,6 +1,6 @@
 /** Server helpers for reading a user's profile, plan, usage, and onboarding. */
 import { PLANS, type PlanId, creditsRemaining } from "./plans";
-import { createClient } from "./supabase/server";
+import { createClient, createAdminClient } from "./supabase/server";
 
 export interface Profile {
   id: string;
@@ -12,6 +12,7 @@ export interface Profile {
   referral_code: string;
   referred_by: string | null;
   stripe_customer_id: string | null;
+  credits_reset_at: string;
 
   // Onboarding + memory bank
   onboarding_complete: boolean;
@@ -38,7 +39,34 @@ export async function getProfile(): Promise<Profile | null> {
     .eq("id", user.id)
     .single();
 
-  return (data as Profile) ?? null;
+  if (!data) return null;
+  let profile = data as Profile;
+
+  // Monthly credit reset on read. The reset_monthly_credits() SQL function
+  // exists but nothing schedules it, so we roll the cycle here: once the
+  // reset date has passed, zero usage and advance the anchor by a month.
+  // Uses the admin client so it keeps working once the sensitive profile
+  // columns are RLS-locked.
+  if (
+    profile.credits_reset_at &&
+    new Date(profile.credits_reset_at).getTime() <= Date.now()
+  ) {
+    const next = new Date();
+    next.setMonth(next.getMonth() + 1);
+    try {
+      const { data: updated } = await createAdminClient()
+        .from("profiles")
+        .update({ credits_used: 0, credits_reset_at: next.toISOString() })
+        .eq("id", user.id)
+        .select("*")
+        .single();
+      if (updated) profile = updated as Profile;
+    } catch (err) {
+      console.error("[account] monthly credit reset failed:", err);
+    }
+  }
+
+  return profile;
 }
 
 export async function getAccount() {
