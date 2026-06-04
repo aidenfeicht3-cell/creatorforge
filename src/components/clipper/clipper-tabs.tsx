@@ -72,7 +72,7 @@ function TabButton({
       aria-selected={active}
       onClick={onClick}
       className={cn(
-        "relative inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium transition-colors",
+        "relative z-10 inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium transition-colors",
         active ? "text-[#0A0A0A]" : "text-muted hover:text-ink",
       )}
     >
