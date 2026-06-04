@@ -22,39 +22,22 @@ export function DashboardShell({
 
   return (
     <div className="relative flex min-h-screen">
-      {/* Animated aurora glows */}
+      {/* Ambient backdrop. Kept as a fixed element (the opacity-only page
+          transition in template.tsx depends on it) but dialed down to a
+          single, barely-there accent wash — premium-minimal, not a loud
+          aurora. Near-invisible on the light theme. */}
       <div className="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
         <div
-          className="aurora-blob aurora-a"
+          className="absolute opacity-[0.06]"
           style={{
-            top: "-10%",
-            left: "10%",
-            width: "32rem",
-            height: "32rem",
+            top: "-12%",
+            left: "8%",
+            width: "40rem",
+            height: "40rem",
+            borderRadius: "9999px",
+            filter: "blur(90px)",
             background:
-              "radial-gradient(circle, rgba(59,130,246,0.45) 0%, rgba(59,130,246,0) 70%)",
-          }}
-        />
-        <div
-          className="aurora-blob aurora-b"
-          style={{
-            top: "30%",
-            right: "-5%",
-            width: "28rem",
-            height: "28rem",
-            background:
-              "radial-gradient(circle, rgba(96,165,250,0.35) 0%, rgba(96,165,250,0) 70%)",
-          }}
-        />
-        <div
-          className="aurora-blob aurora-c"
-          style={{
-            bottom: "-15%",
-            left: "40%",
-            width: "34rem",
-            height: "34rem",
-            background:
-              "radial-gradient(circle, rgba(147,197,253,0.4) 0%, rgba(147,197,253,0) 70%)",
+              "radial-gradient(circle, rgba(200,255,61,0.55) 0%, rgba(200,255,61,0) 70%)",
           }}
         />
       </div>

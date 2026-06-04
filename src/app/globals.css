@@ -26,18 +26,19 @@
   --color-surface: #161616;
   --color-border:  #262626;
 
-  /* Brand — electric lime (the original Snipd brand) */
-  --color-brand-50:  #F5FFD9;
-  --color-brand-300: #DCFF66;
-  --color-brand-400: #C9FF36;
-  --color-brand-500: #B6FF1A;
-  --color-brand-600: #94D900;
-  --color-brand-700: #6FA500;
+  /* Brand — electric lime. The accent, not the canvas: used for primary
+     CTAs, active nav, and key highlights only (never as a fill behind text). */
+  --color-brand-50:  #F4FFD6;
+  --color-brand-300: #DDFF7A;
+  --color-brand-400: #D2FF55;
+  --color-brand-500: #C8FF3D;   /* accent */
+  --color-brand-600: #B7F300;   /* hover / pressed */
+  --color-brand-700: #93C400;
 
   /* Accent (lime is the only accent; tokens kept for compat) */
-  --color-accent:     #B6FF1A;
-  --color-accent-300: #DCFF66;
-  --color-accent-500: #B6FF1A;
+  --color-accent:     #C8FF3D;
+  --color-accent-300: #DDFF7A;
+  --color-accent-500: #C8FF3D;
 
   /* Text */
   --color-ink:   #FAFAFA;
@@ -46,18 +47,33 @@
   --font-sans: var(--font-geist), "Geist", ui-sans-serif, system-ui, -apple-system, sans-serif;
   --font-mono: var(--font-geist-mono), var(--font-jetbrains), ui-monospace, "Geist Mono", "JetBrains Mono", monospace;
 
+  /* Radii — 16px controls (buttons/inputs), 24px cards. */
   --radius-xl:  1rem;
   --radius-2xl: 1.5rem;
+
+  /* ── Elevation — one shadow system, theme-aware ──────────────────
+     These are the DARK defaults (shadows read faintly on near-black, so
+     depth comes mostly from the hairline border + a deeper soft shadow).
+     `:where(.light)` overrides them with the lighter values below. ── */
+  --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.30), 0 2px 8px rgba(0, 0, 0, 0.24);
+  --shadow-2: 0 8px 24px rgba(0, 0, 0, 0.40);
+  --shadow-3: 0 16px 44px rgba(0, 0, 0, 0.50);
 }
 
-/* Light theme override (when user explicitly opts in) */
+/* Light theme override (when user explicitly opts in).
+   Slate-based premium light surface — Stripe/Notion family. */
 :where(.light) {
-  --color-bg:      #FFFFFF;
-  --color-bg-soft: #FAFAF9;
+  --color-bg:      #FAFAFA;
+  --color-bg-soft: #F4F4F5;
   --color-surface: #FFFFFF;
-  --color-border:  #E5E5E5;
-  --color-ink:     #0A0A0A;
-  --color-muted:   #525252;
+  --color-border:  #EAEAEA;
+  --color-ink:     #0F172A;
+  --color-muted:   #64748B;
+
+  /* Soft, low-contrast shadows — the spec values. */
+  --shadow-1: 0 2px 8px rgba(0, 0, 0, 0.04);
+  --shadow-2: 0 8px 24px rgba(0, 0, 0, 0.06);
+  --shadow-3: 0 16px 40px rgba(0, 0, 0, 0.08);
 }
 
 /* Legacy `.dark` selector — keeps existing tokens that the dashboard
@@ -100,12 +116,28 @@ p, li { text-wrap: pretty; }
 }
 ::-webkit-scrollbar-thumb:hover { background: #404040; }
 
+/* ─── Elevation utilities — the one shadow system ───
+   Reference the theme-aware --shadow-* tokens so a card looks right in
+   both themes from a single class. Use elev-1 for resting cards, elev-2
+   for raised/popovers, elev-3 for modals/overlays. ── */
+@utility elev-1 { box-shadow: var(--shadow-1); }
+@utility elev-2 { box-shadow: var(--shadow-2); }
+@utility elev-3 { box-shadow: var(--shadow-3); }
+
 /* ─── Card surfaces ──────────────────────────────
-   `glass` and `glass-strong` utility names are kept for backward
-   compat (tool-runner + dashboard reference them) but the new
-   visual is a confident solid panel with a subtle inner highlight
-   — not glassmorphism. The blue/white era is over.
+   `.card` is the canonical surface: 24px radius, hairline border, soft
+   resting shadow. `glass` / `glass-strong` are kept as aliases for the
+   many components that still reference them (tool-runner, result-view,
+   dashboard) — they now resolve to the same confident solid panel, not
+   glassmorphism. The blue/white era is over.
    ───────────────────────────────────────────── */
+@utility card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-2xl);
+  box-shadow: var(--shadow-1);
+}
+
 @utility glass {
   background: var(--color-surface);
   border: 1px solid var(--color-border);
@@ -114,16 +146,38 @@ p, li { text-wrap: pretty; }
 @utility glass-strong {
   background: var(--color-surface);
   border: 1px solid var(--color-border);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.04),
-    0 24px 60px -28px rgba(0, 0, 0, 0.7);
+  box-shadow: var(--shadow-2);
 }
 
 /* Lime glow ring — for hero brand mark accent only */
 @utility glow-brand {
   box-shadow:
-    0 0 0 1px rgba(182, 255, 26, 0.16),
-    0 24px 60px -10px rgba(182, 255, 26, 0.28);
+    0 0 0 1px rgba(200, 255, 61, 0.16),
+    0 24px 60px -10px rgba(200, 255, 61, 0.28);
+}
+
+/* ─── Form controls ──────────────────────────────
+   `.field` is the canonical input/textarea/select surface: 16px radius,
+   hairline border, soft inset fill. Focus is a 2px accent ring (no harsh
+   border jump), per the design spec. ── */
+.field {
+  width: 100%;
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--color-border);
+  background: var(--color-bg-soft);
+  color: var(--color-ink);
+  transition:
+    border-color 160ms ease,
+    box-shadow 180ms var(--ease-out),
+    background-color 160ms ease;
+}
+.field::placeholder { color: var(--color-muted); }
+.field:focus,
+.field:focus-visible {
+  outline: none;
+  border-color: var(--color-brand-500);
+  background: var(--color-surface);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-brand-500) 22%, transparent);
 }
 
 /* ─── Motion primitives ───────────────────────── */
@@ -145,23 +199,23 @@ p, li { text-wrap: pretty; }
 }
 
 /*
- * Hover-lift on cards. Sharper curve and shorter duration than before
- * (was 400ms — felt languid). Gated behind hover-capable pointers so
- * touch devices don't get the sticky-tap-state bug.
+ * Hover-lift on cards. Premium-minimal: a 2px rise + one elevation step,
+ * neutral (no colored glow). The border warms a hair toward the accent so
+ * the card reads as interactive without shouting. 200ms ease-out.
+ * Gated behind hover-capable pointers so touch devices don't get the
+ * sticky-tap-state bug.
  */
 .hover-lift {
   transition:
-    transform 220ms var(--ease-out),
-    box-shadow 220ms var(--ease-out),
+    transform 200ms var(--ease-out),
+    box-shadow 200ms var(--ease-out),
     border-color 200ms ease;
 }
 @media (hover: hover) and (pointer: fine) {
   .hover-lift:hover {
-    transform: translateY(-3px);
-    box-shadow:
-      0 28px 60px -24px rgba(182, 255, 26, 0.22),
-      inset 0 1px 0 rgba(255, 255, 255, 0.05);
-    border-color: rgba(182, 255, 26, 0.32);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-2);
+    border-color: color-mix(in srgb, var(--color-brand-500) 40%, var(--color-border));
   }
 }
 @media (prefers-reduced-motion: reduce) {
@@ -199,7 +253,7 @@ p, li { text-wrap: pretty; }
 .spotlight {
   position: absolute;
   border-radius: 9999px;
-  background: radial-gradient(circle, rgba(182, 255, 26, 0.32), transparent 60%);
+  background: radial-gradient(circle, rgba(200, 255, 61, 0.32), transparent 60%);
   filter: blur(56px);
   pointer-events: none;
 }
@@ -214,12 +268,12 @@ p, li { text-wrap: pretty; }
 /* Primary-CTA pulse — recolored to lime */
 @keyframes glow-pulse {
   0%, 100% {
-    box-shadow: 0 0 0 0 rgba(182, 255, 26, 0.5),
-                0 10px 34px -8px rgba(182, 255, 26, 0.55);
+    box-shadow: 0 0 0 0 rgba(200, 255, 61, 0.5),
+                0 10px 34px -8px rgba(200, 255, 61, 0.55);
   }
   50% {
-    box-shadow: 0 0 0 10px rgba(182, 255, 26, 0),
-                0 14px 46px -6px rgba(182, 255, 26, 0.85);
+    box-shadow: 0 0 0 10px rgba(200, 255, 61, 0),
+                0 14px 46px -6px rgba(200, 255, 61, 0.85);
   }
 }
 .glow-pulse { animation: glow-pulse 2.6s ease-in-out infinite; }

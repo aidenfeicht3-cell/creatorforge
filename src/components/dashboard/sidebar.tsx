@@ -205,8 +205,8 @@ export function Sidebar({
             className={cn(
               "mt-5 flex items-center justify-center rounded-lg px-3 py-2 transition-colors",
               isActive("/dashboard/launch")
-                ? "bg-brand-50 text-brand-700"
-                : "text-brand-600 hover:bg-bg-soft hover:text-brand-700",
+                ? "bg-brand-500/10 text-brand-600"
+                : "text-brand-600 hover:bg-bg-soft hover:text-brand-600",
             )}
           >
             <Rocket className="h-4 w-4" />
@@ -216,7 +216,7 @@ export function Sidebar({
             href="/dashboard/launch"
             onClick={onMobileClose}
             className={cn(
-              "mt-5 flex items-center gap-2.5 rounded-xl bg-gradient-to-r from-brand-500 to-brand-400 px-3 py-2.5 text-sm font-semibold text-[#0A0A0A] shadow-[0_8px_24px_-8px_rgba(182,255,26,0.4)] transition-all hover:brightness-105",
+              "mt-5 flex items-center gap-2.5 rounded-xl bg-brand-500 px-3 py-2.5 text-sm font-semibold text-[#0A0A0A] shadow-[0_6px_18px_-6px_rgba(200,255,61,0.45)] transition-all hover:bg-brand-600",
               isActive("/dashboard/launch") && "ring-2 ring-brand-500/40",
             )}
           >
@@ -344,7 +344,7 @@ function NavLink({
         "flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm transition-colors",
         collapsed && "justify-center",
         active
-          ? "bg-brand-50 font-medium text-brand-700"
+          ? "bg-brand-500/10 font-medium text-brand-600"
           : "text-muted hover:bg-bg-soft hover:text-ink",
       )}
     >
@@ -374,7 +374,7 @@ function ToolNavLink({
         "flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm transition-colors",
         collapsed && "justify-center",
         active
-          ? "bg-brand-50 font-medium text-brand-700"
+          ? "bg-brand-500/10 font-medium text-brand-600"
           : "text-muted hover:bg-bg-soft hover:text-ink",
       )}
     >

@@ -6,23 +6,25 @@ export type ButtonSize = "sm" | "md" | "lg";
 
 const variants: Record<ButtonVariant, string> = {
   // Primary = lime fill, near-black text. The only loud surface on the page.
-  // Contrast on #B6FF1A bg: black text = 17.5:1 (AAA).
+  // Contrast on the accent bg: black text = AAA. Soft accent shadow, not a
+  // heavy glow; hover darkens to the pressed token (#B7F300).
   primary:
-    "bg-brand-500 text-[#0A0A0A] shadow-[0_8px_24px_-8px_rgba(182,255,26,0.4)] hover:bg-brand-400",
-  // Secondary = bordered, transparent. Reads as "available but quiet."
+    "bg-brand-500 text-[#0A0A0A] shadow-[0_4px_14px_-4px_rgba(200,255,61,0.45)] hover:bg-brand-600 hover:shadow-[0_8px_22px_-6px_rgba(200,255,61,0.5)]",
+  // Secondary = bordered surface. Reads as "available but quiet."
   secondary:
-    "border border-border bg-surface text-ink hover:border-brand-500/40 hover:text-brand-500",
+    "border border-border bg-surface text-ink hover:border-brand-500/40 hover:bg-bg-soft",
   // Ghost = text only, used inline.
   ghost: "text-muted hover:text-ink hover:bg-bg-soft",
-  // Outline = thicker border, brand accent on hover.
+  // Outline = transparent, hairline border, fills softly on hover.
   outline:
-    "border border-border bg-transparent text-ink hover:border-brand-500/60 hover:text-brand-500",
+    "border border-border bg-transparent text-ink hover:border-brand-500/50 hover:bg-bg-soft",
 };
 
+// Heights tuned to the premium spec: 40px inline, 48px default, 56px hero.
 const sizes: Record<ButtonSize, string> = {
-  sm: "h-9 px-4 text-sm",
-  md: "h-11 px-5 text-sm",
-  lg: "h-13 px-7 text-base",
+  sm: "h-10 px-4 text-sm",
+  md: "h-12 px-5 text-[15px]",
+  lg: "h-14 px-7 text-base",
 };
 
 /** Shared class string — apply to <Link> for button-styled links.
@@ -39,7 +41,7 @@ export function buttonClasses(
   className?: string,
 ) {
   return cn(
-    "btn-feel inline-flex items-center justify-center gap-2 rounded-full font-medium hover:-translate-y-0.5 active:scale-[0.97] active:translate-y-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500/50 focus-visible:ring-offset-2 focus-visible:ring-offset-bg disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0",
+    "btn-feel inline-flex items-center justify-center gap-2 rounded-xl font-semibold hover:-translate-y-0.5 active:scale-[0.98] active:translate-y-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500/50 focus-visible:ring-offset-2 focus-visible:ring-offset-bg disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0",
     variants[variant],
     sizes[size],
     className,

@@ -65,19 +65,19 @@ export default async function DashboardPage() {
   ).filter(Boolean) as ToolDef[];
 
   return (
-    <div className="space-y-10">
+    <div className="space-y-12">
       {/* ─── Welcome row ─── */}
       <Reveal>
       <header className="flex flex-wrap items-end justify-between gap-6">
         <div>
-          <p className="font-mono text-xs uppercase tracking-wider text-brand-600">
+          <p className="font-mono text-xs uppercase tracking-[0.14em] text-muted">
             {plan.name} plan · Claude {plan.modelTier}
           </p>
-          <h1 className="mt-1 text-4xl font-bold tracking-[-0.02em]">
+          <h1 className="mt-2 text-[28px] font-semibold leading-tight tracking-[-0.02em] sm:text-3xl">
             Welcome back
             {profile.display_name ? `, ${profile.display_name.split(" ")[0]}` : ""}.
           </h1>
-          <p className="mt-2 text-muted">What are we shipping today?</p>
+          <p className="mt-1.5 text-muted">What are we shipping today?</p>
         </div>
 
         <div className="flex flex-wrap gap-3">
@@ -96,23 +96,23 @@ export default async function DashboardPage() {
       <Reveal delay={0.05}>
       <Link
         href="/dashboard/launch"
-        className="group relative block overflow-hidden rounded-3xl border border-brand-500/20 bg-gradient-to-br from-brand-500/10 via-surface to-surface p-7 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md sm:p-9"
+        className="group relative block overflow-hidden rounded-3xl border border-brand-500/15 bg-surface p-7 elev-1 hover-lift sm:p-9"
       >
-        <div className="pointer-events-none absolute -right-16 -top-16 h-56 w-56 rounded-full bg-gradient-to-br from-brand-500 to-brand-400 opacity-20 blur-3xl transition-opacity group-hover:opacity-30" />
+        <div className="pointer-events-none absolute -right-20 -top-20 h-56 w-56 rounded-full bg-brand-500 opacity-[0.10] blur-3xl transition-opacity group-hover:opacity-[0.16]" />
         <div className="relative flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
           <div className="max-w-xl">
-            <div className="inline-flex items-center gap-1.5 rounded-full border border-brand-500/20 bg-surface px-3 py-1 font-mono text-[10px] font-semibold uppercase tracking-wider text-brand-700">
+            <div className="inline-flex items-center gap-1.5 rounded-full border border-brand-500/20 bg-brand-500/10 px-3 py-1 font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-brand-700">
               <Sparkles className="h-3 w-3" /> Start here
             </div>
-            <h2 className="mt-4 flex items-center gap-2.5 text-2xl font-bold tracking-tight sm:text-3xl">
-              <span className="grid h-10 w-10 place-items-center rounded-2xl bg-gradient-to-br from-brand-500 to-brand-400 text-[#0A0A0A] shadow-[0_8px_24px_-8px_rgba(182,255,26,0.35)]">
+            <h2 className="mt-4 flex items-center gap-3 text-2xl font-semibold tracking-tight sm:text-[28px]">
+              <span className="grid h-11 w-11 place-items-center rounded-2xl bg-brand-500 text-[#0A0A0A] shadow-[0_6px_18px_-6px_rgba(200,255,61,0.45)]">
                 <Rocket className="h-5 w-5" />
               </span>
               Launch Pad
             </h2>
-            <p className="mt-3 text-muted">
+            <p className="mt-3 leading-relaxed text-muted">
               The guided flow that takes you from a blank page to your first
-              video — niche, channel name, profile picture, bio, and a complete
+              video. Niche, channel name, profile picture, bio, and a complete
               film-ready package. Follow along; we do the heavy lifting.
             </p>
             <div className="mt-5 inline-flex items-center gap-1.5 text-sm font-semibold text-brand-600">
@@ -128,9 +128,9 @@ export default async function DashboardPage() {
             ].map((s) => (
               <div
                 key={s.t}
-                className="flex w-20 flex-col items-center gap-2 rounded-2xl border border-border bg-surface/70 p-3 backdrop-blur"
+                className="flex w-20 flex-col items-center gap-2 rounded-2xl border border-border bg-bg-soft p-3"
               >
-                <s.icon className="h-5 w-5 text-brand-600" />
+                <s.icon className="h-5 w-5 text-muted" />
                 <span className="text-[11px] font-medium text-muted">{s.t}</span>
               </div>
             ))}
@@ -148,26 +148,24 @@ export default async function DashboardPage() {
           value={plan.id === "free" ? "Free tier" : `${creditsLeft} / ${creditsCap}`}
           sublabel={plan.id === "free" ? "Unlimited free tools" : undefined}
           progress={plan.id === "free" ? undefined : pct}
-          accent="text-brand-600"
+          highlight
         />
         <Stat
           icon={TrendingUp}
           label="Lifetime generations"
           value={String(totalGenerations ?? 0)}
-          accent="text-emerald-600"
         />
         <Stat
           icon={Flame}
           label="Plan"
           value={plan.name}
-          accent="text-amber-600"
           sublabel={`Up to Claude ${plan.modelTier}`}
         />
       </div>
       </Reveal>
 
       {plan.id !== "free" && creditsLeft === 0 && (
-        <div className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-brand-500/30 bg-brand-50 p-5">
+        <div className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-brand-500/30 bg-brand-500/10 p-5">
           <div>
             <div className="font-semibold">
               Out of credits — you&apos;re on free models until reset.
@@ -185,8 +183,8 @@ export default async function DashboardPage() {
       {/* ─── Featured tools (3 big cards) ─── */}
       <Reveal>
       <section>
-        <div className="mb-4 flex items-baseline justify-between">
-          <h2 className="text-lg font-semibold">Most-used tools</h2>
+        <div className="mb-5 flex items-baseline justify-between">
+          <h2 className="text-lg font-semibold tracking-tight">Most-used tools</h2>
           <p className="text-xs text-muted">
             These three replace the entire workflow.
           </p>
@@ -212,9 +210,9 @@ export default async function DashboardPage() {
           return (
             <Reveal key={category}>
               <section>
-              <div className="mb-4">
-                <h2 className="text-lg font-semibold">{meta.title}</h2>
-                <p className="text-sm text-muted">{meta.tagline}</p>
+              <div className="mb-5">
+                <h2 className="text-lg font-semibold tracking-tight">{meta.title}</h2>
+                <p className="mt-0.5 text-sm text-muted">{meta.tagline}</p>
               </div>
               <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                 {tools.map((tool) => (
@@ -242,31 +240,32 @@ function Stat({
   value,
   sublabel,
   progress,
-  accent,
+  highlight,
 }: {
   icon: React.ComponentType<{ className?: string }>;
   label: string;
   value: string;
   sublabel?: string;
   progress?: number;
-  accent: string;
+  /** When true, the icon picks up the accent (used for the credits/tier stat). */
+  highlight?: boolean;
 }) {
   return (
-    <div className="rounded-2xl border border-border bg-surface p-5 shadow-sm">
+    <div className="rounded-2xl border border-border bg-surface p-5 elev-1">
       <div className="flex items-center justify-between">
-        <span className="font-mono text-[10px] uppercase tracking-wider text-muted">
+        <span className="font-mono text-[10px] uppercase tracking-[0.14em] text-muted">
           {label}
         </span>
-        <Icon className={`h-4 w-4 ${accent}`} />
+        <Icon className={`h-4 w-4 ${highlight ? "text-brand-600" : "text-muted"}`} />
       </div>
-      <div className="mt-2 text-2xl font-bold">{value}</div>
+      <div className="mt-3 text-2xl font-semibold tracking-tight">{value}</div>
       {sublabel && (
-        <div className="mt-0.5 font-mono text-xs text-muted">{sublabel}</div>
+        <div className="mt-1 font-mono text-xs text-muted">{sublabel}</div>
       )}
       {progress !== undefined && (
         <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-bg-soft">
           <div
-            className="h-full rounded-full bg-gradient-to-r from-brand-500 to-brand-400"
+            className="h-full rounded-full bg-brand-500"
             style={{ width: `${progress}%` }}
           />
         </div>
@@ -285,36 +284,29 @@ function FeaturedCard({
   return (
     <Link
       href={`/dashboard/tools/${tool.slug}`}
-      className="group relative overflow-hidden rounded-3xl border border-border bg-surface p-6 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md"
+      className="group flex h-full flex-col rounded-3xl border border-border bg-surface p-6 elev-1 hover-lift"
     >
-      <div
-        className={`pointer-events-none absolute -right-20 -top-20 h-44 w-44 rounded-full bg-gradient-to-br ${tool.accent} opacity-20 blur-3xl transition-opacity group-hover:opacity-30`}
-      />
-      <div className="relative">
-        <div
-          className={`grid h-12 w-12 place-items-center rounded-2xl bg-gradient-to-br ${tool.accent} shadow-lg`}
-        >
-          <ToolIcon name={tool.icon} className="h-6 w-6 text-white" />
-        </div>
-        <div className="mt-5 flex items-center gap-2">
-          <h3 className="text-lg font-semibold">{tool.name}</h3>
-          {locked && <Lock className="h-3.5 w-3.5 text-muted" />}
-          {tool.badge && (
-            <span className="inline-flex items-center rounded-md bg-emerald-50 px-1.5 py-0.5 font-mono text-[9px] font-semibold tracking-wider text-emerald-700">
-              {tool.badge}
-            </span>
-          )}
-        </div>
-        <p className="mt-1 text-sm text-muted">{tool.tagline}</p>
-        <div className="mt-4 flex items-center justify-between">
-          <span className="inline-flex items-center gap-1 rounded-full bg-bg-soft px-3 py-1 font-mono text-[10px] text-muted">
-            <Zap className="h-3 w-3 text-brand-600" />
-            {tool.creditCost}cr
+      <div className="grid h-12 w-12 place-items-center rounded-xl border border-brand-500/20 bg-brand-500/10 text-brand-600">
+        <ToolIcon name={tool.icon} className="h-6 w-6" />
+      </div>
+      <div className="mt-5 flex items-center gap-2">
+        <h3 className="text-lg font-semibold tracking-tight">{tool.name}</h3>
+        {locked && <Lock className="h-3.5 w-3.5 text-muted" />}
+        {tool.badge && (
+          <span className="inline-flex items-center rounded-md bg-brand-500/12 px-1.5 py-0.5 font-mono text-[9px] font-semibold tracking-wider text-brand-600">
+            {tool.badge}
           </span>
-          <span className="inline-flex items-center gap-0.5 text-sm font-medium text-brand-600">
-            Open <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
-          </span>
-        </div>
+        )}
+      </div>
+      <p className="mt-1 text-sm leading-relaxed text-muted">{tool.tagline}</p>
+      <div className="mt-auto flex items-center justify-between pt-5">
+        <span className="inline-flex items-center gap-1 rounded-full bg-bg-soft px-3 py-1 font-mono text-[10px] text-muted">
+          <Zap className="h-3 w-3 text-brand-600" />
+          {tool.creditCost}cr
+        </span>
+        <span className="inline-flex items-center gap-0.5 text-sm font-medium text-brand-600">
+          Open <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
+        </span>
       </div>
     </Link>
   );
@@ -324,28 +316,26 @@ function ToolTile({ tool, locked }: { tool: ToolDef; locked: boolean }) {
   return (
     <Link
       href={`/dashboard/tools/${tool.slug}`}
-      className="group rounded-2xl border border-border bg-surface p-5 shadow-sm transition-all hover:-translate-y-0.5 hover:border-brand-500/40 hover:shadow-md"
+      className="group flex h-full flex-col rounded-2xl border border-border bg-surface p-5 elev-1 hover-lift"
     >
       <div className="flex items-start justify-between">
-        <div
-          className={`grid h-10 w-10 place-items-center rounded-xl bg-gradient-to-br ${tool.accent}`}
-        >
-          <ToolIcon name={tool.icon} className="h-5 w-5 text-white" />
+        <div className="grid h-10 w-10 place-items-center rounded-xl border border-border bg-bg-soft text-muted transition-colors group-hover:text-brand-600">
+          <ToolIcon name={tool.icon} className="h-5 w-5" />
         </div>
         <span className="font-mono text-[10px] uppercase tracking-wider text-muted">
           {tool.creditCost}cr
         </span>
       </div>
       <div className="mt-4 flex items-center gap-2">
-        <h3 className="font-semibold">{tool.name}</h3>
+        <h3 className="font-semibold tracking-tight">{tool.name}</h3>
         {locked && <Lock className="h-3.5 w-3.5 text-muted" />}
         {tool.badge && (
-          <span className="inline-flex items-center rounded-md bg-emerald-50 px-1.5 py-0.5 font-mono text-[9px] font-semibold tracking-wider text-emerald-700">
+          <span className="inline-flex items-center rounded-md bg-brand-500/12 px-1.5 py-0.5 font-mono text-[9px] font-semibold tracking-wider text-brand-600">
             {tool.badge}
           </span>
         )}
       </div>
-      <p className="mt-1 text-sm text-muted">{tool.tagline}</p>
+      <p className="mt-1 text-sm leading-relaxed text-muted">{tool.tagline}</p>
     </Link>
   );
 }
