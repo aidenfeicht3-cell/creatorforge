@@ -41,6 +41,8 @@ alter table public.profiles add column if not exists channel_audience text;
 alter table public.profiles add column if not exists channel_style text;
 alter table public.profiles add column if not exists has_channel text;  -- 'yes' | 'new' | 'no'
 alter table public.profiles add column if not exists workshop_suspended_until timestamptz;
+alter table public.profiles add column if not exists credits_reset_at timestamptz not null default date_trunc('month', now()) + interval '1 month';
+alter table public.profiles add column if not exists stripe_customer_id text;
 
 -- ─── generations ────────────────────────────────────────────────
 create table if not exists public.generations (
