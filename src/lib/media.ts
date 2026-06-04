@@ -50,7 +50,7 @@ async function runVoiceover(
   const key = process.env.ELEVENLABS_API_KEY;
   if (!key) {
     return {
-      error: "Add ELEVENLABS_API_KEY in Vercel → Settings → Environment Variables to enable AI Voiceover.",
+      error: "AI Voiceover is temporarily unavailable. Please try again later.",
       status: 501,
     };
   }
@@ -160,7 +160,7 @@ async function runCaptions(
   const key = process.env.DEEPGRAM_API_KEY;
   if (!key) {
     return {
-      error: "Add DEEPGRAM_API_KEY in Vercel → Settings → Environment Variables to enable auto-captioning.",
+      error: "Auto-captioning is temporarily unavailable. Please try again later.",
       status: 501,
     };
   }

@@ -443,22 +443,14 @@ export function ToolRunner({
 
             <div className="mt-auto pt-7">
             {tool.mediaTool && !mediaReady ? (
-              <div className="rounded-2xl border border-brand-500/25 bg-bg-soft p-4">
+              <div className="rounded-2xl border border-border bg-bg-soft p-4">
                 <div className="flex items-center gap-2 text-sm font-semibold text-ink">
-                  <Plug className="h-4 w-4 text-brand-600" />
-                  Connect {tool.provider ?? "the provider"} to go live
+                  <Sparkles className="h-4 w-4 text-brand-600" />
+                  Coming soon
                 </div>
                 <p className="mt-1.5 text-xs leading-relaxed text-muted">
-                  {tool.setupNote ? `${tool.setupNote} ` : ""}
-                  Add{" "}
-                  {tool.envVar && (
-                    <code className="rounded border border-border bg-surface px-1 py-0.5 font-mono text-[11px] text-brand-700">
-                      {tool.envVar}
-                    </code>
-                  )}{" "}
-                  in Vercel under Settings, Environment Variables, then
-                  redeploy. The form above is wired; it starts generating the
-                  moment the key is set.
+                  {tool.name} is being tuned and will be available shortly. The
+                  rest of your toolkit is ready to use right now.
                 </p>
               </div>
             ) : (

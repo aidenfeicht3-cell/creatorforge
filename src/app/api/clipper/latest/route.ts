@@ -60,7 +60,7 @@ export async function GET(req: Request) {
     console.error("[clipper/latest] failed:", err);
     return NextResponse.json(
       {
-        error: "Couldn't fetch the channel. YOUTUBE_API_KEY may be missing.",
+        error: "Couldn't load that channel right now. Please try again in a bit.",
       },
       { status: 502 },
     );

@@ -328,7 +328,7 @@ export async function createRender(opts: {
   const key = process.env.CREATOMATE_API_KEY;
   if (!key) {
     throw new Error(
-      "Creatomate not configured — set CREATOMATE_API_KEY on the server.",
+      "Video rendering is temporarily unavailable. Please try again later.",
     );
   }
 

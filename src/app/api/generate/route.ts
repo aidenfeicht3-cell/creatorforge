@@ -179,7 +179,7 @@ export async function POST(req: Request) {
     } catch (err) {
       console.error("[generate] audit fetch failed:", err);
       return NextResponse.json(
-        { error: "YouTube API failed. Check YOUTUBE_API_KEY is set on the server." },
+        { error: "Channel Audit is temporarily unavailable right now. Please try again in a bit." },
         { status: 502 },
       );
     }
