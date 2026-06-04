@@ -59,15 +59,10 @@ export function GenerationList({
         return (
           <div key={row.id} className="glass rounded-2xl">
             <div className="flex items-center gap-3 p-4">
-              <div
-                className={cn(
-                  "grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-gradient-to-br",
-                  tool?.accent,
-                )}
-              >
+              <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl border border-border bg-bg-soft text-brand-600">
                 <ToolIcon
                   name={tool?.icon ?? "Zap"}
-                  className="h-5 w-5 text-white"
+                  className="h-5 w-5"
                 />
               </div>
               <button

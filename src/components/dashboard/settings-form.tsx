@@ -63,7 +63,7 @@ export function SettingsForm({
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="Your channel name"
-            className="h-11 w-full rounded-xl border border-border bg-bg-soft px-3.5 text-sm outline-none focus:border-brand-500/60 focus:ring-2 focus:ring-brand-500/15"
+            className="field h-11 px-3.5 text-sm"
           />
         </FieldRow>
         <FieldRow label="Email">
@@ -92,7 +92,7 @@ export function SettingsForm({
               aria-label="Copy"
             >
               {copied ? (
-                <Check className="h-4 w-4 text-emerald-600" />
+                <Check className="h-4 w-4 text-brand-600" />
               ) : (
                 <Copy className="h-4 w-4" />
               )}
@@ -183,7 +183,7 @@ function Section({
 }) {
   return (
     <div
-      className={`rounded-2xl border bg-surface p-6 shadow-sm ${
+      className={`rounded-2xl border bg-surface p-6 elev-1 ${
         accent === "rose" ? "border-rose-200" : "border-border"
       }`}
     >
@@ -247,7 +247,7 @@ export function Toggle({
       aria-checked={on}
       type="button"
       className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full border border-transparent transition-colors ${
-        on ? "bg-brand-500" : "bg-slate-300"
+        on ? "bg-brand-500" : "bg-border"
       }`}
     >
       <span
