@@ -325,3 +325,34 @@ as $$
       credits_reset_at = date_trunc('month', now()) + interval '1 month'
   where credits_reset_at <= now();
 $$;
+
+-- ════════════════════════════════════════════════════════════════
+-- Protect sensitive profile columns from client tampering
+-- profiles RLS lets a user UPDATE their own row (needed for display name,
+-- onboarding, channel fields, and server-side credit deduction). But that
+-- also let a user PATCH their own `plan` to 'studio' through the public
+-- anon key. This trigger reverts any change a NON service-role caller makes
+-- to the billing/grant columns; the Stripe webhook and credit reset run with
+-- the service-role key and bypass it.
+-- ════════════════════════════════════════════════════════════════
+create or replace function public.protect_profile_columns()
+returns trigger
+language plpgsql
+as $$
+begin
+  if coalesce(auth.role(), '') <> 'service_role' then
+    new.plan               := old.plan;
+    new.bonus_credits      := old.bonus_credits;
+    new.stripe_customer_id := old.stripe_customer_id;
+    new.credits_reset_at   := old.credits_reset_at;
+    new.referral_code      := old.referral_code;
+    new.referred_by        := old.referred_by;
+  end if;
+  return new;
+end;
+$$;
+
+drop trigger if exists protect_profiles on public.profiles;
+create trigger protect_profiles
+  before update on public.profiles
+  for each row execute function public.protect_profile_columns();
