@@ -28,7 +28,7 @@ export function AuthShell({ children }: { children: React.ReactNode }) {
           className="aurora-blob aurora-a -left-24 top-6 h-72 w-72"
           style={{
             background:
-              "radial-gradient(circle, rgba(182,255,26,0.18), transparent 70%)",
+              "radial-gradient(circle, rgba(200,255,61,0.18), transparent 70%)",
           }}
         />
         <div
@@ -36,7 +36,7 @@ export function AuthShell({ children }: { children: React.ReactNode }) {
           className="aurora-blob aurora-b -right-10 top-1/3 h-80 w-80"
           style={{
             background:
-              "radial-gradient(circle, rgba(182,255,26,0.1), transparent 70%)",
+              "radial-gradient(circle, rgba(200,255,61,0.1), transparent 70%)",
           }}
         />
 

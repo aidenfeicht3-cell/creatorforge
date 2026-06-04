@@ -333,19 +333,13 @@ export function ToolRunner({
       {/* ── Header ── */}
       <Reveal>
         <header className="relative overflow-hidden rounded-3xl glass-strong p-6 sm:p-7">
-          <div
-            aria-hidden
-            className={`pointer-events-none absolute -right-12 -top-12 h-32 w-32 rounded-full bg-gradient-to-br ${tool.accent} opacity-[0.14] blur-2xl sm:h-40 sm:w-40`}
-          />
           <div className="relative flex items-start gap-4">
-            <div
-              className={`grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-gradient-to-br ${tool.accent} shadow-lg ring-1 ring-inset ring-white/20`}
-            >
-              <ToolIcon name={tool.icon} className="h-6 w-6 text-white" />
+            <div className="grid h-12 w-12 shrink-0 place-items-center rounded-xl border border-brand-500/20 bg-brand-500/10 text-brand-600">
+              <ToolIcon name={tool.icon} className="h-6 w-6" />
             </div>
             <div className="min-w-0 flex-1">
               <div className="flex flex-wrap items-center gap-2">
-                <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
+                <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">
                   {tool.name}
                 </h1>
                 {tool.badge && (
@@ -407,7 +401,7 @@ export function ToolRunner({
                         value={inputs[field.name]}
                         onChange={(e) => set(field.name, e.target.value)}
                         aria-required={field.required || undefined}
-                        className="h-12 w-full appearance-none rounded-xl border border-border bg-bg-soft px-4 pr-11 text-[15px] text-ink outline-none transition-colors hover:border-brand-500/40 focus:border-brand-500/60 focus:ring-2 focus:ring-brand-500/15"
+                        className="field h-12 appearance-none px-4 pr-11 text-[15px]"
                       >
                         {field.options?.map((opt) => (
                           <option key={opt} value={opt}>
@@ -427,7 +421,7 @@ export function ToolRunner({
                       placeholder={field.placeholder}
                       aria-required={field.required || undefined}
                       onChange={(e) => set(field.name, e.target.value)}
-                      className="w-full rounded-xl border border-border bg-bg-soft px-4 py-3 text-[15px] text-ink outline-none placeholder:text-muted/70 transition-colors hover:border-brand-500/40 focus:border-brand-500/60 focus:ring-2 focus:ring-brand-500/15"
+                      className="field px-4 py-3 text-[15px]"
                     />
                   ) : (
                     <input
@@ -436,7 +430,7 @@ export function ToolRunner({
                       placeholder={field.placeholder}
                       aria-required={field.required || undefined}
                       onChange={(e) => set(field.name, e.target.value)}
-                      className="h-12 w-full rounded-xl border border-border bg-bg-soft px-4 text-[15px] text-ink outline-none placeholder:text-muted/70 transition-colors hover:border-brand-500/40 focus:border-brand-500/60 focus:ring-2 focus:ring-brand-500/15"
+                      className="field h-12 px-4 text-[15px]"
                     />
                   )}
 
@@ -508,7 +502,7 @@ export function ToolRunner({
       {loading && (
         <div className="space-y-4">
           {tool.usesYouTube && (
-            <div className="flex items-center gap-3 rounded-xl border border-border bg-surface px-4 py-3 text-sm shadow-sm">
+            <div className="flex items-center gap-3 rounded-xl border border-border bg-surface px-4 py-3 text-sm elev-1">
               <Loader2 className="h-4 w-4 shrink-0 animate-spin text-brand-600" />
               <span className="text-muted">
                 Fetching the real transcript from YouTube, then handing it to
@@ -553,7 +547,7 @@ export function ToolRunner({
 
             {/* Moment-of-value upgrade nudge — only on free (watermarked) plans. */}
             {!cleanExports && (
-              <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-border bg-surface p-4 shadow-sm">
+              <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-border bg-surface p-4 elev-1">
                 <div className="flex items-start gap-2.5">
                   <Sparkles className="mt-0.5 h-4 w-4 shrink-0 text-brand-600" />
                   <p className="text-sm text-ink">
@@ -750,7 +744,7 @@ function DemoPreview({
         {sample.visual ? (
           <SampleVisual sample={sample} accent={tool.accent} />
         ) : (
-          <SampleRows rows={sample.rows} accent={tool.accent} />
+          <SampleRows rows={sample.rows} />
         )}
         {sample.sub && (
           <p className="mt-2.5 text-center font-mono text-[11px] text-muted">
@@ -764,14 +758,14 @@ function DemoPreview({
           <ul className="space-y-2.5">
             {deliverables.slice(0, 4).map((d) => (
               <li key={d} className="flex items-start gap-2.5 text-[13px] leading-snug">
-                <Check className="mt-0.5 h-3.5 w-3.5 shrink-0 text-emerald-600" />
+                <Check className="mt-0.5 h-3.5 w-3.5 shrink-0 text-brand-600" />
                 <span>{d}</span>
               </li>
             ))}
           </ul>
           {tip && (
             <p className="mt-4 flex items-start gap-2 text-xs italic leading-relaxed text-muted">
-              <Lightbulb className="mt-0.5 h-3.5 w-3.5 shrink-0 text-amber-500" />
+              <Lightbulb className="mt-0.5 h-3.5 w-3.5 shrink-0 text-brand-600" />
               {tip}
             </p>
           )}
@@ -782,7 +776,7 @@ function DemoPreview({
 }
 
 /* Scored / labeled rows — the real shape of a text tool's result. */
-function SampleRows({ rows, accent }: { rows: SampleRow[]; accent: string }) {
+function SampleRows({ rows }: { rows: SampleRow[] }) {
   return (
     <div className="space-y-2 rounded-2xl border border-border bg-bg-soft p-3">
       {rows.map((r, i) => {
@@ -791,15 +785,10 @@ function SampleRows({ rows, accent }: { rows: SampleRow[]; accent: string }) {
         return (
           <div
             key={i}
-            className="flex items-center gap-2.5 rounded-xl bg-surface px-2.5 py-2 shadow-sm"
+            className="flex items-center gap-2.5 rounded-xl border border-border bg-surface px-2.5 py-2"
           >
             {badge && (
-              <span
-                className={cn(
-                  "grid h-6 min-w-[1.75rem] shrink-0 place-items-center rounded-md bg-gradient-to-br px-1 text-[10px] font-bold text-white",
-                  accent,
-                )}
-              >
+              <span className="grid h-6 min-w-[1.75rem] shrink-0 place-items-center rounded-md bg-brand-500/15 px-1 text-[10px] font-bold text-brand-600">
                 {badge}
               </span>
             )}

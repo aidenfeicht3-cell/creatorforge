@@ -82,11 +82,11 @@ export function AuthForm({ mode }: { mode: "login" | "signup" }) {
     return (
       <div className="w-full max-w-md">
         <HeaderLogo />
-        <div className="mt-8 rounded-3xl border border-border bg-surface p-8 text-center shadow-[0_24px_60px_-24px_rgba(15,23,42,0.2)] lg:mt-0">
-          <div className="mx-auto grid h-14 w-14 place-items-center rounded-2xl bg-brand-50 text-brand-600">
+        <div className="mt-8 rounded-3xl border border-border bg-surface p-8 text-center elev-2 lg:mt-0">
+          <div className="mx-auto grid h-14 w-14 place-items-center rounded-2xl border border-brand-500/20 bg-brand-500/10 text-brand-600">
             <MailCheck className="h-7 w-7" />
           </div>
-          <h1 className="mt-5 text-2xl font-bold tracking-tight">
+          <h1 className="mt-5 text-2xl font-semibold tracking-tight">
             Check your inbox
           </h1>
           <p className="mt-2 text-sm text-muted">
@@ -113,11 +113,11 @@ export function AuthForm({ mode }: { mode: "login" | "signup" }) {
   return (
     <div className="w-full max-w-md">
       <HeaderLogo />
-      <div className="mt-8 rounded-3xl border border-border bg-surface p-8 shadow-[0_24px_60px_-24px_rgba(15,23,42,0.2)] lg:mt-0">
+      <div className="mt-8 rounded-3xl border border-border bg-surface p-8 elev-2 lg:mt-0">
         <p className="font-mono text-[11px] uppercase tracking-wider text-brand-600">
           {isSignup ? "Get started" : "Welcome back"}
         </p>
-        <h1 className="mt-1 text-2xl font-bold tracking-tight">
+        <h1 className="mt-1 text-2xl font-semibold tracking-tight">
           {isSignup ? "Create your account" : "Log in to Snipd"}
         </h1>
         <p className="mt-1.5 text-sm text-muted">
@@ -203,7 +203,7 @@ function Field({
         required={required}
         placeholder={placeholder}
         onChange={(e) => onChange(e.target.value)}
-        className="h-11 w-full rounded-xl border border-border bg-bg-soft px-3.5 text-sm outline-none transition-colors placeholder:text-muted/60 focus:border-brand-500/60 focus:ring-2 focus:ring-brand-500/15"
+        className="field h-11 px-3.5 text-sm"
       />
     </label>
   );
@@ -231,7 +231,7 @@ function PasswordField({
           minLength={6}
           placeholder="••••••••"
           onChange={(e) => onChange(e.target.value)}
-          className="h-11 w-full rounded-xl border border-border bg-bg-soft pl-3.5 pr-11 text-sm outline-none transition-colors placeholder:text-muted/60 focus:border-brand-500/60 focus:ring-2 focus:ring-brand-500/15"
+          className="field h-11 pl-3.5 pr-11 text-sm"
         />
         <button
           type="button"
