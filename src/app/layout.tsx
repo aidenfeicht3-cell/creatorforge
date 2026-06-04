@@ -58,7 +58,11 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${geist.variable} ${geistMono.variable} ${jetbrains.variable}`}
+      // Dark is the brand default, baked into the server-rendered HTML so the
+      // very first paint is dark even before the ThemeScript runs (it only
+      // flips to `.light` for users who explicitly opted in). suppressHydration
+      // -Warning is required because ThemeScript mutates this class pre-hydration.
+      className={`${geist.variable} ${geistMono.variable} ${jetbrains.variable} dark`}
       suppressHydrationWarning
     >
       <head>
