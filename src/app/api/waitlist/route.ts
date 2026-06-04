@@ -6,7 +6,11 @@ export const runtime = "nodejs";
 
 type Intent = "free" | "pro" | "studio";
 
-const MAX_PER_IP = 5;
+// Per-IP lifetime cap on waitlist entries. Set generously: the only thing it
+// guards is bonus-credit farming (each entry grants 15-30 bonus credits that
+// can run metered media tools), and shared networks (offices, dorms, homes)
+// legitimately produce several signups. Override with WAITLIST_MAX_PER_IP.
+const MAX_PER_IP = Number(process.env.WAITLIST_MAX_PER_IP) || 50;
 
 const BONUS_BY_INTENT: Record<Intent, number> = {
   free: 30,
