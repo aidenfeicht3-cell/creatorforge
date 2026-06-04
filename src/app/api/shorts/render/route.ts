@@ -5,7 +5,7 @@ import { getYoutubeMp4 } from "@/lib/youtube-mp4";
 import { fetchVideoContext } from "@/lib/youtube";
 import { createRender, type RenderOptions } from "@/lib/video-render";
 import { rateLimit } from "@/lib/rate-limit";
-import type { Caption } from "@/lib/transcribe";
+import { transcribeUrl, type Caption } from "@/lib/transcribe";
 
 export const runtime = "nodejs";
 export const maxDuration = 90;
@@ -112,9 +112,27 @@ export async function POST(req: Request) {
     cuesAll = ctx.cues;
   } catch (err) {
     console.warn(
-      "[shorts/render] transcript fetch failed — rendering without captions:",
+      "[shorts/render] transcript fetch failed, will try transcription:",
       err,
     );
+  }
+
+  // Fallback: no YouTube captions available, but we already downloaded the MP4,
+  // so transcribe it ourselves and the rendered shorts still get burned-in
+  // captions. Needs DEEPGRAM_API_KEY; renders captionless without it.
+  if (cuesAll.length === 0) {
+    try {
+      const tr = await transcribeUrl(yt.mp4Url, 2);
+      if (tr?.captions?.length) {
+        cuesAll = tr.captions.map((c) => ({
+          text: c.text,
+          start: c.start,
+          duration: Math.max(0.1, c.end - c.start),
+        }));
+      }
+    } catch (err) {
+      console.warn("[shorts/render] transcription fallback failed:", err);
+    }
   }
 
   const options = body.options ?? {};

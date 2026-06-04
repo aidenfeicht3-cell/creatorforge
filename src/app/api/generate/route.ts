@@ -11,7 +11,7 @@ import {
 } from "@/lib/ai-image";
 import { rateLimit } from "@/lib/rate-limit";
 import { hasCredits, PLANS, type PlanId } from "@/lib/plans";
-import { fetchVideoContext } from "@/lib/youtube";
+import { fetchVideoContextResilient } from "@/lib/youtube-context";
 import { fetchAuditSnapshot } from "@/lib/youtube-data";
 import { runMediaTool } from "@/lib/media";
 
@@ -196,7 +196,7 @@ export async function POST(req: Request) {
       );
     }
     try {
-      videoContext = await fetchVideoContext(url);
+      videoContext = await fetchVideoContextResilient(url);
     } catch (err) {
       return NextResponse.json(
         {
