@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { motion, AnimatePresence, useReducedMotion } from "motion/react";
 import { ChevronDown, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { ToolIcon } from "@/components/ui/icon";
@@ -27,6 +28,7 @@ export function GenerationList({
 }) {
   const [items, setItems] = useState(rows);
   const [open, setOpen] = useState<string | null>(null);
+  const reduce = useReducedMotion();
 
   async function remove(id: string) {
     const { error } = await createClient()
@@ -57,7 +59,10 @@ export function GenerationList({
         const topic =
           row.inputs.topic || row.inputs.niche || "Untitled generation";
         return (
-          <div key={row.id} className="glass rounded-2xl">
+          <div
+            key={row.id}
+            className="glass overflow-hidden rounded-2xl transition-colors hover:border-brand-500/30"
+          >
             <div className="flex items-center gap-3 p-4">
               <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl border border-border bg-bg-soft text-brand-600">
                 <ToolIcon
@@ -99,15 +104,26 @@ export function GenerationList({
                 />
               </button>
             </div>
-            {expanded && (
-              <div className="border-t p-4">
-                <ResultView
-                  tool={row.tool}
-                  data={row.result}
-                  inputs={row.inputs}
-                />
-              </div>
-            )}
+            <AnimatePresence initial={false}>
+              {expanded && (
+                <motion.div
+                  key="content"
+                  initial={reduce ? { opacity: 0 } : { height: 0, opacity: 0 }}
+                  animate={reduce ? { opacity: 1 } : { height: "auto", opacity: 1 }}
+                  exit={reduce ? { opacity: 0 } : { height: 0, opacity: 0 }}
+                  transition={{ duration: 0.28, ease: [0.23, 1, 0.32, 1] }}
+                  className="overflow-hidden"
+                >
+                  <div className="border-t border-border p-4">
+                    <ResultView
+                      tool={row.tool}
+                      data={row.result}
+                      inputs={row.inputs}
+                    />
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
         );
       })}
