@@ -23,6 +23,10 @@ export function AuthForm({ mode }: { mode: "login" | "signup" }) {
   const [verifySent, setVerifySent] = useState(false);
 
   const isSignup = mode === "signup";
+  // Shows the Google button only once the provider is configured, so it's
+  // never a dead end. Set NEXT_PUBLIC_GOOGLE_AUTH=1 in Vercel after wiring
+  // Google in Supabase → Authentication → Providers.
+  const googleEnabled = process.env.NEXT_PUBLIC_GOOGLE_AUTH === "1";
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -68,6 +72,15 @@ export function AuthForm({ mode }: { mode: "login" | "signup" }) {
     } finally {
       setLoading(false);
     }
+  }
+
+  async function signInWithGoogle() {
+    const supabase = createClient();
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: { redirectTo: `${location.origin}/auth/callback?next=${next}` },
+    });
+    if (error) toast.error(error.message);
   }
 
   async function resend() {
@@ -126,7 +139,25 @@ export function AuthForm({ mode }: { mode: "login" | "signup" }) {
             : "Pick up right where you left off."}
         </p>
 
-        <form onSubmit={onSubmit} className="mt-6 space-y-4">
+        {googleEnabled && (
+          <div className="mt-6">
+            <button
+              type="button"
+              onClick={signInWithGoogle}
+              className="btn-feel flex h-12 w-full items-center justify-center gap-2.5 rounded-xl border border-border bg-surface text-sm font-semibold text-ink hover:-translate-y-0.5 hover:bg-bg-soft active:translate-y-0"
+            >
+              <GoogleIcon />
+              Continue with Google
+            </button>
+            <div className="my-5 flex items-center gap-3 text-xs text-muted">
+              <span className="h-px flex-1 bg-border" />
+              or
+              <span className="h-px flex-1 bg-border" />
+            </div>
+          </div>
+        )}
+
+        <form onSubmit={onSubmit} className={googleEnabled ? "space-y-4" : "mt-6 space-y-4"}>
           {isSignup && (
             <Field
               label="Display name"
@@ -168,6 +199,17 @@ export function AuthForm({ mode }: { mode: "login" | "signup" }) {
         </p>
       </div>
     </div>
+  );
+}
+
+function GoogleIcon() {
+  return (
+    <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+      <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.76h3.56c2.08-1.92 3.28-4.74 3.28-8.09z" />
+      <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.56-2.76c-.98.66-2.23 1.06-3.72 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84A11 11 0 0 0 12 23z" />
+      <path fill="#FBBC05" d="M5.84 14.11a6.6 6.6 0 0 1 0-4.22V7.05H2.18a11 11 0 0 0 0 9.9l3.66-2.84z" />
+      <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.05l3.66 2.84C6.71 7.31 9.14 5.38 12 5.38z" />
+    </svg>
   );
 }
 
