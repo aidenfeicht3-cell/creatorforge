@@ -383,7 +383,7 @@ export function ClipEditor({
                 <div className="font-mono text-[10px] uppercase tracking-wider text-muted">
                   Hook overlay
                 </div>
-                <div className="mt-0.5 text-lg font-bold text-gradient">
+                <div className="mt-0.5 text-lg font-bold text-brand-500">
                   {hookOverlay}
                 </div>
               </div>

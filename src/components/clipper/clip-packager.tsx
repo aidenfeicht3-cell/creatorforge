@@ -355,7 +355,7 @@ export function ClipPackager({
                   : "text-muted hover:text-ink"
               }`}
             >
-              {Icon && <Icon className={`h-3.5 w-3.5 ${active ? "text-amber-500" : ""}`} />}
+              {Icon && <Icon className={`h-3.5 w-3.5 ${active ? "text-brand-600" : ""}`} />}
               {t.label}
               <span className="rounded-full bg-bg-soft px-1.5 py-0.5 text-[10px] font-mono opacity-70">
                 {count}
@@ -440,7 +440,7 @@ export function ClipPackager({
                   }
                   className={`flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs transition-colors ${
                     settings.captionColor.toUpperCase() === c.hex
-                      ? "border-brand-500 bg-brand-50 text-brand-700"
+                      ? "border-brand-500 bg-brand-500 text-[#0A0A0A]"
                       : "border-border bg-surface text-muted hover:text-ink"
                   }`}
                 >
@@ -737,7 +737,7 @@ function Pill({
         preserveCase ? "" : "capitalize"
       } ${
         active
-          ? "border-brand-500 bg-brand-50 text-brand-700"
+          ? "border-brand-500 bg-brand-500 text-[#0A0A0A]"
           : "border-border bg-surface text-muted hover:text-ink"
       }`}
     >
