@@ -161,40 +161,34 @@ export function Sidebar({
           </div>
         </div>
 
-        {/* Credits HUD — free plan has no meter, just a "Free tier" badge. */}
-        {!collapsed &&
-          (plan === "free" ? (
-            <div className="mt-5 flex items-center justify-between rounded-2xl border border-border bg-bg-soft p-3.5">
-              <span className="inline-flex items-center gap-1.5 text-sm font-semibold text-ink">
-                <Zap className="h-3.5 w-3.5 text-brand-600" /> Free tier
+        {/* Credits HUD — a meter for everyone. For free users this is the
+            premium trial; once spent they drop to the unlimited fast stack. */}
+        {!collapsed && (
+          <div className="mt-5 rounded-2xl border border-border bg-bg-soft p-3.5">
+            <div className="flex items-center justify-between text-xs">
+              <span className="inline-flex items-center gap-1 font-mono uppercase tracking-wider text-muted">
+                <Zap className="h-3 w-3 text-brand-600" />
+                {plan === "free" ? "Premium trial" : "Credits"}
               </span>
-              <span className="font-mono text-[10px] uppercase tracking-wider text-muted">
-                Unlimited
+              <span className="font-mono text-xs font-semibold text-ink">
+                {creditsLeft}/{creditsCap}
               </span>
             </div>
-          ) : (
-            <div className="mt-5 rounded-2xl border border-border bg-bg-soft p-3.5">
-              <div className="flex items-center justify-between text-xs">
-                <span className="inline-flex items-center gap-1 font-mono uppercase tracking-wider text-muted">
-                  <Zap className="h-3 w-3 text-brand-600" /> Credits
-                </span>
-                <span className="font-mono text-xs font-semibold text-ink">
-                  {creditsLeft}/{creditsCap}
-                </span>
-              </div>
-              <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-surface">
-                <div
-                  className="h-full rounded-full bg-gradient-to-r from-brand-500 to-brand-400"
-                  style={{ width: `${pct}%` }}
-                />
-              </div>
-              {creditsLeft === 0 && (
-                <p className="mt-2 text-[10px] leading-tight text-muted">
-                  Out of credits — now running on free models until reset.
-                </p>
-              )}
+            <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-surface">
+              <div
+                className="h-full rounded-full bg-brand-500"
+                style={{ width: `${pct}%` }}
+              />
             </div>
-          ))}
+            {creditsLeft === 0 && (
+              <p className="mt-2 text-[10px] leading-tight text-muted">
+                {plan === "free"
+                  ? "Trial used. Now on the fast model. Upgrade for premium."
+                  : "Out of credits. Now on free models until reset."}
+              </p>
+            )}
+          </div>
+        )}
 
         {/* Flagship: Launch Pad */}
         {collapsed ? (

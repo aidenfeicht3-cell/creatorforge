@@ -144,10 +144,16 @@ export default async function DashboardPage() {
       <div className="grid gap-4 sm:grid-cols-3">
         <Stat
           icon={Zap}
-          label={plan.id === "free" ? "Your tier" : "Credits this cycle"}
-          value={plan.id === "free" ? "Free tier" : `${creditsLeft} / ${creditsCap}`}
-          sublabel={plan.id === "free" ? "Unlimited free tools" : undefined}
-          progress={plan.id === "free" ? undefined : pct}
+          label={plan.id === "free" ? "Premium trial" : "Credits this cycle"}
+          value={`${creditsLeft} / ${creditsCap}`}
+          sublabel={
+            plan.id === "free"
+              ? creditsLeft === 0
+                ? "Now on the fast model"
+                : "Premium credits to try"
+              : undefined
+          }
+          progress={pct}
           highlight
         />
         <Stat

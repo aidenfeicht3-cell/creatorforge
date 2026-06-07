@@ -100,8 +100,19 @@ export async function POST(req: Request) {
     );
   }
 
-  // Which plan's MODEL TIER + image quality this run actually uses.
-  const runPlan: PlanId = plan === "free" ? "free" : canAfford ? plan : "free";
+  // Model tier + image quality for this run.
+  //  • Free plan WITH trial credits → the premium stack ("pro": Claude Sonnet
+  //    + Replicate images). This is the paid taste. Once the trial is spent
+  //    they fall back to the free stack (still unlimited + uncharged).
+  //  • Paid plan in credit → their tier; out of credit → free stack.
+  const runPlan: PlanId =
+    plan === "free"
+      ? canAfford
+        ? "pro"
+        : "free"
+      : canAfford
+        ? plan
+        : "free";
   const premiumImages = runPlan !== "free";
   // Only charge credits when running on a paid tier (or a metered real-cost tool).
   const charge = metered || premiumImages ? tool.creditCost : 0;
