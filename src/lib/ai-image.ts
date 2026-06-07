@@ -61,6 +61,46 @@ async function withReplicate(prompt: string): Promise<string | null> {
 }
 
 /**
+ * Cloudflare Workers AI — FLUX-1-schnell. Free tier (~10k Neurons/day),
+ * fast and reliable (unlike Pollinations). The primary FREE engine when
+ * CLOUDFLARE_ACCOUNT_ID + CLOUDFLARE_API_TOKEN are set. Returns a base64
+ * data URL (works directly in <img> + canvas; no hosting needed).
+ */
+async function withCloudflare(prompt: string): Promise<string | null> {
+  const account = process.env.CLOUDFLARE_ACCOUNT_ID;
+  const token = process.env.CLOUDFLARE_API_TOKEN;
+  if (!account || !token) return null;
+  try {
+    const res = await fetch(
+      `https://api.cloudflare.com/client/v4/accounts/${account}/ai/run/@cf/black-forest-labs/flux-1-schnell`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ prompt: prompt.slice(0, 2000), steps: 6 }),
+      },
+    );
+    if (!res.ok) {
+      console.error(
+        "[ai-image] Cloudflare failed:",
+        res.status,
+        await res.text().catch(() => ""),
+      );
+      return null;
+    }
+    const data = await res.json();
+    const b64 = data?.result?.image;
+    if (!b64 || typeof b64 !== "string") return null;
+    return `data:image/jpeg;base64,${b64}`;
+  } catch (err) {
+    console.error("[ai-image] Cloudflare threw:", err);
+    return null;
+  }
+}
+
+/**
  * Pollinations.ai — free, no-key image-gen endpoint.
  *
  * IMPORTANT: Pollinations is "fire and hope" — the URL we return resolves
@@ -122,7 +162,11 @@ export async function generateImage(
     if (replicate) return replicate;
   }
 
-  // Pollinations free fallback (3 attempts) — this is the free tier's engine.
+  // Free tier: Cloudflare Workers AI first (reliable, free, when configured),
+  // then Pollinations as the keyless last resort.
+  const cf = await withCloudflare(prompt);
+  if (cf) return cf;
+
   const pol = await withPollinations(prompt);
   if (pol) return pol;
 
