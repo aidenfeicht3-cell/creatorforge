@@ -8,8 +8,8 @@
   @import url('https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700;800&display=swap');
 
   :root{
-    --bg:#0A0A0A; --surface:#161616; --soft:#1c1c1c; --border:#262626;
-    --ink:#FAFAFA; --muted:#A1A1AA; --lime:#C8FF3D; --lime-d:#B7F300;
+    --bg:#0A0A0A; --surface:#161616; --soft:#1e1e1e; --border:#2a2a2a;
+    --ink:#FAFAFA; --muted:#9b9ba3; --lime:#C8FF3D;
   }
   *{box-sizing:border-box;margin:0;padding:0;-webkit-font-smoothing:antialiased}
   html,body{background:#000;font-family:'Geist',ui-sans-serif,system-ui,-apple-system,sans-serif}
@@ -17,185 +17,131 @@
   .deck{height:100dvh;overflow-y:scroll;scroll-snap-type:y mandatory}
   .slide{height:100dvh;display:grid;place-items:center;scroll-snap-align:start;background:#000}
 
-  /* The 9:16 canvas — screenshot THIS. Fills height on desktop, width on phone. */
+  /* 9:16 canvas — screenshot THIS */
   .frame{
     position:relative;aspect-ratio:9/16;width:auto;height:min(100dvh,calc(100vw*16/9));
     max-width:100vw;background:var(--bg);color:var(--ink);overflow:hidden;
-    display:flex;flex-direction:column;padding:9% 8%;
+    display:flex;flex-direction:column;justify-content:center;align-items:center;
+    gap:clamp(14px,3vh,26px);padding:8% 9%;text-align:center;
   }
-  /* atmosphere */
   .frame::before{content:"";position:absolute;inset:0;z-index:0;
-    background:
-      radial-gradient(120% 60% at 80% 0%, rgba(200,255,61,.10), transparent 60%),
-      linear-gradient(to bottom right, rgba(255,255,255,.02), transparent);
-  }
-  .frame::after{content:"";position:absolute;inset:0;z-index:0;opacity:.5;
-    background-image:linear-gradient(rgba(255,255,255,.035) 1px,transparent 1px),
-                    linear-gradient(90deg,rgba(255,255,255,.035) 1px,transparent 1px);
-    background-size:34px 34px;-webkit-mask-image:radial-gradient(ellipse 80% 60% at 50% 30%,#000,transparent 80%);
-            mask-image:radial-gradient(ellipse 80% 60% at 50% 30%,#000,transparent 80%);}
+    background:radial-gradient(130% 50% at 50% -5%, rgba(200,255,61,.10), transparent 60%);}
   .frame > *{position:relative;z-index:1}
 
-  .brand{display:flex;align-items:center;gap:.45em;font-weight:700;font-size:clamp(16px,4.6vh,30px);letter-spacing:-.02em}
-  .bolt{display:grid;place-items:center;width:1.5em;height:1.5em;border-radius:.4em;background:var(--lime);color:#0A0A0A;font-size:.7em}
-  .brand .d{color:var(--lime)}
+  /* tiny wordmark, no emoji */
+  .wm{position:absolute;top:6.5%;left:0;right:0;font-weight:700;font-size:clamp(13px,2.3vh,17px);letter-spacing:-.01em;color:var(--ink);opacity:.9}
+  .wm .sq{display:inline-block;width:.62em;height:.62em;border-radius:.18em;background:var(--lime);margin-right:.12em;transform:translateY(.02em)}
+  .wm .d{color:var(--lime)}
 
-  .step{display:inline-flex;align-items:center;gap:.5em;align-self:flex-start;
-    border:1px solid rgba(200,255,61,.3);background:rgba(200,255,61,.1);color:var(--lime-d);
-    border-radius:999px;padding:.5em 1em;font-weight:600;font-size:clamp(12px,2.6vh,18px);
-    text-transform:uppercase;letter-spacing:.12em}
+  .step{font-weight:600;font-size:clamp(10px,1.9vh,13px);letter-spacing:.18em;text-transform:uppercase;color:var(--lime)}
 
-  h1{font-weight:800;letter-spacing:-.03em;line-height:1.02;font-size:clamp(30px,7.6vh,62px)}
+  h1{font-weight:800;letter-spacing:-.025em;line-height:1.1;font-size:clamp(21px,4.4vh,33px);max-width:11ch}
+  h1.wide{max-width:14ch}
   h1 .lime{color:var(--lime)}
-  .sub{color:var(--muted);font-size:clamp(16px,3.4vh,26px);line-height:1.4;font-weight:500}
+  .sub{color:var(--muted);font-size:clamp(13px,2.2vh,17px);line-height:1.4;font-weight:500;max-width:20ch}
 
-  .spacer{flex:1}
-  .center{justify-content:center;text-align:center;align-items:center}
-  .stack{display:flex;flex-direction:column;gap:clamp(14px,3vh,26px)}
-
-  /* mock UI bits */
-  .card{background:var(--surface);border:1px solid var(--border);border-radius:1.2em;box-shadow:0 24px 60px -28px rgba(0,0,0,.8)}
-  .urlbar{display:flex;align-items:center;gap:.6em;background:var(--soft);border:1px solid var(--border);border-radius:999px;padding:.7em 1.1em;color:var(--muted);font-size:clamp(13px,2.6vh,20px)}
-  .dot{width:.7em;height:.7em;border-radius:50%}
-
-  .nav{display:flex;flex-direction:column;gap:.35em;padding:.7em}
-  .navItem{display:flex;align-items:center;gap:.7em;padding:.7em .9em;border-radius:.7em;color:var(--muted);font-weight:600;font-size:clamp(14px,2.8vh,22px)}
-  .navItem .ic{width:1.15em;height:1.15em;border-radius:.3em;border:1.5px solid currentColor}
+  /* mock UI — compact */
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:.9em;width:74%}
+  .nav{display:flex;flex-direction:column;gap:.2em;padding:.5em;text-align:left}
+  .navItem{display:flex;align-items:center;gap:.6em;padding:.55em .7em;border-radius:.55em;color:var(--muted);font-weight:600;font-size:clamp(12px,2.1vh,16px)}
+  .navItem .ic{width:1em;height:1em;border-radius:.22em;border:1.5px solid currentColor;flex:none}
   .navItem.on{background:rgba(200,255,61,.12);color:var(--lime)}
 
-  .tabs{display:inline-flex;background:var(--surface);border:1px solid var(--border);border-radius:999px;padding:.4em;gap:.2em;font-weight:600;font-size:clamp(15px,3vh,24px)}
-  .tab{padding:.55em 1.3em;border-radius:999px;color:var(--muted)}
+  .tabs{display:inline-flex;background:var(--surface);border:1px solid var(--border);border-radius:999px;padding:.35em;gap:.2em;font-weight:600;font-size:clamp(13px,2.4vh,18px)}
+  .tab{padding:.5em 1.15em;border-radius:999px;color:var(--muted)}
   .tab.on{background:var(--lime);color:#0A0A0A}
 
-  .grid{display:grid;grid-template-columns:1fr 1fr;gap:.8em}
-  .clip{aspect-ratio:16/10;border-radius:.9em;border:1px solid var(--border);background:linear-gradient(135deg,#1e1e1e,#0f0f0f);position:relative;overflow:hidden}
-  .clip.sel{border-color:var(--lime);box-shadow:0 0 0 3px rgba(200,255,61,.3)}
-  .clip .score{position:absolute;top:.5em;left:.5em;background:rgba(200,255,61,.16);color:var(--lime);font-weight:700;font-size:clamp(11px,2vh,16px);padding:.15em .5em;border-radius:.4em}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:.6em;width:74%}
+  .clip{aspect-ratio:16/10;border-radius:.7em;border:1px solid var(--border);background:linear-gradient(135deg,#202020,#101010);position:relative}
+  .clip.sel{border-color:var(--lime);box-shadow:0 0 0 2.5px rgba(200,255,61,.35)}
+  .clip .score{position:absolute;top:.4em;left:.4em;background:rgba(200,255,61,.16);color:var(--lime);font-weight:700;font-size:clamp(9px,1.7vh,13px);padding:.1em .4em;border-radius:.35em}
 
-  /* finished short mock */
-  .short{align-self:center;width:54%;aspect-ratio:9/16;border-radius:1.1em;border:1px solid var(--border);
-    background:linear-gradient(160deg,#202020,#0c0c0c);position:relative;overflow:hidden;box-shadow:0 30px 60px -24px rgba(0,0,0,.9)}
-  .short .cap{position:absolute;left:6%;right:6%;bottom:14%;text-align:center;font-weight:800;
-    text-transform:uppercase;font-size:clamp(13px,2.5vh,20px);color:#fff;
-    text-shadow:0 2px 8px rgba(0,0,0,.8);line-height:1.05}
-  .short .cap b{background:var(--lime);color:#0A0A0A;padding:.05em .25em;border-radius:.15em}
-  .short .badge{position:absolute;top:5%;left:6%;background:rgba(0,0,0,.55);backdrop-filter:blur(4px);
-    border-radius:.4em;padding:.25em .6em;font-size:clamp(10px,1.9vh,15px);font-weight:700;color:var(--lime)}
-  .short .play{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:18%;aspect-ratio:1;border-radius:50%;
-    background:rgba(255,255,255,.9);display:grid;place-items:center}
-  .short .play::after{content:"";border-left:.7em solid #0A0A0A;border-top:.45em solid transparent;border-bottom:.45em solid transparent;margin-left:.15em}
+  .short{width:40%;aspect-ratio:9/16;border-radius:.9em;border:1px solid var(--border);
+    background:linear-gradient(160deg,#232323,#0d0d0d);position:relative;overflow:hidden;
+    box-shadow:0 24px 50px -22px rgba(0,0,0,.9)}
+  .short .cap{position:absolute;left:7%;right:7%;bottom:13%;font-weight:800;text-transform:uppercase;
+    font-size:clamp(10px,1.9vh,15px);color:#fff;text-shadow:0 1px 6px rgba(0,0,0,.8);line-height:1.06}
+  .short .cap b{background:var(--lime);color:#0A0A0A;padding:.02em .22em;border-radius:.12em}
+  .short .badge{position:absolute;top:5%;left:7%;background:rgba(0,0,0,.5);border-radius:.35em;
+    padding:.2em .5em;font-size:clamp(8px,1.6vh,12px);font-weight:700;color:var(--lime)}
+  .short .play{position:absolute;top:48%;left:50%;transform:translate(-50%,-50%);width:20%;aspect-ratio:1;
+    border-radius:50%;background:rgba(255,255,255,.92);display:grid;place-items:center}
+  .short .play::after{content:"";border-left:.55em solid #0A0A0A;border-top:.35em solid transparent;border-bottom:.35em solid transparent;margin-left:.12em}
 
-  .cta-btn{align-self:center;background:var(--lime);color:#0A0A0A;font-weight:800;border-radius:999px;
-    padding:.8em 1.6em;font-size:clamp(16px,3.4vh,26px);box-shadow:0 18px 40px -12px rgba(200,255,61,.5)}
-  .pill-word{color:var(--lime);font-weight:800}
+  .cta-btn{background:var(--lime);color:#0A0A0A;font-weight:700;border-radius:999px;
+    padding:.7em 1.5em;font-size:clamp(14px,2.6vh,20px)}
+  .quote{color:var(--lime);font-weight:800}
 
-  .hint{position:fixed;bottom:14px;left:0;right:0;text-align:center;color:#666;font:500 12px/1 'Geist',sans-serif;z-index:50}
+  .hint{position:fixed;bottom:12px;left:0;right:0;text-align:center;color:#555;font:500 11px/1 'Geist',sans-serif;z-index:50}
   @media print{.hint{display:none}}
 </style>
 </head>
 <body>
 <div class="deck">
 
-  <!-- 1 · HOOK -->
+  <!-- 1 · HOOK (pure text, lots of air) -->
   <section class="slide"><div class="frame">
-    <div class="brand"><span class="bolt">⚡</span>snip<span class="d">d</span></div>
-    <div class="spacer"></div>
-    <div class="stack">
-      <h1>Turn any Twitch clip into a <span class="lime">viral short.</span></h1>
-      <div class="sub">In 10 seconds. With AI. No editing.</div>
-    </div>
-    <div class="spacer"></div>
-    <div class="short" style="align-self:flex-start;width:44%">
-      <div class="badge">VIRAL 94</div>
-      <div class="play"></div>
-      <div class="cap">this clip <b>broke</b> the internet</div>
+    <div class="wm"><span class="sq"></span>snip<span class="d">d</span></div>
+    <h1 class="wide">Clip any Twitch stream into a <span class="lime">viral short.</span></h1>
+    <div class="sub">In 10 seconds. With AI. Free.</div>
+  </div></section>
+
+  <!-- 2 · OPEN CLIPPER -->
+  <section class="slide"><div class="frame">
+    <div class="wm"><span class="sq"></span>snip<span class="d">d</span></div>
+    <div class="step">Step 1</div>
+    <h1>Open the <span class="lime">Clipper</span></h1>
+    <div class="card"><div class="nav">
+      <div class="navItem"><span class="ic"></span>Overview</div>
+      <div class="navItem"><span class="ic"></span>Library</div>
+      <div class="navItem on"><span class="ic"></span>Clipper</div>
+      <div class="navItem"><span class="ic"></span>Affiliate</div>
+    </div></div>
+  </div></section>
+
+  <!-- 3 · PICK TWITCH -->
+  <section class="slide"><div class="frame">
+    <div class="wm"><span class="sq"></span>snip<span class="d">d</span></div>
+    <div class="step">Step 2</div>
+    <h1>Pick <span class="lime">Twitch</span></h1>
+    <div class="tabs"><span class="tab">YouTube</span><span class="tab on">Twitch</span></div>
+    <div class="sub">Or paste any YouTube link instead.</div>
+  </div></section>
+
+  <!-- 4 · PICK A CLIP -->
+  <section class="slide"><div class="frame">
+    <div class="wm"><span class="sq"></span>snip<span class="d">d</span></div>
+    <div class="step">Step 3</div>
+    <h1>Pick a <span class="lime">clip</span></h1>
+    <div class="grid">
+      <div class="clip"><div class="score">88</div></div>
+      <div class="clip sel"><div class="score">94</div></div>
+      <div class="clip"><div class="score">81</div></div>
+      <div class="clip"><div class="score">76</div></div>
     </div>
   </div></section>
 
-  <!-- 2 · GO TO SNIPD -->
+  <!-- 5 · DONE -->
   <section class="slide"><div class="frame">
-    <div class="step">Step 01</div>
-    <div class="spacer"></div>
-    <div class="stack">
-      <h1>Go to <span class="lime">snipd</span>.</h1>
-      <div class="urlbar"><span class="dot" style="background:#ff5f57"></span><span class="dot" style="background:#febc2e"></span><span class="dot" style="background:#28c840"></span>&nbsp;&nbsp;snipd.app</div>
-    </div>
-    <div class="spacer"></div>
-    <div class="brand" style="opacity:.5;font-size:18px"><span class="bolt">⚡</span>snip<span class="d">d</span></div>
-  </div></section>
-
-  <!-- 3 · OPEN CLIPPER -->
-  <section class="slide"><div class="frame">
-    <div class="step">Step 02</div>
-    <div class="spacer"></div>
-    <div class="stack">
-      <h1>Open the <span class="lime">Clipper</span>.</h1>
-      <div class="card"><div class="nav">
-        <div class="navItem"><span class="ic"></span>Overview</div>
-        <div class="navItem"><span class="ic"></span>Library</div>
-        <div class="navItem on"><span class="ic"></span>Clipper</div>
-        <div class="navItem"><span class="ic"></span>Affiliate</div>
-      </div></div>
-    </div>
-    <div class="spacer"></div>
-  </div></section>
-
-  <!-- 4 · PICK TWITCH -->
-  <section class="slide"><div class="frame">
-    <div class="step">Step 03</div>
-    <div class="spacer"></div>
-    <div class="stack center" style="align-items:flex-start">
-      <h1>Pick <span class="lime">Twitch</span>.</h1>
-      <div class="tabs"><span class="tab">▶ YouTube</span><span class="tab on">✦ Twitch</span></div>
-      <div class="sub">Or paste any YouTube link instead.</div>
-    </div>
-    <div class="spacer"></div>
-  </div></section>
-
-  <!-- 5 · PICK A CLIP -->
-  <section class="slide"><div class="frame">
-    <div class="step">Step 04</div>
-    <div class="spacer"></div>
-    <div class="stack">
-      <h1>Pick a <span class="lime">clip</span>.</h1>
-      <div class="grid">
-        <div class="clip"><div class="score">88</div></div>
-        <div class="clip sel"><div class="score">94</div></div>
-        <div class="clip"><div class="score">81</div></div>
-        <div class="clip"><div class="score">76</div></div>
-      </div>
-    </div>
-    <div class="spacer"></div>
-  </div></section>
-
-  <!-- 6 · DONE -->
-  <section class="slide"><div class="frame">
-    <div class="step" style="border-color:rgba(200,255,61,.4)">✓ Done</div>
-    <div class="spacer"></div>
-    <div class="stack">
-      <h1>A captioned <span class="lime">9:16 short.</span> Ready to post.</h1>
-    </div>
+    <div class="wm"><span class="sq"></span>snip<span class="d">d</span></div>
+    <div class="step">Done</div>
+    <h1 class="wide">A captioned <span class="lime">9:16 short.</span></h1>
     <div class="short">
       <div class="badge">9:16 · captions</div>
       <div class="play"></div>
       <div class="cap">and that's when <b>everything</b> changed</div>
     </div>
-    <div class="spacer"></div>
   </div></section>
 
-  <!-- 7 · CTA -->
-  <section class="slide"><div class="frame center" style="text-align:center">
-    <div class="brand center" style="justify-content:center"><span class="bolt">⚡</span>snip<span class="d">d</span></div>
-    <div class="spacer"></div>
-    <div class="stack center">
-      <h1>Comment <span class="pill-word">"CLIP"</span> and I'll send you the link.</h1>
-      <div class="sub">👇 Free to try. No card.</div>
-    </div>
-    <div class="spacer"></div>
-    <div class="cta-btn">Start clipping free</div>
+  <!-- 6 · CTA -->
+  <section class="slide"><div class="frame">
+    <div class="wm"><span class="sq"></span>snip<span class="d">d</span></div>
+    <h1 class="wide">Comment <span class="quote">"CLIP"</span> for the link.</h1>
+    <div class="sub">Free to try. No card needed.</div>
+    <div class="cta-btn">I'll send it to you</div>
   </div></section>
 
 </div>
-<div class="hint">scroll ↓ · screenshot each slide for TikTok</div>
+<div class="hint">scroll · screenshot each slide</div>
 </body>
 </html>
