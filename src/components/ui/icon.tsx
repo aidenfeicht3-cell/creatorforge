@@ -22,6 +22,10 @@ import {
   Mic,
   Eraser,
   Captions,
+  Repeat2,
+  MessageSquare,
+  CalendarDays,
+  Mail,
   type LucideIcon,
 } from "lucide-react";
 
@@ -49,6 +53,10 @@ const ICONS: Record<string, LucideIcon> = {
   Mic,
   Eraser,
   Captions,
+  Repeat2,
+  MessageSquare,
+  CalendarDays,
+  Mail,
 };
 
 export function ToolIcon({

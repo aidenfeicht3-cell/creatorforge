@@ -28,6 +28,75 @@ export function buildPrompt(
   context?: VideoContext,
 ): PromptSpec {
   switch (tool) {
+    case "repurpose":
+      return {
+        system: `${BASE_SYSTEM} You repackage one piece of content into native posts for X, LinkedIn, Instagram, and a newsletter. Each must read like it was written for THAT platform, never copy-pasted. ${JSON_RULE}`,
+        user: `Repurpose this video into platform-native posts. Voice: ${inputs.tone}.
+
+SOURCE:
+"""
+${(inputs.source || "").slice(0, 4000)}
+"""
+
+Return JSON: {
+  "groups":[
+    {"label":"X / Twitter thread","items":[{"primary":"each tweet as its own item, in order, max 280 chars each","secondary":"optional role like hook or CTA"}]},
+    {"label":"LinkedIn post","items":[{"primary":"the full post, use \\n for line breaks"}]},
+    {"label":"Instagram caption","items":[{"primary":"the caption then a line of relevant hashtags"}]},
+    {"label":"Newsletter blurb","items":[{"primary":"a short email section that teases the video"}]}
+  ],
+  "nextStep":"recommended next move"
+}`,
+      };
+
+    case "comments":
+      return {
+        system: `${BASE_SYSTEM} You write replies a creator would actually post: specific, warm, never generic filler. ${JSON_RULE}`,
+        user: `Write replies to these comments. Tone: ${inputs.tone}.
+
+COMMENTS:
+"""
+${(inputs.comments || "").slice(0, 3000)}
+"""
+
+Return JSON: {
+  "groups":[
+    {"label":"Replies","items":[{"primary":"the reply","secondary":"the comment it answers"}]},
+    {"label":"Pinned comment","items":[{"primary":"one strong pinned comment that drives more comments"}]}
+  ]
+}`,
+      };
+
+    case "calendar":
+      return {
+        system: `${BASE_SYSTEM} You build realistic 30-day content calendars. Every entry is a specific, filmable idea, never a vague theme. ${JSON_RULE}`,
+        user: `Build a 30-day content calendar for "${inputs.niche}" at a cadence of ${inputs.cadence}.
+
+Return JSON: {
+  "groups":[
+    {"label":"Week 1","items":[{"primary":"specific video title/idea","secondary":"why it earns a slot","badge":"format, e.g. Short or Long-form"}]},
+    {"label":"Week 2","items":[{"primary":"...","secondary":"...","badge":"..."}]},
+    {"label":"Week 3","items":[{"primary":"...","secondary":"...","badge":"..."}]},
+    {"label":"Week 4","items":[{"primary":"...","secondary":"...","badge":"..."}]}
+  ],
+  "nextStep":"how to actually run this plan"
+}`,
+      };
+
+    case "branddeal":
+      return {
+        system: `${BASE_SYSTEM} You write sponsorship outreach that lands replies: concise, specific, confident without arrogance. ${JSON_RULE}`,
+        user: `Write a brand-deal pitch. Creator: "${inputs.channel}". Pitching to: "${inputs.brand}".
+
+Return JSON: {
+  "groups":[
+    {"label":"Cold outreach email","items":[{"primary":"the full email; first line is the subject; use \\n for line breaks"}]},
+    {"label":"Why you're worth it","items":[{"primary":"a specific value point to justify your rate"}]},
+    {"label":"Follow-up","items":[{"primary":"a short follow-up to send after 5 days of no reply"}]}
+  ]
+}`,
+      };
+
     case "thumbnails":
       return {
         system: `${BASE_SYSTEM} ${JSON_RULE}`,

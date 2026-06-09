@@ -22,21 +22,29 @@ const CATEGORY_META: Record<
   string,
   { title: string; tagline: string }
 > = {
-  youtube: {
-    title: "Video packaging",
-    tagline: "Everything for the next video you ship.",
+  plan: {
+    title: "Plan",
+    tagline: "Find the idea worth making.",
   },
-  production: {
-    title: "Production",
-    tagline: "Storyboard, B-roll, and cinematic direction.",
+  package: {
+    title: "Package",
+    tagline: "Make the next video impossible to scroll past.",
   },
-  branding: {
+  produce: {
+    title: "Produce",
+    tagline: "Plan the shoot, frame by frame.",
+  },
+  repurpose: {
+    title: "Clip & Repurpose",
+    tagline: "Turn one video into a week of content.",
+  },
+  brand: {
     title: "Brand",
     tagline: "Your channel identity, sharpened.",
   },
-  growth: {
-    title: "Growth",
-    tagline: "Find your audience. Find your niche.",
+  grow: {
+    title: "Grow",
+    tagline: "Study what works. Fix what doesn't.",
   },
 };
 
@@ -208,7 +216,7 @@ export default async function DashboardPage() {
       </Reveal>
 
       {/* ─── Tools by category ─── */}
-      {(["youtube", "production", "branding", "growth"] as const).map(
+      {(["plan", "package", "produce", "repurpose", "brand", "grow"] as const).map(
         (category) => {
           const tools = grouped[category];
           if (!tools || tools.length === 0) return null;

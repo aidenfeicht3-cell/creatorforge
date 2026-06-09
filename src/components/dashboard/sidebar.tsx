@@ -39,10 +39,12 @@ const MAIN = [
 ];
 
 const CATEGORIES: { key: string; label: string }[] = [
-  { key: "youtube", label: "YouTube" },
-  { key: "production", label: "Production" },
-  { key: "branding", label: "Brand" },
-  { key: "growth", label: "Growth" },
+  { key: "plan", label: "Plan" },
+  { key: "package", label: "Package" },
+  { key: "produce", label: "Produce" },
+  { key: "repurpose", label: "Clip & Repurpose" },
+  { key: "brand", label: "Brand" },
+  { key: "grow", label: "Grow" },
 ];
 
 const COLLAPSED_KEY = "cf-sidebar-collapsed";
@@ -69,10 +71,12 @@ export function Sidebar({
   const [collapsed, setCollapsed] = useState(false);
   // Per-category open state (defaults: youtube + production open)
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({
-    youtube: true,
-    production: true,
-    branding: true,
-    growth: true,
+    plan: true,
+    package: true,
+    produce: true,
+    repurpose: true,
+    brand: true,
+    grow: true,
   });
 
   useEffect(() => {

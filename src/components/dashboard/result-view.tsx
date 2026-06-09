@@ -2672,6 +2672,56 @@ type RendererProps = { data: Any; inputs?: Any };
 
 // Partial: media tools (voiceover/watermark/captions) produce no
 // JSON result, so they have no renderer — ResultView falls back gracefully.
+/** Generic structured renderer — groups of items (primary / secondary / badge),
+ *  each with a copy button. Powers the text tools (Repurpose, Comment Replies,
+ *  Content Calendar, Brand Deal) so adding more is just a prompt + registry. */
+function Generic({ data }: { data: Any }) {
+  const groups = (data.groups as Any[]) || [];
+  if (groups.length === 0) {
+    return (
+      <pre className="glass overflow-auto rounded-2xl p-4 text-xs">
+        {JSON.stringify(data, null, 2)}
+      </pre>
+    );
+  }
+  return (
+    <div className="space-y-5">
+      {groups.map((g, gi) => {
+        const items = (g.items as Any[]) || [];
+        return (
+          <div key={gi}>
+            <div className="mb-2">
+              <Label>{String(g.label)}</Label>
+            </div>
+            <div className="space-y-2.5">
+              {items.map((it, i) => (
+                <Card key={i}>
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0 flex-1">
+                      {it.badge && (
+                        <span className="mb-1.5 inline-block rounded-md bg-brand-500/12 px-1.5 py-0.5 font-mono text-[10px] font-semibold text-brand-600">
+                          {String(it.badge)}
+                        </span>
+                      )}
+                      <p className="whitespace-pre-line text-[15px] leading-relaxed text-ink">
+                        {String(it.primary)}
+                      </p>
+                      {it.secondary && (
+                        <p className="mt-1 text-xs text-muted">{String(it.secondary)}</p>
+                      )}
+                    </div>
+                    <CopyButton text={String(it.primary)} />
+                  </div>
+                </Card>
+              ))}
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 const RENDERERS: Partial<Record<ToolSlug, (p: RendererProps) => React.ReactNode>> = {
   thumbnails: ({ data, inputs }) => (
     <Thumbnails data={data} style={inputs?.style as string | undefined} />
@@ -2699,6 +2749,10 @@ const RENDERERS: Partial<Record<ToolSlug, (p: RendererProps) => React.ReactNode>
   voiceover: VoiceoverResult,
   captions: CaptionsResult,
   autovideo: AutoVideo,
+  repurpose: Generic,
+  comments: Generic,
+  calendar: Generic,
+  branddeal: Generic,
 };
 
 export function ResultView({
@@ -2746,8 +2800,8 @@ function InsightsFooter({ data }: { data: Any }) {
   return (
     <div className="space-y-3">
       {topPick && (
-        <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-5">
-          <div className="font-mono text-[10px] uppercase tracking-wider text-emerald-700">
+        <div className="rounded-2xl border border-brand-500/30 bg-brand-500/10 p-5">
+          <div className="font-mono text-[10px] uppercase tracking-wider text-brand-600">
             ★ Top pick
           </div>
           <p className="mt-2 text-[15px] leading-relaxed">{topPick}</p>
@@ -2764,20 +2818,20 @@ function InsightsFooter({ data }: { data: Any }) {
       )}
 
       {(watchOutFor.length > 0 || honestRisks.length > 0) && (
-        <div className="rounded-2xl border border-amber-200 bg-amber-50 p-5">
-          <div className="font-mono text-[10px] uppercase tracking-wider text-amber-700">
+        <div className="rounded-2xl border border-border bg-bg-soft p-5">
+          <div className="font-mono text-[10px] uppercase tracking-wider text-muted">
             Watch out for
           </div>
           <ul className="mt-3 space-y-1.5 text-sm">
             {watchOutFor.map((w, i) => (
               <li key={`w${i}`} className="flex items-start gap-2">
-                <span className="mt-1.5 inline-block h-1 w-1 shrink-0 rounded-full bg-amber-700" />
+                <span className="mt-1.5 inline-block h-1 w-1 shrink-0 rounded-full bg-muted" />
                 <span>{w}</span>
               </li>
             ))}
             {honestRisks.map((r, i) => (
               <li key={`r${i}`} className="flex items-start gap-2">
-                <span className="mt-1.5 inline-block h-1 w-1 shrink-0 rounded-full bg-amber-700" />
+                <span className="mt-1.5 inline-block h-1 w-1 shrink-0 rounded-full bg-muted" />
                 <span>{r}</span>
               </li>
             ))}
@@ -2786,8 +2840,8 @@ function InsightsFooter({ data }: { data: Any }) {
       )}
 
       {nextStep && (
-        <div className="rounded-2xl border border-brand-500/30 bg-brand-50 p-5">
-          <div className="font-mono text-[10px] uppercase tracking-wider text-brand-700">
+        <div className="rounded-2xl border border-brand-500/30 bg-brand-500/10 p-5">
+          <div className="font-mono text-[10px] uppercase tracking-wider text-brand-600">
             Next step →
           </div>
           <p className="mt-2 text-[15px] leading-relaxed">{nextStep}</p>
