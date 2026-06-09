@@ -1,0 +1,60 @@
+/* Shared styles for Snipd TikTok value-first slideshows.
+   Value slides carry NO branding (feels native); the brand mark + product
+   appear only on the reveal + CTA slides. */
+@import url('https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700;800&display=swap');
+
+:root{
+  --bg:#0A0A0A; --surface:#161616; --soft:#1e1e1e; --border:#2a2a2a;
+  --ink:#FAFAFA; --muted:#9b9ba3; --lime:#C8FF3D;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-font-smoothing:antialiased}
+html,body{background:#000;font-family:'Geist',ui-sans-serif,system-ui,-apple-system,sans-serif}
+
+.deck{height:100dvh;overflow-y:scroll;scroll-snap-type:y mandatory}
+.slide{height:100dvh;display:grid;place-items:center;scroll-snap-align:start;background:#000}
+
+/* 9:16 canvas — screenshot THIS */
+.frame{
+  position:relative;aspect-ratio:9/16;width:auto;height:min(100dvh,calc(100vw*16/9));
+  max-width:100vw;background:var(--bg);color:var(--ink);overflow:hidden;
+  display:flex;flex-direction:column;justify-content:center;align-items:center;
+  gap:clamp(14px,3vh,26px);padding:9% 9%;text-align:center;
+}
+.frame::before{content:"";position:absolute;inset:0;z-index:0;
+  background:radial-gradient(130% 50% at 50% -5%, rgba(200,255,61,.09), transparent 60%);}
+.frame.up::before{background:radial-gradient(130% 50% at 50% 105%, rgba(200,255,61,.10), transparent 60%);}
+.frame > *{position:relative;z-index:1}
+
+/* typography */
+.kicker{font-weight:700;font-size:clamp(11px,2vh,14px);letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}
+.kicker.lime{color:var(--lime)}
+h1{font-weight:800;letter-spacing:-.025em;line-height:1.12;font-size:clamp(22px,4.6vh,34px);max-width:13ch}
+h1.hook{font-size:clamp(25px,5.2vh,40px);max-width:12ch;line-height:1.06}
+h1 .lime{color:var(--lime)}
+.sub{color:var(--muted);font-size:clamp(13px,2.2vh,17px);line-height:1.4;font-weight:500;max-width:22ch}
+.num{color:var(--lime);font-weight:800}
+
+/* small brand mark — ONLY on reveal/CTA */
+.wm{font-weight:700;font-size:clamp(15px,2.8vh,20px);letter-spacing:-.01em}
+.wm .sq{display:inline-block;width:.6em;height:.6em;border-radius:.18em;background:var(--lime);margin-right:.14em;transform:translateY(.02em)}
+.wm .d{color:var(--lime)}
+
+/* product reveal mock — a finished short */
+.short{width:42%;aspect-ratio:9/16;border-radius:.9em;border:1px solid var(--border);
+  background:linear-gradient(160deg,#232323,#0d0d0d);position:relative;overflow:hidden;
+  box-shadow:0 24px 50px -22px rgba(0,0,0,.9)}
+.short .cap{position:absolute;left:7%;right:7%;bottom:13%;font-weight:800;text-transform:uppercase;
+  font-size:clamp(10px,1.9vh,15px);color:#fff;text-shadow:0 1px 6px rgba(0,0,0,.8);line-height:1.06}
+.short .cap b{background:var(--lime);color:#0A0A0A;padding:.02em .22em;border-radius:.12em}
+.short .badge{position:absolute;top:5%;left:7%;background:rgba(0,0,0,.5);border-radius:.35em;
+  padding:.2em .5em;font-size:clamp(8px,1.6vh,12px);font-weight:700;color:var(--lime)}
+.short .play{position:absolute;top:48%;left:50%;transform:translate(-50%,-50%);width:20%;aspect-ratio:1;
+  border-radius:50%;background:rgba(255,255,255,.92);display:grid;place-items:center}
+.short .play::after{content:"";border-left:.55em solid #0A0A0A;border-top:.35em solid transparent;border-bottom:.35em solid transparent;margin-left:.12em}
+
+.cta-btn{background:var(--lime);color:#0A0A0A;font-weight:700;border-radius:999px;
+  padding:.7em 1.5em;font-size:clamp(14px,2.6vh,20px)}
+.quote{color:var(--lime);font-weight:800}
+
+.hint{position:fixed;bottom:12px;left:0;right:0;text-align:center;color:#555;font:500 11px/1 'Geist',sans-serif;z-index:50}
+@media print{.hint{display:none}}
